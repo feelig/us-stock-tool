@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microsoft (MSFT) 深度研报 & 趋势分析 - 智算金融</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3786448290157661"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --dim: #94a3b8;
+            --bull: #10b981;
+            --bear: #f87171;
+            --gold: #facc15;
+            --blue: #38bdf8;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        a.back {
+            color: var(--blue);
+            text-decoration: none;
+            font-size: 14px;
+            border: 1px solid var(--blue);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        a.back:hover {
+            background: var(--blue);
+            color: #000;
+        }
+
+        .header {
+            margin-top: 20px;
+            border-left: 4px solid #0ea5e9;
+            padding-left: 20px;
+            margin-bottom: 25px;
+        }
+
+        .badge {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 10px 0 5px 0;
+            font-size: 28px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .metric {
+            background: #171717;
+            border: 1px solid #334155;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .m-label {
+            font-size: 11px;
+            color: var(--dim);
+            text-transform: uppercase;
+        }
+
+        .m-val {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .chart-box {
+            height: 400px;
+            background: #0b1120;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            margin-bottom: 30px;
+        }
+
+        .article {
+            background: var(--card);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            border-bottom: 2px solid #334155;
+            padding-bottom: 10px;
+            color: #0ea5e9;
+            margin-top: 0;
+        }
+
+        h3 {
+            color: var(--blue);
+            margin-top: 25px;
+            font-size: 18px;
+        }
+
+        p {
+            color: #cbd5e1;
+            text-align: justify;
+            margin-bottom: 15px;
+        }
+
+        .strategy-box {
+            background: rgba(56, 189, 248, 0.05);
+            border: 1px solid var(--blue);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .dashboard {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="../index.html" class="back">❮ 返回主屏幕</a>
+        <div class="header">
+            <span class="badge" id="trendTag" style="background: #334155;">分析中...</span>
+            <h1 id="stockTitle">Microsoft (MSFT)</h1>
+            <p style="color: #94a3b8;">云与 AI 生产力的绝对统治者。</p>
+        </div>
+        <div class="dashboard">
+            <div class="metric">
+                <div class="m-label">当前价格</div>
+                <div class="m-val" id="price" style="color:#0ea5e9">...</div>
+            </div>
+            <div class="metric">
+                <div class="m-label">总市值</div>
+                <div class="m-val" id="mcap">...</div>
+            </div>
+            <div class="metric">
+                <div class="m-label">市盈率 (PE)</div>
+                <div class="m-val" id="pe">...</div>
+            </div>
+            <div class="metric">
+                <div class="m-label">52周最高</div>
+                <div class="m-val" id="high52">...</div>
+            </div>
+        </div>
+        <div class="chart-box"><canvas id="mainChart"></canvas></div>
+        <div class="article">
+            <h2>🏢 核心逻辑：B 端霸主</h2>
+            <p><strong>Azure + OpenAI：</strong> 微软通过 Azure 云服务统治企业市场，并通过独家投资 OpenAI 锁定了 GPT-4 的商业化红利。</p>
+            <p><strong>生产力粘性：</strong> Office 365 是全球企业的“水电煤”，Copilot 的加入将进一步提升其定价权。</p>
+
+            <div class="strategy-box">
+                <h3 style="margin-top:0;">🎓 独家战法：MSFT 的牛熊分界线</h3>
+                <p>微软的走势非常符合技术面特征。观察图表中的 <strong style="color:#facc15">黄色线 (MA50)</strong> 和 <strong
+                        style="color:#38bdf8">蓝色线 (MA200)</strong>：</p>
+                <ul style="padding-left: 20px; color: #cbd5e1;">
+                    <li><strong>稳健策略：</strong> 微软的股价通常沿着 MA50 (黄线) 攀升。当股价在牛市中回踩黄线不破，是绝佳的“上车”机会。</li>
+                    <li><strong>极端情况：</strong> 只有在系统性风险（如 2022 年加息）发生时，它才会跌破蓝线 (MA200)。这种机会几年才会有一次，是长线资金入场的强烈信号。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script src="../data.js"></script>
+    <script>
+        const ticker = "MSFT";
+        const stockObj = STOCK_HISTORICAL_DATA[ticker];
+        if (stockObj) {
+            const meta = stockObj.meta; const dates = stockObj.dates; const prices = stockObj.prices; const ma50 = stockObj.ma50; const ma200 = stockObj.ma200;
+            document.title = `${ticker} 深度研报 - 智算金融`;
+            document.getElementById('stockTitle').innerText = `${meta.name} (${ticker})`;
+            document.getElementById('price').innerText = "$" + prices[prices.length - 1];
+            document.getElementById('mcap').innerText = meta.marketCap;
+            document.getElementById('pe').innerText = meta.peRatio;
+            document.getElementById('high52').innerText = "$" + meta.week52High;
+            const tag = document.getElementById('trendTag'); tag.innerText = meta.trend;
+            if (meta.trend.includes('牛')) { tag.style.background = 'rgba(16,185,129,0.2)'; tag.style.color = '#10b981'; } else { tag.style.background = 'rgba(248,113,113,0.2)'; tag.style.color = '#f87171'; }
+            const cutIdx = dates.findIndex(d => d >= '2020-01-01');
+            new Chart(document.getElementById('mainChart'), {
+                type: 'line', data: {
+                    labels: dates.slice(cutIdx), datasets: [
+                        { label: '股价', data: prices.slice(cutIdx), borderColor: '#ffffff', borderWidth: 2, pointRadius: 0, order: 1 },
+                        { label: 'MA50', data: ma50.slice(cutIdx), borderColor: '#facc15', borderWidth: 1, borderDash: [5, 5], pointRadius: 0, order: 2 },
+                        { label: 'MA200', data: ma200.slice(cutIdx), borderColor: '#38bdf8', borderWidth: 2, pointRadius: 0, order: 0 }
+                    ]
+                }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { x: { display: false }, y: { position: 'right', grid: { color: '#334155' } } } }
+            });
+        }
+    </script>
+</body>
+
+</html>
