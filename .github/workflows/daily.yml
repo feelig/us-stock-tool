@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: "17 1 * * *"
 
+concurrency:
+  group: daily-mri-update-main
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -36,4 +40,5 @@ jobs:
             exit 0
           fi
           git commit -m "Daily: auto update"
-          git push
+          git pull --rebase origin main
+          git push origin main
