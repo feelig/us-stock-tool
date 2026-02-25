@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 const { execFileSync } = require('child_process');
 let sharp = null;
 try {
@@ -14,7 +15,7 @@ const OUT_PATH = path.resolve(DATA_DIR, 'daily.json');
 const RISK_INDEX_PATH = path.resolve(DATA_DIR, 'risk_index.json');
 const RISK_INDEX_HISTORY_PATH = path.resolve(DATA_DIR, 'risk_index_history.json');
 const OG_DIR = path.resolve(__dirname, '..', 'public', 'og');
-const ARCHIVE_DIR = path.resolve(__dirname, '..', 'pages', 'daily');
+const ARCHIVE_DIR = path.resolve(__dirname, '..', 'public', 'daily');
 const RECENT_PATH = path.resolve(ARCHIVE_DIR, 'recent.json');
 const RECENT30_PATH = path.resolve(ARCHIVE_DIR, 'recent30.json');
 const MONTHLY_PATH = path.resolve(ARCHIVE_DIR, 'monthly.json');
@@ -26,6 +27,85 @@ const DISCLAIMER_PATH = path.resolve(__dirname, '..', 'disclaimer.html');
 function readMock() {
   const raw = fs.readFileSync(MOCK_PATH, 'utf-8');
   return JSON.parse(raw);
+}
+
+function fetchCsv(symbol) {
+  const url = `https://stooq.com/q/d/l/?s=${symbol}&i=d`;
+  return new Promise((resolve, reject) => {
+    const req = https.get(url, { timeout: 15000 }, (res) => {
+      if (res.statusCode !== 200) {
+        reject(new Error(`stooq ${symbol} status ${res.statusCode}`));
+        res.resume();
+        return;
+      }
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => resolve(data));
+    });
+    req.on('error', reject);
+    req.on('timeout', () => req.destroy(new Error(`stooq ${symbol} timeout`)));
+  });
+}
+
+function parseStooq(csv) {
+  const lines = csv.trim().split('\n');
+  const outDates = [];
+  const outClose = [];
+  for (let i = 1; i < lines.length; i++) {
+    const parts = lines[i].split(',');
+    if (parts.length < 5) continue;
+    const date = parts[0];
+    const close = parseFloat(parts[4]);
+    if (!date || !Number.isFinite(close)) continue;
+    outDates.push(date);
+    outClose.push(close);
+  }
+  return { dates: outDates, close: outClose };
+}
+
+function intersectDates(seriesMap) {
+  const keys = Object.keys(seriesMap);
+  if (!keys.length) return [];
+  let common = new Set(seriesMap[keys[0]].dates);
+  for (let i = 1; i < keys.length; i++) {
+    const next = new Set(seriesMap[keys[i]].dates);
+    common = new Set([...common].filter(d => next.has(d)));
+  }
+  return Array.from(common).sort();
+}
+
+async function loadDataSource() {
+  const cacheDir = path.resolve(__dirname, 'cache');
+  const cachePath = path.join(cacheDir, 'prices.json');
+  try {
+    const symbols = ['spy.us', 'qqq.us', 'tlt.us', 'gld.us'];
+    const payloads = await Promise.all(symbols.map(fetchCsv));
+    const parsed = payloads.map(parseStooq);
+    const map = {
+      SPY: parsed[0],
+      QQQ: parsed[1],
+      TLT: parsed[2],
+      GLD: parsed[3]
+    };
+    const dates = intersectDates(map).slice(-260);
+    const series = {
+      SPY: dates.map(d => map.SPY.close[map.SPY.dates.indexOf(d)]),
+      QQQ: dates.map(d => map.QQQ.close[map.QQQ.dates.indexOf(d)]),
+      TLT: dates.map(d => map.TLT.close[map.TLT.dates.indexOf(d)]),
+      GLD: dates.map(d => map.GLD.close[map.GLD.dates.indexOf(d)])
+    };
+    const mock = readMock();
+    const out = { dates, series: { ...series, ...mock.series }, source: 'stooq', updatedAt: new Date().toISOString() };
+    fs.mkdirSync(cacheDir, { recursive: true });
+    fs.writeFileSync(cachePath, JSON.stringify(out, null, 2));
+    return { data: out, status: 'fresh' };
+  } catch (e) {
+    if (fs.existsSync(cachePath)) {
+      const cached = JSON.parse(fs.readFileSync(cachePath, 'utf-8'));
+      return { data: cached, status: 'stale' };
+    }
+    throw e;
+  }
 }
 
 function clamp(n, min, max) {
@@ -274,15 +354,15 @@ function renderThemeRows(list) {
 function renderArchiveHtml(daily, ctx = {}) {
   const { date, reasons, topThemes, bottomThemes } = daily;
   const riskIndex = daily.riskIndex || daily.marketRisk || {};
-  const canonical = `${SITE_ROOT}/pages/daily/${date}.html`;
+  const canonical = `${SITE_ROOT}/daily/${date}.html`;
   const explanation = buildExplanation(daily);
   const metaDesc = buildMetaDescription(daily);
   const lightText = lightLabel(riskIndex.light);
   const prevScore = Number.isFinite(ctx.prevScore) ? ctx.prevScore : null;
   const delta = prevScore === null ? 0 : Number((riskIndex.score - prevScore).toFixed(1));
   const deltaText = prevScore === null ? "—" : `${delta >= 0 ? "+" : ""}${delta}`;
-  const prevLink = ctx.prevDate ? `${SITE_ROOT}/pages/daily/${ctx.prevDate}.html` : '';
-  const nextLink = ctx.nextDate ? `${SITE_ROOT}/pages/daily/${ctx.nextDate}.html` : '';
+  const prevLink = ctx.prevDate ? `${SITE_ROOT}/daily/${ctx.prevDate}.html` : '';
+  const nextLink = ctx.nextDate ? `${SITE_ROOT}/daily/${ctx.nextDate}.html` : '';
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -499,8 +579,8 @@ function buildRecentList(limit = 7) {
       if (!date) continue;
       items.push({
         date,
-        urlHtml: `/pages/daily/${date}.html`,
-        urlJson: `/pages/daily/${date}.json`,
+        urlHtml: `/daily/${date}.html`,
+        urlJson: `/daily/${date}.json`,
         light: data.marketRisk?.light,
         score: data.marketRisk?.score,
         equityRange: data.marketRisk?.equityRange
@@ -713,7 +793,7 @@ function writeSitemap(archiveHtmlFiles) {
   ];
   for (const file of archiveHtmlFiles) {
     const date = file.slice(0, 10);
-    urls.push({ loc: `${SITE_ROOT}/pages/daily/${file}`, changefreq: 'daily', priority: '0.5', lastmod: date });
+    urls.push({ loc: `${SITE_ROOT}/daily/${file}`, changefreq: 'daily', priority: '0.5', lastmod: date });
   }
   const xml = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'];
   for (const u of urls) {
@@ -747,9 +827,9 @@ function calcConfidence(components) {
 }
 
 async function main() {
-  const mock = readMock();
+  const { data, status } = await loadDataSource();
   const yesterday = getYesterdayRisk();
-  let daily = buildDaily(mock);
+  let daily = buildDaily(data);
   daily = applySmoothing(daily, yesterday);
   delete daily._ctx;
   daily = {
@@ -759,6 +839,7 @@ async function main() {
       keyDrivers: buildKeyDrivers(daily.riskIndex?.components)
     }
   };
+  daily.dataStatus = status;
   fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.writeFileSync(OUT_PATH, JSON.stringify(daily, null, 2));
   console.log('daily.json updated:', OUT_PATH);
@@ -870,9 +951,15 @@ async function main() {
     `<meta name="twitter:description" content="${ogDesc}">`,
     `<meta name="twitter:image" content="${ogImage}">`
   ].join('\n');
-  updateOgForPage(path.resolve(__dirname, '..', 'index.html'), ogBlock);
-  updateOgForPage(path.resolve(__dirname, '..', 'pages', 'daily.html'), ogBlock);
-  updateOgForPage(path.resolve(__dirname, '..', 'market-risk-index.html'), ogBlock.replace(`content="${SITE_ROOT}/"`, `content="${SITE_ROOT}/market-risk-index.html"`));
+  updateOgForPage(path.resolve(__dirname, '..', 'public', 'index.html'), ogBlock);
+  updateOgForPage(
+    path.resolve(__dirname, '..', 'public', 'daily.html'),
+    ogBlock.replace(`content="${SITE_ROOT}/"`, `content="${SITE_ROOT}/daily.html"`)
+  );
+  updateOgForPage(
+    path.resolve(__dirname, '..', 'public', 'market-risk-index.html'),
+    ogBlock.replace(`content="${SITE_ROOT}/"`, `content="${SITE_ROOT}/market-risk-index.html"`)
+  );
 
   const archiveJsons = listArchiveJsons();
   const dates = archiveJsons.map(f => f.slice(0, 10)).sort();
@@ -903,4 +990,7 @@ async function main() {
   console.log('sitemap.xml updated:', SITEMAP_PATH);
 }
 
-main();
+main().catch((err) => {
+  console.error('generate_daily failed:', err.message);
+  process.exitCode = 1;
+});

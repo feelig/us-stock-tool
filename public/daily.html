@@ -521,7 +521,7 @@
       const t = getI18n(getDailyLang());
       const listEl = document.getElementById('recentList');
       try {
-        const res = await fetch('daily/recent.json', { cache: 'no-store' });
+        const res = await fetch('/daily/recent.json', { cache: 'no-store' });
         const data = await res.json();
         if (!Array.isArray(data) || data.length === 0) {
           listEl.innerHTML = `<div class="note">${t.recent_empty || '暂无历史记录'}</div>`;
@@ -530,7 +530,7 @@
         listEl.innerHTML = data.map(item => {
           const level = (t.light_levels && t.light_levels[item.light]) ? t.light_levels[item.light] : (item.light || '').toUpperCase();
           const label = t.market_risk_light || '风险灯';
-          const href = item.urlHtml || `daily/${item.date}.html`;
+          const href = item.urlHtml || `/daily/${item.date}.html`;
           return `<a class="recent-item" href="${href}"><span>${item.date}</span><span>${label} · ${level} · ${item.score}</span></a>`;
         }).join('');
       } catch (e) {
@@ -542,14 +542,14 @@
       const t = getI18n(getDailyLang());
       const listEl = document.getElementById('recent30List');
       try {
-        const res = await fetch('daily/recent30.json', { cache: 'no-store' });
+        const res = await fetch('/daily/recent30.json', { cache: 'no-store' });
         const data = await res.json();
         if (!Array.isArray(data) || data.length === 0) {
           listEl.innerHTML = `<div class="note">${t.recent30_empty || '暂无记录'}</div>`;
           return;
         }
         listEl.innerHTML = data.map(item => {
-          return `<a class="recent-item" href="${item.urlHtml || `daily/${item.date}.html`}"><span>${item.date}</span><span>${item.score}</span></a>`;
+          return `<a class="recent-item" href="${item.urlHtml || `/daily/${item.date}.html`}"><span>${item.date}</span><span>${item.score}</span></a>`;
         }).join('');
       } catch (e) {
         listEl.innerHTML = `<div class="note">${t.recent30_empty || '暂无记录'}</div>`;
@@ -560,7 +560,7 @@
       const t = getI18n(getDailyLang());
       const listEl = document.getElementById('monthlyList');
       try {
-        const res = await fetch('daily/monthly.json', { cache: 'no-store' });
+        const res = await fetch('/daily/monthly.json', { cache: 'no-store' });
         const data = await res.json();
         const months = data?.months || [];
         if (!Array.isArray(months) || months.length === 0) {
@@ -569,7 +569,7 @@
         }
         listEl.innerHTML = months.map(item => {
           const label = `${item.month} (${item.dates.length})`;
-          const href = item.latest ? `daily/${item.latest}.html` : '#';
+          const href = item.latest ? `/daily/${item.latest}.html` : '#';
           return `<a class="recent-item" href="${href}"><span>${label}</span><span>${item.latest || ''}</span></a>`;
         }).join('');
       } catch (e) {

@@ -1,0 +1,10 @@
+{
+  "name": "us-stock-tool",
+  "private": true,
+  "version": "1.0.0",
+  "description": "FinLogicHub5",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "sharp": "^0.33.5"
+  }
+}
