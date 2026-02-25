@@ -1,14 +1,86 @@
 <!DOCTYPE html>
+<!--
+MVP 重构说明：
+- 已移除：02B 进阶分析实验室、03 决策与执行区、04 账户与策略管理、回测历史/提醒/导出/外部小组件等非MVP模块
+- 已精简：策略模板仅保留 AI Growth / Balanced / Index；组合模式折叠至“高级设置”
+原因：聚焦“AI 投资决策助手”最小可上线版本，减少首屏负担与DOM体积，提升加载与维护效率
+-->
 <html lang="zh-CN">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="AI 投资决策助手：一键回测生成核心指标、图表与策略解释，支持组合模式与分享链接。">
+    <meta name="robots" content="index,follow">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="canonical" href="https://finlogichub5.com/">
+    <!-- MRI_OG_START -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="MRI 50 · MEDIUM · 2026-02-25">
+<meta property="og:description" content="FinLogic MRI 50，风险等级 medium，仓位区间 40-60%，置信度 medium。">
+<meta property="og:url" content="https://finlogichub5.com/">
+<meta property="og:site_name" content="FinLogicHub5">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://finlogichub5.com/og/mri-latest.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MRI 50 · MEDIUM · 2026-02-25">
+<meta name="twitter:description" content="FinLogic MRI 50，风险等级 medium，仓位区间 40-60%，置信度 medium。">
+<meta name="twitter:image" content="https://finlogichub5.com/og/mri-latest.png">
+<!-- MRI_OG_END -->
+    <meta name="google-adsense-account" content="ca-pub-3786448290157661">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3786448290157661"
         crossorigin="anonymous"></script>
-    <title>美股 7 姐妹深度回测与对比系统 - 智算金融</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+    <title>AI 投资决策助手 - FinLogicHub5</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "FinLogicHub5",
+            "url": "https://finlogichub5.com/",
+            "inLanguage": ["zh-CN", "en"],
+            "description": "US stock backtesting dashboard for Magnificent Seven and SPY."
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "这个工具是实时行情吗？",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "不是实时交易终端。本网站用于历史回测与策略评估，数据会按批次更新。"
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "组合回测是否包含手续费与税费？",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "默认不包含手续费、税费、滑点和分红再投资影响，结果用于研究参考。"
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "策略评分可以直接用于实盘吗？",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "策略评分仅作为风险收益的相对比较指标，不构成投资建议。实盘前请自行做压力测试。"
+                    }
+                }
+            ]
+        }
+    </script>
     <style>
         :root {
             --primary: #38bdf8;
@@ -124,11 +196,260 @@
             box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4);
         }
 
+        .action-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .ghost-btn {
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: transparent;
+            border: 1px solid #475569;
+            color: #cbd5e1;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .ghost-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .action-status {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 8px;
+            min-height: 18px;
+        }
+
+        .mode-block {
+            margin-top: 8px;
+            padding: 14px;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.55);
+        }
+
+        .mode-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .mode-row input[type="checkbox"] {
+            accent-color: var(--primary);
+        }
+
+        .mode-row .mode-label {
+            font-size: 13px;
+            color: #cbd5e1;
+            font-weight: 700;
+        }
+
+        #portfolioConfig {
+            margin-top: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: Consolas, Monaco, monospace;
+        }
+
+        .mode-hint {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        .mode-subgrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .ad-slot-wrap {
+            margin-top: 20px;
+            padding: 12px;
+            border: 1px dashed #334155;
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.45);
+        }
+
+        .ad-slot-label {
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .methodology {
+            margin-top: 20px;
+            padding: 16px;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.45);
+        }
+
+        .methodology h4 {
+            margin: 0 0 8px 0;
+            color: var(--primary);
+        }
+
+        .methodology p {
+            margin: 0 0 8px 0;
+            color: #cbd5e1;
+            font-size: 13px;
+        }
+
+        .ai-card {
+            margin-top: 16px;
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.08), rgba(30, 41, 59, 0.75));
+        }
+
+        .ai-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            color: #7dd3fc;
+        }
+
+        .ai-card p {
+            margin: 0;
+            color: #dbeafe;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .ai-actions {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(148, 163, 184, 0.28);
+        }
+
+        .ai-actions-title {
+            font-size: 12px;
+            color: #cbd5e1;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .ai-actions ul {
+            margin: 0;
+            padding-left: 18px;
+            color: #e2e8f0;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .playbook-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .advanced-settings {
+            margin-top: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            border-radius: 12px;
+            background: rgba(2, 6, 23, 0.32);
+            padding: 6px 10px 12px 10px;
+        }
+
+        .advanced-summary {
+            list-style: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+            color: #cbd5e1;
+            padding: 6px 4px;
+        }
+
+        .advanced-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .core-metrics-grid {
+            margin-top: 26px;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .core-card {
+            padding: 18px;
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            background: rgba(15, 23, 42, 0.46);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            text-align: center;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        .core-card h4 {
+            margin: 0 0 10px 0;
+            color: #cbd5e1;
+            font-size: 12px;
+        }
+
+        .core-card .value {
+            font-size: 28px;
+            color: #7dd3fc;
+            font-weight: 800;
+            display: block;
+        }
+
+        .core-card .sub {
+            font-size: 11px;
+            color: #94a3b8;
+            display: block;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 1024px) {
+            .core-metrics-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            .container {
+                padding: 16px;
+            }
+
+            #chartWrapper {
+                height: 340px;
+            }
+
+            .ad-slot-wrap {
+                padding: 8px;
+            }
+
+            .ad-slot-wrap.ad-mid {
+                display: none;
+            }
+
+            .core-metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 14px;
         }
 
         .stat-card {
@@ -170,6 +491,12 @@
             cursor: crosshair;
         }
 
+        .chart-toolbar {
+            margin-top: 18px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
         .reset-zoom-btn {
             position: absolute;
             top: 25px;
@@ -185,32 +512,6 @@
             display: none;
         }
 
-        .table-container {
-            margin-top: 40px;
-            background: var(--card);
-            border-radius: 12px;
-            border: 1px solid #475569;
-            overflow: hidden;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #475569;
-            font-size: 14px;
-        }
-
-        th {
-            background: #334155;
-            color: var(--primary);
-        }
-
         .seo-content {
             margin-top: 40px;
             padding: 30px;
@@ -218,6 +519,30 @@
             border-radius: 12px;
             border-left: 4px solid var(--primary);
             line-height: 1.8;
+        }
+
+        .report-grid {
+            margin-top: 18px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+        }
+
+        .report-code {
+            font-weight: 900;
+            font-size: 20px;
+        }
+
+        .report-desc {
+            font-size: 12px;
+            color: #cbd5e1;
+            margin-top: 5px;
+        }
+
+        .report-cta {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 8px;
         }
 
         .report-link {
@@ -250,17 +575,591 @@
             color: var(--primary);
             text-decoration: none;
         }
+
+        .section-head {
+            margin: 18px 0 10px 0;
+        }
+
+        .section-head.tight {
+            margin-top: 10px;
+        }
+
+        .section-title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 800;
+            color: #dbeafe;
+            letter-spacing: 0.2px;
+        }
+
+        .section-sub {
+            margin: 4px 0 0 0;
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        .section-tags {
+            margin-top: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .section-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #dbeafe;
+            background: rgba(15, 23, 42, 0.72);
+            border: 1px solid rgba(125, 211, 252, 0.28);
+        }
+
+        /* Premium Re-layout */
+        body {
+            font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+            background:
+                radial-gradient(1100px 600px at 8% -10%, rgba(56, 189, 248, 0.28), transparent 65%),
+                radial-gradient(900px 500px at 95% -6%, rgba(16, 185, 129, 0.22), transparent 62%),
+                linear-gradient(180deg, #040711 0%, #07101f 45%, #0a1426 100%);
+            min-height: 100vh;
+            letter-spacing: 0.1px;
+        }
+
+        .container {
+            max-width: 1180px;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.78), rgba(15, 23, 42, 0.92));
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 28px 70px rgba(2, 6, 23, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+        }
+
+        .hero-shell {
+            position: relative;
+            margin: -4px -4px 24px -4px;
+            padding: 20px 24px 24px 24px;
+            border-radius: 18px;
+            background:
+                linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(14, 165, 233, 0.05) 40%, rgba(16, 185, 129, 0.08) 100%),
+                rgba(8, 16, 32, 0.66);
+            border: 1px solid rgba(125, 211, 252, 0.24);
+        }
+
+        .hero-shell::before {
+            content: "";
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            right: -120px;
+            top: -160px;
+            border-radius: 999px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.45), rgba(56, 189, 248, 0) 72%);
+            pointer-events: none;
+        }
+
+        .hero-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .daily-link {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #e2e8f0;
+            text-decoration: none;
+            border: 1px solid rgba(125, 211, 252, 0.35);
+            background: rgba(15, 23, 42, 0.6);
+        }
+
+        .daily-link:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.66);
+            border: 1px solid rgba(125, 211, 252, 0.35);
+            color: #dbeafe;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .lang-switch {
+            position: static;
+            margin: 0;
+        }
+
+        h1 {
+            text-align: left;
+            margin: 14px 0 10px 0;
+            font-size: clamp(28px, 4vw, 42px);
+            line-height: 1.15;
+            letter-spacing: -0.6px;
+            color: #f8fdff;
+            text-shadow: 0 12px 32px rgba(56, 189, 248, 0.25);
+        }
+
+        .hero-subtitle {
+            margin: 0;
+            font-size: 15px;
+            color: #bfdbfe;
+            max-width: 760px;
+            line-height: 1.75;
+        }
+
+        .hero-chips {
+            margin-top: 16px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .hero-chip {
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            background: rgba(2, 6, 23, 0.54);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            color: #e2e8f0;
+        }
+
+        .risk-index-shell {
+            margin-top: 16px;
+            padding: 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            background: rgba(2, 6, 23, 0.5);
+            display: grid;
+            gap: 10px;
+        }
+
+        .risk-index-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .risk-index-score {
+            font-size: 44px;
+            font-weight: 800;
+            color: #7dd3fc;
+        }
+
+        .risk-index-lamp {
+            font-size: 40px;
+            line-height: 1;
+        }
+
+        .risk-index-note {
+            font-size: 12px;
+            color: #cbd5e1;
+        }
+
+        .risk-index-details summary {
+            cursor: pointer;
+            color: #93c5fd;
+            font-size: 12px;
+            list-style: none;
+        }
+
+        .risk-index-details summary::-webkit-details-marker { display: none; }
+
+        .contrib-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(148, 163, 184, 0.2);
+            border-radius: 999px;
+            overflow: hidden;
+            margin: 4px 0 8px 0;
+        }
+
+        .contrib-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #38bdf8, #22d3ee);
+        }
+
+        .risk-index-chart {
+            height: 120px;
+            background: rgba(2, 6, 23, 0.4);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 10px;
+            padding: 6px;
+        }
+
+        .retain-shell {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .retain-card {
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            background: rgba(2, 6, 23, 0.45);
+        }
+
+        .retain-title {
+            font-size: 12px;
+            color: #cbd5e1;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .retain-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .retain-input {
+            flex: 1;
+            min-width: 140px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.36);
+            background: rgba(7, 15, 30, 0.92);
+            color: #e2e8f0;
+            font-size: 13px;
+        }
+
+        .retain-btn {
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.5);
+            color: #7dd3fc;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .watchlist-items {
+            margin-top: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .watch-pill {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            color: #e2e8f0;
+            background: rgba(2, 6, 23, 0.5);
+        }
+
+        .watch-pill button {
+            margin-left: 6px;
+            background: transparent;
+            border: none;
+            color: #f87171;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .toast {
+            position: fixed;
+            right: 16px;
+            bottom: 18px;
+            z-index: 999;
+            background: rgba(2, 6, 23, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            color: #e2e8f0;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            opacity: 0;
+            transform: translateY(6px);
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .control-panel,
+        .mode-block,
+        .methodology,
+        .seo-content {
+            border-color: rgba(148, 163, 184, 0.25);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+
+        .control-panel {
+            padding: 16px;
+            border-radius: 12px;
+            background: rgba(2, 6, 23, 0.34);
+            margin-bottom: 12px;
+        }
+
+        input,
+        select {
+            border: 1px solid rgba(148, 163, 184, 0.36);
+            background: rgba(7, 15, 30, 0.92);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: rgba(56, 189, 248, 0.82);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.16);
+        }
+
+        button#runBtn {
+            margin-top: 14px;
+            background: linear-gradient(90deg, #38bdf8, #22d3ee 55%, #2dd4bf 100%);
+            color: #05202f;
+            font-size: 19px;
+            border-radius: 12px;
+            box-shadow: 0 14px 35px rgba(45, 212, 191, 0.24);
+        }
+
+        button#runBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 38px rgba(56, 189, 248, 0.32);
+        }
+
+        .ghost-btn {
+            border-color: rgba(148, 163, 184, 0.45);
+            background: rgba(15, 23, 42, 0.45);
+        }
+
+        .action-row {
+            padding-bottom: 8px;
+            border-bottom: 1px dashed rgba(148, 163, 184, 0.25);
+            margin-bottom: 2px;
+        }
+
+        .ad-slot-wrap {
+            border-style: solid;
+            background: rgba(7, 15, 30, 0.54);
+        }
+
+        .results-grid {
+            margin-top: 12px;
+        }
+
+        .result-workbench {
+            margin-top: 10px;
+            padding: 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.26);
+            background: linear-gradient(180deg, rgba(2, 6, 23, 0.62), rgba(15, 23, 42, 0.52));
+        }
+
+        .result-workbench .core-metrics-grid {
+            margin-top: 8px;
+        }
+
+        .result-workbench .results-grid {
+            margin-top: 10px;
+        }
+
+        .result-workbench .chart-toolbar {
+            margin-top: 12px;
+        }
+
+        .result-workbench #chartWrapper {
+            margin-top: 12px;
+        }
+
+        .result-workbench .ai-card {
+            margin-top: 12px;
+        }
+
+        .stat-card {
+            background: linear-gradient(180deg, rgba(30, 41, 59, 0.78), rgba(15, 23, 42, 0.65));
+            border: 1px solid rgba(148, 163, 184, 0.24);
+        }
+
+        .stat-card .value {
+            font-size: 26px;
+        }
+
+        #chartWrapper {
+            background: linear-gradient(180deg, rgba(2, 6, 23, 0.85), rgba(7, 15, 30, 0.9));
+            border: 1px solid rgba(148, 163, 184, 0.24);
+        }
+
+        .reset-zoom-btn {
+            background: rgba(2, 6, 23, 0.76);
+            border-color: rgba(148, 163, 184, 0.4);
+        }
+
+        .report-link {
+            background: linear-gradient(180deg, rgba(30, 41, 59, 0.75), rgba(15, 23, 42, 0.72));
+            border-color: rgba(148, 163, 184, 0.24);
+        }
+
+        .site-footer {
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.96));
+            border-top-color: rgba(148, 163, 184, 0.2);
+        }
+
+        @media (max-width: 960px) {
+            .hero-shell {
+                padding: 16px 14px 18px 14px;
+            }
+
+            .hero-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .result-workbench {
+                padding: 10px;
+            }
+        }
+
+        @keyframes riseIn {
+            0% {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-shell,
+        .control-panel,
+        .mode-block,
+        .core-metrics-grid,
+        .results-grid,
+        #chartWrapper {
+            animation: riseIn 0.45s ease both;
+        }
+
+        .mode-block { animation-delay: 0.04s; }
+        .core-metrics-grid { animation-delay: 0.08s; }
+        .results-grid { animation-delay: 0.12s; }
+        #chartWrapper { animation-delay: 0.16s; }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <div class="lang-switch">
-            <button class="lang-btn" onclick="setLang('en')" id="btn-en">English</button>
-            <button class="lang-btn active" onclick="setLang('zh')" id="btn-zh">中文</button>
+        <div class="hero-shell">
+            <div class="hero-top">
+                <div class="hero-tag" id="ui-hero-tag">AI DECISION ASSISTANT</div>
+                <div class="hero-actions">
+                    <a class="daily-link" href="pages/daily.html" id="daily-link-top"></a>
+                    <a class="daily-link" href="market-risk-index.html" id="risk-index-link-top">市场风险指数</a>
+                    <div class="lang-switch">
+                        <button class="lang-btn" onclick="setLang('en')" id="btn-en">English</button>
+                        <button class="lang-btn active" onclick="setLang('zh')" id="btn-zh">中文</button>
+                    </div>
+                </div>
+            </div>
+            <h1 id="ui-title">🤖 AI 投资决策助手（MVP）</h1>
+            <p class="hero-subtitle" id="ui-hero-sub">用一键回测生成核心指标与策略解释，快速判断风格与风险。</p>
+            <div class="hero-chips">
+                <span class="hero-chip" id="ui-hero-chip-1">一键回测 & 核心指标</span>
+                <span class="hero-chip" id="ui-hero-chip-2">AI 策略解释</span>
+                <span class="hero-chip" id="ui-hero-chip-3">可分享配置链接</span>
+            </div>
+
+            <div class="risk-index-shell" id="riskIndexShell">
+                <div class="risk-index-row">
+                    <div class="risk-index-lamp" id="riskIndexLamp">🟡</div>
+                    <div>
+                        <div class="risk-index-note" id="riskIndexLabel"></div>
+                        <div class="risk-index-score" id="riskIndexScore">--</div>
+                    </div>
+                </div>
+                <div class="risk-index-note" id="riskIndexEquity">--</div>
+                <div class="risk-index-note" id="riskIndexLevel">--</div>
+                <div class="risk-index-note" id="riskIndexPercentile">--</div>
+                <div class="risk-index-note" id="riskIndexConfidence">--</div>
+                <div class="risk-index-note" id="riskIndexDelta">Δ --</div>
+                <div class="risk-index-note" id="riskIndexComponents">--</div>
+                <div class="risk-index-note" id="riskIndexExplain"></div>
+                <div class="risk-index-note" id="riskIndexMethod">--</div>
+                <details class="risk-index-details">
+                    <summary id="riskIndexMethodToggle">方法论</summary>
+                    <div class="risk-index-note" id="riskIndexInputs">--</div>
+                </details>
+                <details class="risk-index-details">
+                    <summary id="riskIndexDriversToggle">为何如此？</summary>
+                    <div class="risk-index-note" id="riskIndexDrivers">--</div>
+                    <div class="risk-index-note" id="riskIndexContrib">--</div>
+                    <div class="risk-index-note" id="riskIndexNotes">--</div>
+                </details>
+                <div class="action-row">
+                    <button class="ghost-btn" id="shareXBtn">Share on X</button>
+                    <button class="ghost-btn" id="shareLinkedInBtn">Share on LinkedIn</button>
+                    <button class="ghost-btn" id="copyLinkBtn">Copy Link</button>
+                </div>
+                <div class="risk-index-chart">
+                    <canvas id="riskIndexChart"></canvas>
+                </div>
+            </div>
+
+            <div class="retain-shell">
+                <div class="retain-card">
+                    <div class="retain-title" id="ui-subscribe-title">邮件订阅</div>
+                    <div class="retain-row">
+                        <input class="retain-input" id="subscribeEmail" type="email" placeholder="you@email.com">
+                        <button class="retain-btn" id="subscribeBtn">订阅</button>
+                    </div>
+                    <div class="risk-index-note" id="subscribeStatus"></div>
+                </div>
+                <div class="retain-card">
+                    <div class="retain-title" id="ui-watchlist-title">Watchlist</div>
+                    <div class="retain-row">
+                        <button class="retain-btn" id="addWatchBtn">收藏当前标的</button>
+                        <button class="retain-btn" id="clearWatchBtn">清空</button>
+                    </div>
+                    <div class="watchlist-items" id="watchlistItems"></div>
+                </div>
+            </div>
         </div>
 
-        <h1 id="ui-title">📊 美股 7 姐妹深度回测与对比系统</h1>
+        <div class="section-head tight">
+            <h3 class="section-title" id="ui-sec-config-title">01. 回测配置区</h3>
+            <p class="section-sub" id="ui-sec-config-sub">选择标的、区间和策略模板，然后一键生成报告。</p>
+            <div class="section-tags">
+                <span class="section-tag" id="ui-sec-config-tag1">标的与区间</span>
+                <span class="section-tag" id="ui-sec-config-tag2">策略模板</span>
+                <span class="section-tag" id="ui-sec-config-tag3">回测参数</span>
+            </div>
+        </div>
 
         <div class="control-panel">
             <div class="input-item">
@@ -273,6 +1172,7 @@
                     <option value="GOOGL">Google (GOOGL)</option>
                     <option value="AMZN">Amazon (AMZN)</option>
                     <option value="META">Meta (META)</option>
+                    <option value="SPY">S&P 500 (SPY)</option>
                 </select>
             </div>
             <div class="input-item">
@@ -303,106 +1203,190 @@
             </div>
         </div>
 
+        <details class="advanced-settings">
+            <summary class="advanced-summary" id="ui-advanced-summary">高级设置：组合回测与模板</summary>
+            <div class="mode-block">
+                <div class="mode-row">
+                    <input type="checkbox" id="portfolioMode" onchange="handleModeChange()">
+                    <span class="mode-label" id="ui-mode-title">启用组合回测模式</span>
+                </div>
+                <div class="playbook-row">
+                    <select id="playbookSelect">
+                        <option value="none">Manual Setup</option>
+                        <option value="ai_growth">AI Growth</option>
+                        <option value="balanced">Balanced</option>
+                        <option value="index_only">Index Core</option>
+                    </select>
+                    <button class="ghost-btn" id="applyPlaybookBtn" onclick="applyPlaybook()">⚡ 应用策略模板</button>
+                </div>
+                <div class="mode-subgrid">
+                    <input type="text" id="portfolioConfig" value="NVDA:25,MSFT:25,AAPL:25,GOOGL:25"
+                        placeholder="NVDA:25,MSFT:25,AAPL:25,GOOGL:25">
+                    <select id="rebalanceFreq">
+                        <option value="none">No Rebalance</option>
+                        <option value="monthly">Monthly Rebalance</option>
+                        <option value="quarterly">Quarterly Rebalance</option>
+                        <option value="yearly">Yearly Rebalance</option>
+                    </select>
+                </div>
+                <div class="mode-hint" id="ui-mode-hint">格式：代码:权重，用逗号分隔，总权重不必正好 100（系统会自动归一化）。</div>
+            </div>
+        </details>
+
         <button onclick="runAnalysis()" id="runBtn">生成区间对比回测报告</button>
-
-        <div class="results-grid">
-            <div class="stat-card">
-                <h4 id="ui-stat-growth">主股累计增长</h4>
-                <span id="resRate" class="value">0%</span>
-                <span id="multiplierText" class="sub">资产翻了 0 倍</span>
-            </div>
-            <div class="stat-card">
-                <h4 id="ui-stat-cagr">年化收益 (CAGR)</h4>
-                <span id="resCAGR" class="value">0%</span>
-                <span class="sub" id="ui-sub-cagr">复合年均增长率</span>
-            </div>
-            <div class="stat-card">
-                <h4 id="ui-stat-mdd">最大回撤 (MDD)</h4>
-                <span id="resMDD" class="value" style="color: var(--down);">0%</span>
-                <span class="sub" id="ui-sub-mdd">期间最大亏损幅度</span>
-            </div>
-            <div class="stat-card">
-                <h4 id="ui-stat-final">最终资产价值</h4>
-                <span id="resFinal" class="value">$0</span>
-                <span id="periodText" class="sub">统计时间跨度</span>
+        <div class="action-row">
+            <button class="ghost-btn" id="shareBtn" onclick="shareCurrentSetup()">🔗 分享链接</button>
+        </div>
+        <div class="action-status" id="actionStatus"></div>
+        <div class="section-head">
+            <h3 class="section-title" id="ui-sec-result-title">02. 回测结果与图表</h3>
+            <p class="section-sub" id="ui-sec-result-sub">先看关键指标，再直接观察价格轨迹与阶段变化。</p>
+            <div class="section-tags">
+                <span class="section-tag" id="ui-sec-result-tag1">核心指标</span>
+                <span class="section-tag" id="ui-sec-result-tag2">价格走势图</span>
+                <span class="section-tag" id="ui-sec-result-tag3"></span>
             </div>
         </div>
 
-        <div id="chartWrapper">
-            <button class="reset-zoom-btn" id="resetZoomBtn" onclick="resetZoom()">🔄 重置视图</button>
-            <canvas id="chartCanvas"></canvas>
-        </div>
-
-        <div class="seo-content">
-            <h3 id="ui-seo-h3">🏢 美股“七姐妹”深度回测与价值分析</h3>
-            <p id="ui-seo-p1">通过本回测系统，投资者可以深度分析这七家巨头在不同经济周期下的韧性与爆发力差距。</p>
-
-            <div style="margin-top: 30px; border-top: 1px solid #334155; padding-top: 25px;">
-                <h3 style="color: #facc15; margin-top: 0; margin-bottom: 20px;">
-                    📚 深度研报：核心资产全解析 (Deep Dive)
-                </h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px;">
-                    <a href="pages/nvda.html" class="report-link">
-                        <div style="font-weight: 900; font-size: 20px; color: #76b900;">NVDA</div>
-                        <div style="font-size: 12px; color: #cbd5e1; margin-top: 5px;">AI 算力之王</div>
-                        <div style="font-size: 11px; color: #64748b; margin-top: 8px;">查看研报 ➔</div>
-                    </a>
-                    <a href="pages/tsla.html" class="report-link">
-                        <div style="font-weight: 900; font-size: 20px; color: #f87171;">TSLA</div>
-                        <div style="font-size: 12px; color: #cbd5e1; margin-top: 5px;">能源与机器人</div>
-                        <div style="font-size: 11px; color: #64748b; margin-top: 8px;">查看研报 ➔</div>
-                    </a>
-                    <a href="pages/aapl.html" class="report-link">
-                        <div style="font-weight: 900; font-size: 20px; color: #94a3b8;">AAPL</div>
-                        <div style="font-size: 12px; color: #cbd5e1; margin-top: 5px;">现金流帝国</div>
-                        <div style="font-size: 11px; color: #64748b; margin-top: 8px;">查看研报 ➔</div>
-                    </a>
-                    <a href="pages/msft.html" class="report-link">
-                        <div style="font-weight: 900; font-size: 20px; color: #0ea5e9;">MSFT</div>
-                        <div style="font-size: 12px; color: #cbd5e1; margin-top: 5px;">云与生产力</div>
-                        <div style="font-size: 11px; color: #64748b; margin-top: 8px;">查看研报 ➔</div>
-                    </a>
-                    <a href="pages/googl.html" class="report-link">
-                        <div style="font-weight: 900; font-size: 20px; color: #3b82f6;">GOOGL</div>
-                        <div style="font-size: 12px; color: #cbd5e1; margin-top: 5px;">全球信息入口</div>
-                        <div style="font-size: 11px; color: #64748b; margin-top: 8px;">查看研报 ➔</div>
-                    </a>
-                    <a href="pages/amzn.html" class="report-link">
-                        <div style="font-weight: 900; font-size: 20px; color: #f97316;">AMZN</div>
-                        <div style="font-size: 12px; color: #cbd5e1; margin-top: 5px;">电商与云基建</div>
-                        <div style="font-size: 11px; color: #64748b; margin-top: 8px;">查看研报 ➔</div>
-                    </a>
-                    <a href="pages/meta.html" class="report-link">
-                        <div style="font-weight: 900; font-size: 20px; color: #06b6d4;">META</div>
-                        <div style="font-size: 12px; color: #cbd5e1; margin-top: 5px;">社交网络</div>
-                        <div style="font-size: 11px; color: #64748b; margin-top: 8px;">查看研报 ➔</div>
-                    </a>
-                    <a href="pages/spy.html" class="report-link">
-                        <div style="font-weight: 900; font-size: 20px; color: #10b981;">SPY</div>
-                        <div style="font-size: 12px; color: #cbd5e1; margin-top: 5px;">市场基准指数</div>
-                        <div style="font-size: 11px; color: #64748b; margin-top: 8px;">查看研报 ➔</div>
-                    </a>
+        <div class="result-workbench">
+            <div class="core-metrics-grid">
+                <div class="core-card">
+                    <h4 id="ui-stat-cagr">年化收益 (CAGR)</h4>
+                    <span id="resCAGR" class="value">0%</span>
+                    <span class="sub" id="ui-sub-cagr">复合年均增长率</span>
+                </div>
+                <div class="core-card">
+                    <h4 id="ui-stat-mdd">最大回撤 (MDD)</h4>
+                    <span id="resMDD" class="value" style="color: var(--down);">0%</span>
+                    <span class="sub" id="ui-sub-mdd">期间最大亏损幅度</span>
+                </div>
+                <div class="core-card">
+                    <h4 id="ui-stat-sharpe">Sharpe 比率</h4>
+                    <span id="resSharpe" class="value">0</span>
+                    <span class="sub" id="ui-sub-sharpe">风险调整后收益</span>
+                </div>
+                <div class="core-card">
+                    <h4 id="ui-stat-final">最终资产价值</h4>
+                    <span id="resFinal" class="value">$0</span>
+                    <span id="periodText" class="sub">统计时间跨度</span>
                 </div>
             </div>
 
-            <p style="margin-top: 15px; font-size: 0.9em; opacity: 0.8;" id="ui-seo-p2">💡 操控指南：使用 鼠标滚轮 放大缩小 X 轴；按住
-                鼠标左键并左右拖动 测量局部涨幅。</p>
+            <div class="results-grid">
+                <div class="stat-card">
+                    <h4 id="ui-stat-growth">主股累计增长</h4>
+                    <span id="resRate" class="value">0%</span>
+                    <span id="multiplierText" class="sub">资产翻了 0 倍</span>
+                </div>
+                <div class="stat-card">
+                    <h4 id="ui-stat-vol">年化波动率</h4>
+                    <span id="resVol" class="value">0%</span>
+                    <span class="sub" id="ui-sub-vol">收益波动强度</span>
+                </div>
+                <div class="stat-card">
+                    <h4 id="ui-stat-sortino">Sortino 比率</h4>
+                    <span id="resSortino" class="value">0</span>
+                    <span class="sub" id="ui-sub-sortino">下行风险调整收益</span>
+                </div>
+                <div class="stat-card">
+                    <h4 id="ui-stat-win">日胜率</h4>
+                    <span id="resWin" class="value">0%</span>
+                    <span class="sub" id="ui-sub-win">上涨交易日占比</span>
+                </div>
+                <div class="stat-card">
+                    <h4 id="ui-stat-score">策略评分</h4>
+                    <span id="resScore" class="value">0</span>
+                    <span class="sub" id="ui-sub-score">综合收益风险评分</span>
+                </div>
+            </div>
+
+            <div class="chart-toolbar">
+                <button class="ghost-btn" id="maToggleBtn" onclick="toggleMovingAverages()">隐藏均线</button>
+            </div>
+            <div id="chartWrapper">
+                <button class="reset-zoom-btn" id="resetZoomBtn" onclick="resetZoom()">🔄 重置视图</button>
+                <canvas id="chartCanvas"></canvas>
+            </div>
+
+            <div class="ai-card">
+                <h3 id="ui-ai-title">🤖 AI 策略解释</h3>
+                <p id="aiStyleText">运行回测后，将基于收益与风险指标生成策略风格标签。</p>
+                <p id="aiRiskText" style="margin-top:8px;color:#fcd34d;">风险来源：等待分析结果后生成。</p>
+                <div class="ai-actions">
+                    <div class="ai-actions-title" id="ui-ai-action-title">执行动作建议</div>
+                    <ul id="aiActionList">
+                        <li>完成回测后生成 3 条可执行建议。</li>
+                    </ul>
+                </div>
+            </div>
         </div>
 
-        <div class="table-container">
-            <h3 style="padding: 15px; margin: 0; background: #334155; font-size: 16px;" id="ui-table-title">📅 主股年度表现明细
-            </h3>
-            <table>
-                <thead>
-                    <tr id="ui-table-head">
-                        <th>年份</th>
-                        <th>年初价格</th>
-                        <th>年末价格</th>
-                        <th>年度涨跌幅</th>
-                    </tr>
-                </thead>
-                <tbody id="yearlyTableBody"></tbody>
-            </table>
+        <div class="ad-slot-wrap ad-top">
+            <div class="ad-slot-label">Ad Slot (Top)</div>
+            <ins class="adsbygoogle" style="display:block; min-height: 90px;" data-ad-client="ca-pub-3786448290157661"
+                data-ad-slot="REPLACE_ME_TOP" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        </div>
+
+        <div class="methodology">
+            <h4 id="ui-method-title">方法论与风险说明</h4>
+            <p id="ui-method-p1">本工具仅用于历史数据分析，不构成任何投资建议。过往表现不代表未来结果。</p>
+            <p id="ui-method-p2">组合模式默认按收盘价计算，不含手续费、税费和滑点。请在实盘前自行做压力测试。</p>
+            <p id="ui-method-source">数据源：Yahoo Finance（批量同步，非逐笔实时）。</p>
+            <p id="ui-method-formula">核心公式：CAGR=(终值/初值)^(1/年数)-1；MDD 为历史峰值到谷值最大跌幅。</p>
+            <p id="methodFreshness">数据更新：-</p>
+        </div>
+
+        <div class="ad-slot-wrap ad-mid">
+            <div class="ad-slot-label">Ad Slot (Mid)</div>
+            <ins class="adsbygoogle" style="display:block; min-height: 250px;" data-ad-client="ca-pub-3786448290157661"
+                data-ad-slot="REPLACE_ME_MID" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        </div>
+
+        <div class="seo-content">
+            <h3 id="ui-seo-h3">📚 核心资产深度研报入口</h3>
+            <p id="ui-seo-p1">选择标的进入研报页，查看公司画像、财务与业务亮点。</p>
+            <div class="report-grid">
+                <a href="pages/stock.html?ticker=NVDA" class="report-link">
+                    <div class="report-code" style="color: #76b900;">NVDA</div>
+                    <div class="report-desc">AI 算力之王</div>
+                    <div class="report-cta">查看研报 ➔</div>
+                </a>
+                <a href="pages/stock.html?ticker=TSLA" class="report-link">
+                    <div class="report-code" style="color: #f87171;">TSLA</div>
+                    <div class="report-desc">能源与机器人</div>
+                    <div class="report-cta">查看研报 ➔</div>
+                </a>
+                <a href="pages/stock.html?ticker=AAPL" class="report-link">
+                    <div class="report-code" style="color: #94a3b8;">AAPL</div>
+                    <div class="report-desc">现金流帝国</div>
+                    <div class="report-cta">查看研报 ➔</div>
+                </a>
+                <a href="pages/stock.html?ticker=MSFT" class="report-link">
+                    <div class="report-code" style="color: #0ea5e9;">MSFT</div>
+                    <div class="report-desc">云与生产力</div>
+                    <div class="report-cta">查看研报 ➔</div>
+                </a>
+                <a href="pages/stock.html?ticker=GOOGL" class="report-link">
+                    <div class="report-code" style="color: #3b82f6;">GOOGL</div>
+                    <div class="report-desc">全球信息入口</div>
+                    <div class="report-cta">查看研报 ➔</div>
+                </a>
+                <a href="pages/stock.html?ticker=AMZN" class="report-link">
+                    <div class="report-code" style="color: #f97316;">AMZN</div>
+                    <div class="report-desc">电商与云基建</div>
+                    <div class="report-cta">查看研报 ➔</div>
+                </a>
+                <a href="pages/stock.html?ticker=META" class="report-link">
+                    <div class="report-code" style="color: #06b6d4;">META</div>
+                    <div class="report-desc">社交网络</div>
+                    <div class="report-cta">查看研报 ➔</div>
+                </a>
+                <a href="pages/stock.html?ticker=SPY" class="report-link">
+                    <div class="report-code" style="color: #10b981;">SPY</div>
+                    <div class="report-desc">市场基准指数</div>
+                    <div class="report-cta">查看研报 ➔</div>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -416,6 +1400,8 @@
             <div>
                 <h3 style="color: var(--primary); margin-top: 0;">Resources & Legal</h3>
                 <ul style="list-style: none; padding: 0;">
+                    <li style="margin-bottom: 12px;"><a href="pages/daily.html" id="daily-link-footer"></a></li>
+                    <li style="margin-bottom: 12px;"><a href="market-risk-index.html" id="risk-index-link-footer">市场风险指数</a></li>
                     <li style="margin-bottom: 12px;"><a href="privacy.html">Privacy Policy / 隐私政策</a></li>
                     <li style="margin-bottom: 12px;"><a href="disclaimer.html">Investment Disclaimer / 免责声明</a></li>
                 </ul>
@@ -426,78 +1412,623 @@
         </div>
     </footer>
 
-    <script src="data.js"></script>
+    <div class="toast" id="toast"></div>
+
+    <script src="js/i18n.js"></script>
+    <script src="data/stock-loader.js"></script>
     <script>
+        // === I18N ===
         const langPack = {
             zh: {
-                title: "📊 美股 7 姐妹深度回测与对比系统",
+                title: "🤖 AI 投资决策助手（MVP）",
+                heroTag: "AI DECISION ASSISTANT",
+                heroSub: "用一键回测生成核心指标与策略解释，快速判断风格与风险。",
+                heroChip1: "一键回测 & 核心指标", heroChip2: "AI 策略解释", heroChip3: "可分享配置链接",
+                secConfigTitle: "01. 回测配置区", secConfigSub: "选择标的与区间，必要时在高级设置中启用组合模式。",
+                secConfigTag1: "标的与区间", secConfigTag2: "策略模板", secConfigTag3: "回测参数",
+                secResultTitle: "02. 回测结果与图表", secResultSub: "首屏即可查看核心指标与走势图。",
+                secResultTag1: "核心指标", secResultTag2: "价格走势图", secResultTag3: "AI 策略解释",
                 labelBase: "基础股票 (主线)", labelCompare: "对比股票 (虚线)", optNone: "-- 不对比 --",
                 labelCapital: "本金 ($)", labelStart: "回测起点", labelEnd: "回测终点",
-                btnRun: "生成区间对比回测报告", statGrowth: "主股累计增长", subMult: "资产翻了 {x} 倍",
+                invalidRange: "回测起点不能晚于终点", noData: "所选区间无有效数据", noAlignedData: "主股与对比股在该区间无重叠交易日",
+                dataLoadFail: "数据加载失败，请稍后重试",
+                invalidCapital: "请输入有效本金（必须大于 0）",
+                invalidTicker: "基础股票无效，请重新选择",
+                invalidCompareTicker: "对比股票无效，请重新选择",
+                dataLoaderUnavailable: "数据加载器不可用，请检查 data/stock-loader.js",
+                noTickerData: "基础股票数据不可用",
+                noCompareData: "对比股票数据不可用",
+                advancedSummary: "高级设置：组合回测与模板",
+                modeTitle: "启用组合回测模式", modeHint: "格式：代码:权重，用逗号分隔，总权重不必正好 100（系统会自动归一化）。",
+                invalidPortfolio: "组合配置无效，请使用如 NVDA:25,MSFT:25 的格式",
+                rebalance: "再平衡频率", rbNone: "不再平衡", rbMonthly: "月度再平衡", rbQuarterly: "季度再平衡", rbYearly: "年度再平衡",
+                playbookManual: "手动模式", playbookAIGrowth: "AI Growth", playbookBalanced: "Balanced", playbookIndex: "Index",
+                applyPlaybook: "⚡ 应用策略模板", playbookApplied: "策略模板已应用",
+                btnShare: "🔗 分享链接", shareOk: "分享链接已复制", shareFail: "复制失败，请手动复制地址栏链接",
+                btnRun: "运行回测", statGrowth: "主股累计增长", subMult: "资产翻了 {x} 倍",
+                maShow: "显示均线", maHide: "隐藏均线", maDisabled: "组合模式下不可用",
                 statCAGR: "年化收益 (CAGR)", subCAGR: "复合年均增长率", statMDD: "最大回撤 (MDD)",
                 subMDD: "期间最大亏损幅度", statFinal: "最终资产价值", resetBtn: "🔄 重置视图",
-                tableTitle: "📅 主股年度表现明细", tableHead: ["年份", "年初价格", "年末价格", "年度涨跌幅"],
-                seoH3: "🏢 美股“七姐妹”(Magnificent Seven) 深度投资价值分析",
-                seoP1: "在当今全球资本市场中，美股“七姐妹”不仅仅是科技巨头，更是全球 AI 革命的领航者。通过本回测系统，投资者可以深度复盘这些核心资产的表现。",
-                seoP2: "💡 操控指南：使用 鼠标滚轮 放大缩小 X 轴；按住 鼠标左键并左右拖动 可精准测量任意区间的涨幅。",
-                rulerTitle: "根K线区间涨幅", toolDate: "📅 日期: ", toolChange: " 较起点"
+                statVol: "年化波动率", subVol: "收益波动强度", statSharpe: "Sharpe 比率", subSharpe: "风险调整后收益",
+                statSortino: "Sortino 比率", subSortino: "下行风险调整收益", statWin: "日胜率", subWin: "上涨交易日占比",
+                statScore: "策略评分", subScore: "综合收益风险评分",
+                aiTitle: "🤖 AI 策略解释", aiStyleBase: "运行回测后，将基于收益与风险指标生成策略风格标签。", aiRiskBase: "风险来源：等待分析结果后生成。", aiActionTitle: "执行动作建议", aiActionBase: ["完成回测后生成 3 条可执行建议。"],
+                methodTitle: "方法论与风险说明",
+                methodP1: "本工具仅用于历史数据分析，不构成任何投资建议。过往表现不代表未来结果。",
+                methodP2: "组合模式默认按收盘价计算，不含手续费、税费和滑点。请在实盘前自行做压力测试。",
+                methodSource: "数据源：Yahoo Finance（批量同步，非逐笔实时）。",
+                methodFormula: "核心公式：CAGR=(终值/初值)^(1/年数)-1；MDD 为历史峰值到谷值最大跌幅。",
+                methodP3Base: "数据更新：-", methodP3Tpl: "数据更新：{items}",
+                seoH3: "📚 核心资产深度研报入口",
+                seoP1: "选择标的进入研报页，查看公司画像、财务与业务亮点。",
+                rulerTitle: "根K线区间涨幅", toolDate: "📅 日期: ", toolChange: " 较起点", periodJoin: " 至 ",
+                subscribeTitle: "邮件订阅", subscribeBtn: "订阅", subscribeOk: "已保存订阅（本地）", subscribeInvalid: "请输入有效邮箱",
+                watchlistTitle: "Watchlist", watchAdd: "收藏当前标的", watchClear: "清空", watchEmpty: "暂无收藏",
+                riskChanged: "风险灯已变化：{from} → {to}"
             },
             en: {
-                title: "📊 Magnificent 7 Backtesting System",
+                title: "🤖 AI Investment Decision Assistant (MVP)",
+                heroTag: "AI DECISION ASSISTANT",
+                heroSub: "Run a one-click backtest to get core metrics and strategy explanation.",
+                heroChip1: "One-click Backtest", heroChip2: "AI Strategy Explanation", heroChip3: "Sharable Setup Link",
+                secConfigTitle: "01. Backtest Setup", secConfigSub: "Pick tickers and range, use advanced settings for portfolio mode.",
+                secConfigTag1: "Ticker & Range", secConfigTag2: "Playbook", secConfigTag3: "Backtest Params",
+                secResultTitle: "02. Results & Chart", secResultSub: "Core metrics and chart are visible above the fold.",
+                secResultTag1: "Core Metrics", secResultTag2: "Price Chart", secResultTag3: "AI Explanation",
                 labelBase: "Primary Ticker", labelCompare: "Compare With", optNone: "-- No Compare --",
                 labelCapital: "Initial Capital ($)", labelStart: "Start Year", labelEnd: "End Year",
-                btnRun: "Generate Analytics Report", statGrowth: "Total Growth", subMult: "Portfolio up {x}x",
+                invalidRange: "Start year cannot be later than end year", noData: "No valid data in selected range", noAlignedData: "No overlapping trading days for selected pair",
+                dataLoadFail: "Failed to load data. Please try again.",
+                invalidCapital: "Please enter a valid initial capital (> 0)",
+                invalidTicker: "Invalid primary ticker. Please reselect.",
+                invalidCompareTicker: "Invalid compare ticker. Please reselect.",
+                dataLoaderUnavailable: "Data loader unavailable. Please check data/stock-loader.js",
+                noTickerData: "Primary ticker data is unavailable",
+                noCompareData: "Compare ticker data is unavailable",
+                advancedSummary: "Advanced Settings: Portfolio & Playbook",
+                modeTitle: "Enable Portfolio Mode", modeHint: "Format: TICKER:WEIGHT, comma-separated. Total weight does not need to equal 100.",
+                invalidPortfolio: "Invalid portfolio config. Use format like NVDA:25,MSFT:25",
+                rebalance: "Rebalance Frequency", rbNone: "No Rebalance", rbMonthly: "Monthly Rebalance", rbQuarterly: "Quarterly Rebalance", rbYearly: "Yearly Rebalance",
+                playbookManual: "Manual Setup", playbookAIGrowth: "AI Growth", playbookBalanced: "Balanced", playbookIndex: "Index",
+                applyPlaybook: "⚡ Apply Playbook", playbookApplied: "Playbook applied",
+                btnShare: "🔗 Share Link", shareOk: "Share link copied", shareFail: "Copy failed. Please copy URL manually",
+                btnRun: "Run Backtest", statGrowth: "Total Growth", subMult: "Portfolio up {x}x",
+                maShow: "Show MA", maHide: "Hide MA", maDisabled: "Not available in portfolio mode",
                 statCAGR: "Annual Return (CAGR)", subCAGR: "Compound Annual Growth Rate", statMDD: "Max Drawdown (MDD)",
                 subMDD: "Maximum peak-to-trough decline", statFinal: "Final Portfolio Value", resetBtn: "🔄 Reset Zoom",
-                tableTitle: "📅 Annual Performance Details", tableHead: ["Year", "Start Price", "End Price", "Annual Change"],
-                seoH3: "🏢 Strategic Analysis of the 'Magnificent Seven' Tech Giants",
-                seoP1: "The 'Magnificent Seven' dictate the direction of the S&P 500. This system empowers investors to review these core assets with 10-year historical data.",
-                seoP2: "💡 Guide: Use mouse wheel to zoom X-axis; hold Left Click & Drag to precisely measure performance.",
-                rulerTitle: " K-lines Range Change", toolDate: "📅 Date: ", toolChange: " from start"
+                statVol: "Annualized Volatility", subVol: "Return fluctuation intensity", statSharpe: "Sharpe Ratio", subSharpe: "Risk-adjusted return",
+                statSortino: "Sortino Ratio", subSortino: "Downside risk-adjusted return", statWin: "Daily Win Rate", subWin: "Share of up trading days",
+                statScore: "Strategy Score", subScore: "Return-risk composite score",
+                aiTitle: "🤖 AI Strategy Explanation", aiStyleBase: "Run a backtest to generate the strategy style label.", aiRiskBase: "Risk sources: waiting for analysis result.", aiActionTitle: "Execution Actions", aiActionBase: ["Run a backtest to generate 3 actionable steps."],
+                methodTitle: "Methodology & Risk Disclosure",
+                methodP1: "This tool is for historical analysis only and is not investment advice. Past performance does not guarantee future results.",
+                methodP2: "Portfolio mode uses close prices by default and excludes fees, taxes, and slippage. Run your own stress tests before real trading.",
+                methodSource: "Data Source: Yahoo Finance (batch-synced, not tick-by-tick realtime).",
+                methodFormula: "Core formulas: CAGR=(Final/Initial)^(1/Years)-1; MDD is max peak-to-trough decline.",
+                methodP3Base: "Data freshness: -", methodP3Tpl: "Data freshness: {items}",
+                seoH3: "📚 Deep Dive Research Entry",
+                seoP1: "Open a ticker report for company overview, financials, and key highlights.",
+                rulerTitle: " K-lines Range Change", toolDate: "📅 Date: ", toolChange: " from start", periodJoin: " to ",
+                subscribeTitle: "Email Updates", subscribeBtn: "Subscribe", subscribeOk: "Saved locally", subscribeInvalid: "Enter a valid email",
+                watchlistTitle: "Watchlist", watchAdd: "Add current ticker", watchClear: "Clear", watchEmpty: "No items",
+                riskChanged: "Risk light changed: {from} → {to}"
             }
         };
 
         let currentLang = 'zh';
+        window.lastAnalysisSummary = "";
+        window.lastAnalysisData = null;
+        window.showMALines = true;
+        const KNOWN_TICKERS = ["NVDA", "TSLA", "AAPL", "MSFT", "GOOGL", "AMZN", "META", "SPY"];
+        const tickerCache = {
+            yearBounds: new Map(),
+            datePriceMap: new Map(),
+            years: new Map(),
+            fieldMaps: new Map()
+        };
+
+        function runDeferred(task, delay = 0) {
+            const runner = () => setTimeout(task, delay);
+            if (typeof requestAnimationFrame === "function") requestAnimationFrame(runner);
+            else runner();
+        }
+
+        function runIdle(task, timeout = 1200) {
+            if (typeof requestIdleCallback === "function") requestIdleCallback(() => task(), { timeout });
+            else setTimeout(task, timeout);
+        }
+
+        function getLocalDateISO(date = new Date()) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, "0");
+            const d = String(date.getDate()).padStart(2, "0");
+            return `${y}-${m}-${d}`;
+        }
+
+        function uniqTickers(list) {
+            return [...new Set((Array.isArray(list) ? list : [])
+                .map(t => String(t || "").trim().toUpperCase())
+                .filter(Boolean))];
+        }
+
+        async function ensureTickersLoaded(tickers) {
+            const list = uniqTickers(tickers).filter(t => KNOWN_TICKERS.includes(t));
+            if (!list.length) return;
+            if (typeof loadTickersData !== "function") throw new Error("data loader is unavailable");
+            await loadTickersData(list);
+        }
+
+        function getTickerYearBounds(ticker) {
+            if (!ticker) return null;
+            if (tickerCache.yearBounds.has(ticker)) return tickerCache.yearBounds.get(ticker);
+            const stockObj = STOCK_HISTORICAL_DATA[ticker];
+            if (!stockObj?.dates?.length) return null;
+            const map = {};
+            for (let i = 0; i < stockObj.dates.length; i++) {
+                const y = stockObj.dates[i].slice(0, 4);
+                if (!map[y]) map[y] = { start: i, end: i };
+                else map[y].end = i;
+            }
+            tickerCache.yearBounds.set(ticker, map);
+            tickerCache.years.set(ticker, Object.keys(map).sort());
+            return map;
+        }
+
+        function getTickerYears(ticker) {
+            if (!ticker) return [];
+            if (tickerCache.years.has(ticker)) return tickerCache.years.get(ticker);
+            getTickerYearBounds(ticker);
+            return tickerCache.years.get(ticker) || [];
+        }
+
+        function getTickerDatePriceMap(ticker) {
+            if (!ticker) return null;
+            if (tickerCache.datePriceMap.has(ticker)) return tickerCache.datePriceMap.get(ticker);
+            const stockObj = STOCK_HISTORICAL_DATA[ticker];
+            if (!stockObj?.dates?.length || !stockObj?.prices?.length) return null;
+            const map = new Map();
+            for (let i = 0; i < stockObj.dates.length; i++) map.set(stockObj.dates[i], stockObj.prices[i]);
+            tickerCache.datePriceMap.set(ticker, map);
+            return map;
+        }
+
+        function getTickerFieldMap(ticker, fieldName) {
+            if (!ticker || !fieldName) return null;
+            const key = `${ticker}:${fieldName}`;
+            if (tickerCache.fieldMaps.has(key)) return tickerCache.fieldMaps.get(key);
+            const stockObj = STOCK_HISTORICAL_DATA[ticker];
+            const dates = stockObj?.dates;
+            const values = stockObj?.[fieldName];
+            if (!Array.isArray(dates) || !Array.isArray(values) || !dates.length || values.length !== dates.length) return null;
+            const map = new Map();
+            for (let i = 0; i < dates.length; i++) map.set(dates[i], values[i]);
+            tickerCache.fieldMaps.set(key, map);
+            return map;
+        }
+
+        function updateMovingAverageButton() {
+            const lp = langPack[currentLang];
+            const btn = document.getElementById('maToggleBtn');
+            if (!btn || !lp) return;
+            const isPortfolio = !!document.getElementById('portfolioMode')?.checked;
+            btn.innerText = window.showMALines ? lp.maHide : lp.maShow;
+            btn.disabled = isPortfolio;
+            btn.style.opacity = isPortfolio ? "0.55" : "1";
+            btn.title = isPortfolio ? lp.maDisabled : "";
+        }
+
+        function getI18n(lang) {
+            const base = window.FINLOGIC_I18N || {};
+            return base[lang] || base.zh || {};
+        }
 
         function setLang(lang) {
             currentLang = lang;
             const lp = langPack[lang];
-            document.getElementById('ui-title').innerText = lp.title;
-            document.getElementById('ui-label-base').innerText = lp.labelBase;
-            document.getElementById('ui-label-compare').innerText = lp.labelCompare;
-            document.getElementById('ui-opt-none').innerText = lp.optNone;
-            document.getElementById('ui-label-capital').innerText = lp.labelCapital;
-            document.getElementById('ui-label-start').innerText = lp.labelStart;
-            document.getElementById('ui-label-end').innerText = lp.labelEnd;
-            document.getElementById('runBtn').innerText = lp.btnRun;
-            document.getElementById('ui-stat-growth').innerText = lp.statGrowth;
-            document.getElementById('ui-stat-cagr').innerText = lp.statCAGR;
-            document.getElementById('ui-sub-cagr').innerText = lp.subCAGR;
-            document.getElementById('ui-stat-mdd').innerText = lp.statMDD;
-            document.getElementById('ui-sub-mdd').innerText = lp.subMDD;
-            document.getElementById('ui-stat-final').innerText = lp.statFinal;
-            document.getElementById('resetZoomBtn').innerText = lp.resetBtn;
-            document.getElementById('ui-table-title').innerText = lp.tableTitle;
-            document.getElementById('ui-seo-h3').innerText = lp.seoH3;
-            document.getElementById('ui-seo-p1').innerText = lp.seoP1;
-            document.getElementById('ui-seo-p2').innerText = lp.seoP2;
-            const headCells = document.getElementById('ui-table-head').cells;
-            lp.tableHead.forEach((text, i) => headCells[i].innerText = text);
+            const t = getI18n(lang);
+            document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+
+            const setText = (id, text) => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = text ?? "";
+            };
+            const setHTML = (id, html) => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = html ?? "";
+            };
+            const setPlaceholder = (id, text) => {
+                const el = document.getElementById(id);
+                if (el) el.placeholder = text ?? "";
+            };
+            const setOption = (selector, text) => {
+                const el = document.querySelector(selector);
+                if (el) el.innerText = text ?? "";
+            };
+
+            setText('ui-title', lp.title);
+            setText('ui-hero-tag', lp.heroTag);
+            setText('ui-hero-sub', lp.heroSub);
+            setText('ui-hero-chip-1', lp.heroChip1);
+            setText('ui-hero-chip-2', lp.heroChip2);
+            setText('ui-hero-chip-3', lp.heroChip3);
+            setText('ui-sec-config-title', lp.secConfigTitle);
+            setText('ui-sec-config-sub', lp.secConfigSub);
+            setText('ui-sec-config-tag1', lp.secConfigTag1);
+            setText('ui-sec-config-tag2', lp.secConfigTag2);
+            setText('ui-sec-config-tag3', lp.secConfigTag3);
+            setText('ui-sec-result-title', lp.secResultTitle);
+            setText('ui-sec-result-sub', lp.secResultSub);
+            setText('ui-sec-result-tag1', lp.secResultTag1);
+            setText('ui-sec-result-tag2', lp.secResultTag2);
+            setText('ui-sec-result-tag3', t.market_climate || lp.secResultTag3);
+            setText('ui-label-base', lp.labelBase);
+            setText('ui-label-compare', lp.labelCompare);
+            setText('ui-opt-none', lp.optNone);
+            setText('ui-label-capital', lp.labelCapital);
+            setText('ui-label-start', lp.labelStart);
+            setText('ui-label-end', lp.labelEnd);
+            setText('ui-advanced-summary', lp.advancedSummary);
+            setText('ui-mode-title', lp.modeTitle);
+            setText('ui-mode-hint', lp.modeHint);
+            setOption('#playbookSelect option[value="none"]', lp.playbookManual);
+            setOption('#playbookSelect option[value="ai_growth"]', lp.playbookAIGrowth);
+            setOption('#playbookSelect option[value="balanced"]', lp.playbookBalanced);
+            setOption('#playbookSelect option[value="index_only"]', lp.playbookIndex);
+            setText('applyPlaybookBtn', lp.applyPlaybook);
+            setText('runBtn', lp.btnRun);
+            setText('shareBtn', lp.btnShare);
+            setOption('#rebalanceFreq option[value="none"]', lp.rbNone);
+            setOption('#rebalanceFreq option[value="monthly"]', lp.rbMonthly);
+            setOption('#rebalanceFreq option[value="quarterly"]', lp.rbQuarterly);
+            setOption('#rebalanceFreq option[value="yearly"]', lp.rbYearly);
+
+            setText('ui-stat-growth', lp.statGrowth);
+            setText('ui-stat-cagr', lp.statCAGR);
+            setText('ui-sub-cagr', lp.subCAGR);
+            setText('ui-stat-mdd', lp.statMDD);
+            setText('ui-sub-mdd', lp.subMDD);
+            setText('ui-stat-final', lp.statFinal);
+            setText('ui-stat-vol', lp.statVol);
+            setText('ui-sub-vol', lp.subVol);
+            setText('ui-stat-sharpe', lp.statSharpe);
+            setText('ui-sub-sharpe', lp.subSharpe);
+            setText('ui-stat-sortino', lp.statSortino);
+            setText('ui-sub-sortino', lp.subSortino);
+            setText('ui-stat-win', lp.statWin);
+            setText('ui-sub-win', lp.subWin);
+            setText('ui-stat-score', lp.statScore);
+            setText('ui-sub-score', lp.subScore);
+            setText('resetZoomBtn', lp.resetBtn);
+            updateMovingAverageButton();
+
+            setText('ui-ai-title', lp.aiTitle);
+            setText('ui-ai-action-title', lp.aiActionTitle);
+            if (!window.lastAnalysisData) {
+                setText('aiStyleText', lp.aiStyleBase);
+                setText('aiRiskText', lp.aiRiskBase);
+                setHTML('aiActionList', (lp.aiActionBase || []).map(item => `<li>${item}</li>`).join(""));
+            }
+
+            setText('daily-link-top', t.nav_daily || "每日市场状态");
+            setText('daily-link-footer', t.nav_daily || "每日市场状态");
+            setText('riskIndexLabel', `${t.market_risk_light || '风险灯'} · ${t.risk_temperature || '风险温度'}`);
+            setText('risk-index-link-top', currentLang === 'zh' ? '市场风险指数' : 'Market Risk Index');
+            setText('risk-index-link-footer', currentLang === 'zh' ? '市场风险指数' : 'Market Risk Index');
+            setText('ui-subscribe-title', lp.subscribeTitle);
+            setText('subscribeBtn', lp.subscribeBtn);
+            setText('ui-watchlist-title', lp.watchlistTitle);
+            setText('addWatchBtn', lp.watchAdd);
+            setText('clearWatchBtn', lp.watchClear);
+
+            setText('ui-method-title', lp.methodTitle);
+            setText('ui-method-p1', lp.methodP1);
+            setText('ui-method-p2', lp.methodP2);
+            setText('ui-method-source', lp.methodSource);
+            setText('ui-method-formula', lp.methodFormula);
+            setText('methodFreshness', lp.methodP3Base);
+            setText('ui-seo-h3', lp.seoH3);
+            setText('ui-seo-p1', lp.seoP1);
+
             document.getElementById('btn-zh').classList.toggle('active', lang === 'zh');
             document.getElementById('btn-en').classList.toggle('active', lang === 'en');
             initYearOptions();
+            if (window.lastAnalysisData) {
+                updateAiStrategyExplanation(window.lastAnalysisData.metrics, window.lastAnalysisData);
+                updateDataFreshness(window.lastAnalysisData.activeTickers);
+            }
+            window.dispatchEvent(new CustomEvent('finlogichub5:lang-change', { detail: { lang } }));
         }
 
         let isDragging = false, dragStartIdx = null, dragEndIdx = null;
+        let chartMouseDownHandler = null;
+        let chartMouseUpHandler = null;
         const rangeRulerPlugin = { id: 'rangeRuler', afterDraw: (chart) => { if (isDragging && dragStartIdx !== null && dragEndIdx !== null) { const { ctx, chartArea: { top, bottom }, scales: { x } } = chart; const xStart = x.getPixelForValue(dragStartIdx), xEnd = x.getPixelForValue(dragEndIdx); ctx.save(); ctx.fillStyle = 'rgba(56, 189, 248, 0.15)'; ctx.fillRect(xStart, top, xEnd - xStart, bottom - top); ctx.lineWidth = 1; ctx.strokeStyle = '#38bdf8'; ctx.setLineDash([5, 5]); ctx.beginPath(); ctx.moveTo(xStart, top); ctx.lineTo(xStart, bottom); ctx.moveTo(xEnd, top); ctx.lineTo(xEnd, bottom); ctx.stroke(); const results = [], kLines = Math.abs(dragEndIdx - dragStartIdx); chart.data.datasets.forEach((ds) => { const pS = ds.data[dragStartIdx], pE = ds.data[dragEndIdx]; if (pS && pE) { const pct = ((pE - pS) / pS * 100).toFixed(2); results.push({ label: `${ds.label.split(' ')[0]}: ${pct >= 0 ? '+' : ''}${pct}%`, color: ds.borderColor }); } }); ctx.setLineDash([]); ctx.font = 'bold 12px Arial'; const boxW = 160, boxH = (results.length * 20) + 35, lX = xEnd + boxW / 2 > chart.width ? xEnd - boxW / 2 : xEnd + boxW / 2, lY = top + 20; ctx.fillStyle = 'rgba(15, 23, 42, 0.9)'; ctx.fillRect(lX - boxW / 2, lY, boxW, boxH); ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center'; ctx.fillText(`${kLines}${langPack[currentLang].rulerTitle}`, lX, lY + 20); results.forEach((res, i) => { ctx.fillStyle = res.color; ctx.fillText(res.label, lX, lY + 40 + (i * 20)); }); ctx.restore(); } } };
         const crosshairPlugin = { id: 'crosshair', afterDraw: (chart) => { if (chart.tooltip?._active?.length) { const { ctx, chartArea: { top, bottom, left, right } } = chart; const activePoint = chart.tooltip._active[0]; const xCoor = activePoint.element.x, yCoor = activePoint.element.y; ctx.save(); ctx.beginPath(); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)'; ctx.setLineDash([3, 3]); ctx.moveTo(xCoor, top); ctx.lineTo(xCoor, bottom); ctx.moveTo(left, yCoor); ctx.lineTo(right, yCoor); ctx.stroke(); ctx.restore(); } } };
 
-        function initYearOptions() {
-            const ticker = document.getElementById('ticker').value;
+        function toggleMovingAverages() {
+            window.showMALines = !window.showMALines;
+            updateMovingAverageButton();
+            runAnalysis();
+        }
+
+        function setActionStatus(msg) {
+            document.getElementById('actionStatus').innerText = msg || "";
+        }
+
+        function getYearRangeIndices(stockObj, startYear, endYear, tickerHint) {
+            if (tickerHint) {
+                const bounds = getTickerYearBounds(tickerHint);
+                if (!bounds) return null;
+                const s = bounds[startYear];
+                const e = bounds[endYear];
+                if (!s || !e || s.start > e.end) return null;
+                return { startIndex: s.start, endIndex: e.end };
+            }
+            const startIndex = stockObj.dates.findIndex(d => d.startsWith(startYear));
+            let endIndex = -1;
+            for (let i = stockObj.dates.length - 1; i >= 0; i--) {
+                if (stockObj.dates[i].startsWith(endYear)) { endIndex = i; break; }
+            }
+            if (startIndex === -1 || endIndex === -1 || startIndex > endIndex) return null;
+            return { startIndex, endIndex };
+        }
+
+        function alignByDate(baseObj, baseTicker, compObj, compTicker, startYear, endYear) {
+            const range = getYearRangeIndices(baseObj, startYear, endYear, baseTicker);
+            if (!range) return null;
+            const baseLabels = baseObj.dates.slice(range.startIndex, range.endIndex + 1);
+            const basePrices = baseObj.prices.slice(range.startIndex, range.endIndex + 1);
+            if (!compObj) return { labels: baseLabels, baseData: basePrices, compData: null };
+            const compMap = getTickerDatePriceMap(compTicker);
+            if (!compMap) return null;
+            const labels = [];
+            const data1 = [];
+            const data2 = [];
+            for (let i = 0; i < baseLabels.length; i++) {
+                const date = baseLabels[i];
+                const p2 = compMap.get(date);
+                if (p2 !== undefined) {
+                    labels.push(date);
+                    data1.push(basePrices[i]);
+                    data2.push(p2);
+                }
+            }
+            return { labels, baseData: data1, compData: data2 };
+        }
+
+        function calcDailyReturns(series) {
+            const out = [];
+            for (let i = 1; i < series.length; i++) {
+                const prev = series[i - 1];
+                const cur = series[i];
+                if (prev > 0) out.push((cur - prev) / prev);
+            }
+            return out;
+        }
+
+        function mean(arr) {
+            if (!arr.length) return 0;
+            return arr.reduce((acc, v) => acc + v, 0) / arr.length;
+        }
+
+        function stdDev(arr, avg) {
+            if (arr.length < 2) return 0;
+            const m = avg ?? mean(arr);
+            const variance = arr.reduce((acc, v) => acc + ((v - m) ** 2), 0) / (arr.length - 1);
+            return Math.sqrt(variance);
+        }
+
+        // === AI Strategy Explanation (Rule Engine) ===
+        function updateAiStrategyExplanation(metrics, context) {
+            const lp = langPack[currentLang];
+            const t = getI18n(currentLang);
+            if (!metrics) return;
+            const cagr = metrics.cagr || 0;
+            const mdd = Math.abs(metrics.mdd || 0);
+            const vol = metrics.annualVol || 0;
+            const sharpe = metrics.sharpe || 0;
+            const sortino = metrics.sortino || 0;
+            const winRate = metrics.winRate || 0;
+            const labels = context?.labels || [];
+            const periodYears = labels.length ? Math.max(1, (labels.length / 252)).toFixed(1) : "—";
+            const span = labels.length ? `${labels[0]}${lp.periodJoin}${labels[labels.length - 1]}` : "—";
+            const isPortfolio = !!context?.portfolioMode;
+            const rebalanceFreq = context?.rebalanceFreq || "none";
+
+            let styleLabel = currentLang === "zh" ? "均衡" : "Balanced";
+            if (cagr >= 18 && vol >= 30 && mdd >= 30) styleLabel = currentLang === "zh" ? "高成长 / 高波动" : "High Growth / High Vol";
+            else if (cagr >= 12 && sharpe >= 1.1 && mdd <= 25) styleLabel = currentLang === "zh" ? "均衡进攻" : "Balanced Offensive";
+            else if (cagr <= 10 || vol <= 18 || mdd <= 18) styleLabel = currentLang === "zh" ? "防守稳健" : "Defensive";
+
+            let riskLevel = currentLang === "zh" ? "中" : "Medium";
+            if (mdd > 35 || vol > 35 || sharpe < 0.6) riskLevel = currentLang === "zh" ? "高" : "High";
+            else if (mdd < 20 && vol < 22 && sharpe > 1.1) riskLevel = currentLang === "zh" ? "低" : "Low";
+
+            const riskSources = [];
+            if (isPortfolio) riskSources.push(currentLang === "zh" ? "组合集中度与权重偏离" : "Portfolio concentration & weight drift");
+            else riskSources.push(currentLang === "zh" ? "单一标的波动" : "Single-ticker volatility");
+            if (mdd > 25) riskSources.push(currentLang === "zh" ? "历史回撤偏深" : "Deep historical drawdown");
+            if (vol > 30) riskSources.push(currentLang === "zh" ? "高波动区间" : "High volatility regime");
+
+            const styleText = currentLang === "zh"
+                ? `风格标签：${styleLabel}。区间 ${span}（约 ${periodYears} 年），CAGR ${cagr.toFixed(2)}%，Sharpe ${sharpe.toFixed(2)}，Sortino ${sortino.toFixed(2)}，WinRate ${winRate.toFixed(1)}%。`
+                : `Style: ${styleLabel}. Period ${span} (~${periodYears}y), CAGR ${cagr.toFixed(2)}%, Sharpe ${sharpe.toFixed(2)}, Sortino ${sortino.toFixed(2)}, WinRate ${winRate.toFixed(1)}%.`;
+
+            const riskText = currentLang === "zh"
+                ? `主要风险来源：${riskSources.join("、")}；风险等级：${riskLevel}。MDD ${mdd.toFixed(2)}%，年化波动 ${vol.toFixed(2)}%。`
+                : `Main risks: ${riskSources.join(", ")}; Risk level: ${riskLevel}. MDD ${mdd.toFixed(2)}%, Vol ${vol.toFixed(2)}%.`;
+
+            const actions = [];
+            const guardrailLabel = t.position_guardrail || (currentLang === "zh" ? "仓位护栏" : "Position Guardrail");
+            if (riskLevel === (currentLang === "zh" ? "高" : "High")) {
+                actions.push(currentLang === "zh" ? "仓位建议：降低单一资产暴露，核心仓位控制在 30%-50%。" : "Positioning: reduce single-asset exposure; keep core allocation at 30%-50%.");
+            } else {
+                actions.push(currentLang === "zh" ? "仓位建议：维持核心仓位，避免追涨，分批加仓更稳。" : "Positioning: keep core allocation, avoid chasing; add in tranches.");
+            }
+            if (mdd > 30) {
+                actions.push(currentLang === "zh" ? `${guardrailLabel}：设置 25%-30% 最大回撤触发减仓/暂停加仓。` : `${guardrailLabel}: set 25%-30% MDD trigger to reduce risk.`);
+            } else {
+                actions.push(currentLang === "zh" ? `${guardrailLabel}：设置 15%-20% 回撤复盘阈值，保持纪律。` : `${guardrailLabel}: set 15%-20% review threshold.`);
+            }
+            if (isPortfolio) {
+                const freqMap = { none: currentLang === "zh" ? "建议启用季度再平衡" : "Enable quarterly rebalancing", monthly: currentLang === "zh" ? "维持月度再平衡" : "Keep monthly rebalancing", quarterly: currentLang === "zh" ? "维持季度再平衡" : "Keep quarterly rebalancing", yearly: currentLang === "zh" ? "维持年度再平衡" : "Keep annual rebalancing" };
+                actions.push(currentLang === "zh" ? `再平衡建议：${freqMap[rebalanceFreq] || freqMap.none}。` : `Rebalance: ${freqMap[rebalanceFreq] || freqMap.none}.`);
+            } else {
+                actions.push(currentLang === "zh" ? "再平衡建议：非组合模式可按季度检查与 SPY 的偏离。" : "Rebalance: review quarterly against SPY since it's a single ticker.");
+            }
+
+            document.getElementById('aiStyleText').innerText = styleText;
+            document.getElementById('aiRiskText').innerText = riskText;
+            document.getElementById('ui-ai-action-title').innerText = lp.aiActionTitle;
+            document.getElementById('aiActionList').innerHTML = actions.map(item => `<li>${item}</li>`).join("");
+        }
+
+        function updateDataFreshness(tickers) {
+            const lp = langPack[currentLang];
+            const symbols = Array.isArray(tickers) ? [...new Set(tickers)] : [];
+            if (!symbols.length) {
+                document.getElementById('methodFreshness').innerText = lp.methodP3Base;
+                return;
+            }
+            const labels = symbols.map(t => {
+                const d = STOCK_HISTORICAL_DATA[t]?.meta?.lastUpdate || "-";
+                return `${t} ${d}`;
+            });
+            document.getElementById('methodFreshness').innerText = lp.methodP3Tpl.replace('{items}', labels.join(" | "));
+        }
+
+        function applyPlaybook() {
+            const key = document.getElementById('playbookSelect').value;
+            if (key === 'none') return;
+            const presets = {
+                ai_growth: { pm: true, cfg: "NVDA:35,MSFT:25,GOOGL:20,META:10,AMZN:10", rb: "quarterly", cmp: "SPY", tk: "NVDA" },
+                balanced: { pm: true, cfg: "SPY:40,MSFT:20,AAPL:20,NVDA:10,GOOGL:10", rb: "quarterly", cmp: "SPY", tk: "SPY" },
+                index_only: { pm: false, cfg: "SPY:100", rb: "none", cmp: "none", tk: "SPY" }
+            };
+            const p = presets[key];
+            if (!p) return;
+            document.getElementById('portfolioMode').checked = p.pm;
+            document.getElementById('portfolioConfig').value = p.cfg;
+            document.getElementById('rebalanceFreq').value = p.rb;
+            document.getElementById('compareTicker').value = p.cmp;
+            document.getElementById('ticker').value = p.tk;
+            handleModeChange();
+            runAnalysis();
+            setActionStatus(langPack[currentLang].playbookApplied);
+        }
+
+        function parsePortfolioConfig(raw) {
+            const items = (raw || "").split(",").map(s => s.trim()).filter(Boolean);
+            const parsed = [];
+            for (const item of items) {
+                const pair = item.split(":");
+                if (pair.length !== 2) continue;
+                const ticker = pair[0].trim().toUpperCase();
+                const weight = parseFloat(pair[1]);
+                if (!ticker || !KNOWN_TICKERS.includes(ticker) || !Number.isFinite(weight) || weight <= 0) continue;
+                parsed.push({ ticker, weight });
+            }
+            const total = parsed.reduce((acc, p) => acc + p.weight, 0);
+            if (!parsed.length || total <= 0) return null;
+            return parsed.map(p => ({ ...p, weight: p.weight / total }));
+        }
+
+        function getPortfolioPrimaryTicker(portfolioParts) {
+            return portfolioParts?.length ? portfolioParts[0].ticker : document.getElementById('ticker').value;
+        }
+
+        function getRebalanceKey(dateStr, rebalanceFreq) {
+            const y = dateStr.slice(0, 4);
+            const m = dateStr.slice(5, 7);
+            if (rebalanceFreq === "monthly") return `${y}-${m}`;
+            if (rebalanceFreq === "quarterly") {
+                const q = Math.floor((Number(m) - 1) / 3) + 1;
+                return `${y}-Q${q}`;
+            }
+            if (rebalanceFreq === "yearly") return y;
+            return "none";
+        }
+
+        function buildPortfolioSeries(portfolioParts, startYear, endYear, rebalanceFreq) {
+            const maps = [];
+            let orderedDates = null;
+            for (const part of portfolioParts) {
+                const stockObj = STOCK_HISTORICAL_DATA[part.ticker];
+                if (!stockObj) return null;
+                const range = getYearRangeIndices(stockObj, startYear, endYear, part.ticker);
+                if (!range) return null;
+                const dates = stockObj.dates.slice(range.startIndex, range.endIndex + 1);
+                const datePriceMap = getTickerDatePriceMap(part.ticker);
+                if (!datePriceMap) return null;
+                maps.push({ ticker: part.ticker, weight: part.weight, map: datePriceMap });
+                if (!orderedDates) orderedDates = dates.slice();
+            }
+            if (!orderedDates || orderedDates.length < 2) return null;
+            const commonDates = orderedDates.filter(d => maps.every(m => m.map.has(d)));
+            if (commonDates.length < 2) return null;
+            let totalValue = 100;
+            const shares = new Map();
+            const firstDate = commonDates[0];
+            for (const m of maps) {
+                const p0 = m.map.get(firstDate);
+                shares.set(m.ticker, (totalValue * m.weight) / p0);
+            }
+            let currentBucket = getRebalanceKey(firstDate, rebalanceFreq);
+            const series = [];
+            for (const date of commonDates) {
+                const bucket = getRebalanceKey(date, rebalanceFreq);
+                if (rebalanceFreq !== "none" && bucket !== currentBucket) {
+                    currentBucket = bucket;
+                    let rebalanceTotal = 0;
+                    for (const m of maps) rebalanceTotal += shares.get(m.ticker) * m.map.get(date);
+                    totalValue = rebalanceTotal;
+                    for (const m of maps) {
+                        const price = m.map.get(date);
+                        shares.set(m.ticker, (totalValue * m.weight) / price);
+                    }
+                }
+                let dayTotal = 0;
+                for (const m of maps) dayTotal += shares.get(m.ticker) * m.map.get(date);
+                totalValue = dayTotal;
+                series.push(dayTotal);
+            }
+            return { labels: commonDates, data: series };
+        }
+
+        function alignComparisonToLabels(labels, compObj, compTicker) {
+            if (!compObj) return null;
+            const compMap = getTickerDatePriceMap(compTicker);
+            if (!compMap) return null;
+            const values = [];
+            for (const d of labels) {
+                const p = compMap.get(d);
+                if (p === undefined) return null;
+                values.push(p);
+            }
+            return values;
+        }
+
+        function handleModeChange() {
+            const isPortfolio = document.getElementById('portfolioMode').checked;
+            document.getElementById('ticker').disabled = isPortfolio;
+            initYearOptions();
+            updateMovingAverageButton();
+        }
+
+        async function initYearOptions() {
+            const portfolioMode = document.getElementById('portfolioMode').checked;
+            const portfolioParts = parsePortfolioConfig(document.getElementById('portfolioConfig').value);
+            const ticker = portfolioMode ? getPortfolioPrimaryTicker(portfolioParts) : document.getElementById('ticker').value;
+            if (!ticker || !KNOWN_TICKERS.includes(ticker)) return;
+            try {
+                await ensureTickersLoaded([ticker]);
+            } catch (e) {
+                return;
+            }
             const stockObj = STOCK_HISTORICAL_DATA[ticker];
             if (!stockObj) return;
-            // ⚠️ 适配新数据结构：从 dates 数组提取年份
-            const years = [...new Set(stockObj.dates.map(d => d.split('-')[0].trim()))].sort();
+            const years = getTickerYears(ticker);
+            if (!years.length) return;
             const sS = document.getElementById('startYear'), eS = document.getElementById('endYear');
             const sVal = sS.value, eVal = eS.value;
             sS.innerHTML = ""; eS.innerHTML = "";
@@ -511,44 +2042,159 @@
             if (eVal) eS.value = eVal; else eS.selectedIndex = years.length - 1;
         }
 
-        function runAnalysis() {
+        // === Backtest Pipeline ===
+        async function runAnalysis() {
             const ticker = document.getElementById('ticker').value, compTicker = document.getElementById('compareTicker').value;
             const cap = parseFloat(document.getElementById('capital').value);
-            const sY = document.getElementById('startYear').value, eY = document.getElementById('endYear').value;
-            if (sY > eY) return;
-
-            // ⚠️ 适配新数据结构
-            const d1Obj = STOCK_HISTORICAL_DATA[ticker];
-            const d2Obj = compTicker !== "none" ? STOCK_HISTORICAL_DATA[compTicker] : null;
-
-            // 过滤日期索引
-            const startIndex = d1Obj.dates.findIndex(d => d.startsWith(sY));
-            // 找结束年份的最后一天
-            let endIndex = d1Obj.dates.length - 1;
-            for (let i = d1Obj.dates.length - 1; i >= 0; i--) {
-                if (d1Obj.dates[i].startsWith(eY)) { endIndex = i; break; }
+            let sY = document.getElementById('startYear').value, eY = document.getElementById('endYear').value;
+            const portfolioMode = document.getElementById('portfolioMode').checked;
+            const lp = langPack[currentLang];
+            if (!KNOWN_TICKERS.includes(ticker)) {
+                setActionStatus(lp.invalidTicker);
+                return;
+            }
+            if (compTicker !== "none" && !KNOWN_TICKERS.includes(compTicker)) {
+                setActionStatus(lp.invalidCompareTicker);
+                return;
+            }
+            if (!Number.isFinite(cap) || cap <= 0) {
+                setActionStatus(lp.invalidCapital);
+                return;
+            }
+            if (!sY || !eY) {
+                await initYearOptions();
+                sY = document.getElementById('startYear').value;
+                eY = document.getElementById('endYear').value;
+            }
+            if (sY > eY) {
+                setActionStatus(lp.invalidRange);
+                return;
             }
 
-            // 截取数据
-            const labels = d1Obj.dates.slice(startIndex, endIndex + 1);
-            const data1 = d1Obj.prices.slice(startIndex, endIndex + 1);
-            const data2 = d2Obj ? d2Obj.prices.slice(startIndex, endIndex + 1) : null;
+            const neededTickers = [ticker];
+            let portfolioParts = null;
+            if (portfolioMode) {
+                portfolioParts = parsePortfolioConfig(document.getElementById('portfolioConfig').value);
+                if (!portfolioParts) {
+                    setActionStatus(lp.invalidPortfolio);
+                    return;
+                }
+                neededTickers.push(...portfolioParts.map(p => p.ticker));
+            }
+            if (compTicker !== "none") neededTickers.push(compTicker);
+            try {
+                await ensureTickersLoaded(neededTickers);
+            } catch (e) {
+                setActionStatus(String(e?.message || "").includes("loader") ? lp.dataLoaderUnavailable : lp.dataLoadFail);
+                return;
+            }
 
-            updateStats(data1, labels, cap);
+            const d1Obj = STOCK_HISTORICAL_DATA[ticker];
+            const d2Obj = compTicker !== "none" ? STOCK_HISTORICAL_DATA[compTicker] : null;
+            if (!d1Obj) {
+                setActionStatus(lp.noTickerData);
+                return;
+            }
+            if (compTicker !== "none" && !d2Obj) {
+                setActionStatus(lp.noCompareData);
+                return;
+            }
+            let labels = [];
+            let data1 = [];
+            let data2 = null;
+            let labelName = ticker;
+            let activeTickers = [ticker];
+
+            if (portfolioMode) {
+                activeTickers = portfolioParts.map(p => p.ticker);
+                const rebalanceFreq = document.getElementById('rebalanceFreq').value;
+                const portfolio = buildPortfolioSeries(portfolioParts, sY, eY, rebalanceFreq);
+                if (!portfolio || portfolio.labels.length < 2) {
+                    setActionStatus(lp.noData);
+                    return;
+                }
+                labels = portfolio.labels;
+                data1 = portfolio.data;
+                labelName = rebalanceFreq === "none" ? "PORTFOLIO" : `PORTFOLIO (${rebalanceFreq.toUpperCase()})`;
+                if (d2Obj) data2 = alignComparisonToLabels(labels, d2Obj, compTicker);
+                if (d2Obj && !data2) {
+                    setActionStatus(lp.noAlignedData);
+                    return;
+                }
+            } else {
+                const aligned = alignByDate(d1Obj, ticker, d2Obj, compTicker, sY, eY);
+                if (!aligned || aligned.labels.length < 2) {
+                    setActionStatus(d2Obj ? lp.noAlignedData : lp.noData);
+                    return;
+                }
+                labels = aligned.labels;
+                data1 = aligned.baseData;
+                data2 = aligned.compData;
+            }
+            if (d2Obj) activeTickers.push(compTicker);
+            activeTickers = [...new Set(activeTickers)];
+            setActionStatus("");
+
+            const metrics = updateStats(data1, labels, cap);
             let ds = [{
-                label: ticker,
+                label: labelName,
                 data: data1,
                 borderColor: '#38bdf8',
                 backgroundColor: 'rgba(56, 189, 248, 0.1)',
                 borderWidth: 2, fill: true, pointRadius: 0, tension: 0.1, yAxisID: 'y'
             }];
-            if (data2) ds.push({
+            if (!portfolioMode && window.showMALines) {
+                const ma50Map = getTickerFieldMap(ticker, 'ma50');
+                const ma200Map = getTickerFieldMap(ticker, 'ma200');
+                if (ma50Map && ma200Map) {
+                    const ma50Series = labels.map(d => ma50Map.get(d) ?? null);
+                    const ma200Series = labels.map(d => ma200Map.get(d) ?? null);
+                    ds.push({
+                        label: 'MA50',
+                        data: ma50Series,
+                        borderColor: '#f59e0b',
+                        borderDash: [5, 4],
+                        borderWidth: 1.5,
+                        fill: false,
+                        pointRadius: 0,
+                        tension: 0.08,
+                        yAxisID: 'y',
+                        isMA: true
+                    });
+                    ds.push({
+                        label: 'MA200',
+                        data: ma200Series,
+                        borderColor: '#22d3ee',
+                        borderDash: [8, 5],
+                        borderWidth: 1.4,
+                        fill: false,
+                        pointRadius: 0,
+                        tension: 0.08,
+                        yAxisID: 'y',
+                        isMA: true
+                    });
+                }
+            }
+            if (data2 && data2.length > 1) ds.push({
                 label: compTicker,
                 data: data2,
                 borderColor: '#facc15', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.1, yAxisID: 'y1'
             });
-            drawChart(labels, ds, !!data2);
-            updateYearlyTable(d1Obj, labels, data1);
+            drawChart(labels, ds, !!(data2 && data2.length > 1));
+            updateDataFreshness(activeTickers);
+            window.lastAnalysisData = {
+                portfolioMode,
+                labelName,
+                labels,
+                series: data1,
+                metrics,
+                activeTickers,
+                ticker,
+                compareTicker: compTicker,
+                rebalanceFreq: document.getElementById('rebalanceFreq').value,
+                portfolioConfig: document.getElementById('portfolioConfig').value
+            };
+            updateAiStrategyExplanation(metrics, window.lastAnalysisData);
         }
 
         function updateStats(data, labels, cap) {
@@ -557,33 +2203,106 @@
             const cagr = (Math.pow(mult, 1 / (yrs > 0 ? yrs : 1)) - 1) * 100;
             let maxP = 0, mdd = 0;
             data.forEach(p => { if (p > maxP) maxP = p; let dd = (p - maxP) / maxP; if (dd < mdd) mdd = dd; });
+            const returns = calcDailyReturns(data);
+            const avg = mean(returns);
+            const stdev = stdDev(returns, avg);
+            const rfDaily = 0.02 / 252;
+            const downside = returns.filter(r => r < rfDaily).map(r => r - rfDaily);
+            const downsideDev = stdDev(downside, mean(downside));
+            const annualVol = stdev > 0 ? stdev * Math.sqrt(252) * 100 : 0;
+            const sharpe = stdev > 0 ? ((avg - rfDaily) / stdev) * Math.sqrt(252) : 0;
+            const sortino = downsideDev > 0 ? ((avg - rfDaily) / downsideDev) * Math.sqrt(252) : 0;
+            const winRate = returns.length ? (returns.filter(r => r > 0).length / returns.length) * 100 : 0;
+            const rawScore = (cagr * 1.4) + (sharpe * 18) - (Math.abs(mdd * 100) * 0.75) - (annualVol * 0.15) + (winRate * 0.2);
+            const score = Math.max(0, Math.min(100, rawScore));
             document.getElementById('resRate').innerText = (growth >= 0 ? '+' : '') + growth.toFixed(2) + "%";
             document.getElementById('resRate').style.color = growth >= 0 ? "var(--up)" : "var(--down)";
             document.getElementById('multiplierText').innerText = langPack[currentLang].subMult.replace('{x}', mult.toFixed(1));
             document.getElementById('resCAGR').innerText = cagr.toFixed(2) + "%";
             document.getElementById('resMDD').innerText = (mdd * 100).toFixed(2) + "%";
-            document.getElementById('resFinal').innerText = "$" + Math.round(cap * mult).toLocaleString();
-            document.getElementById('periodText').innerText = `${labels[0]} to ${labels[labels.length - 1]}`;
+            const finalValue = Math.round(cap * mult);
+            document.getElementById('resFinal').innerText = "$" + finalValue.toLocaleString();
+            document.getElementById('periodText').innerText = `${labels[0]}${langPack[currentLang].periodJoin}${labels[labels.length - 1]}`;
+            document.getElementById('resVol').innerText = annualVol.toFixed(2) + "%";
+            document.getElementById('resSharpe').innerText = sharpe.toFixed(2);
+            document.getElementById('resSortino').innerText = sortino.toFixed(2);
+            document.getElementById('resWin').innerText = winRate.toFixed(2) + "%";
+            document.getElementById('resScore').innerText = score.toFixed(0);
+            document.getElementById('resScore').style.color = score >= 70 ? "var(--up)" : (score >= 45 ? "#facc15" : "var(--down)");
+            return { cagr, mdd: mdd * 100, annualVol, sharpe, sortino, winRate, score, finalValue };
         }
 
-        function updateYearlyTable(stockObj, labels, prices) {
-            const tbody = document.getElementById('yearlyTableBody');
-            tbody.innerHTML = "";
-            const years = [...new Set(labels.map(d => d.split('-')[0].trim()))].sort();
+        function saveCurrentStrategy() {
+            const payload = {
+                ticker: document.getElementById('ticker').value,
+                compareTicker: document.getElementById('compareTicker').value,
+                capital: document.getElementById('capital').value,
+                startYear: document.getElementById('startYear').value,
+                endYear: document.getElementById('endYear').value,
+                portfolioMode: document.getElementById('portfolioMode').checked,
+                portfolioConfig: document.getElementById('portfolioConfig').value,
+                rebalanceFreq: document.getElementById('rebalanceFreq').value,
+                lang: currentLang,
+                savedAt: new Date().toISOString()
+            };
+            localStorage.setItem('finlogichub5:last-strategy', JSON.stringify(payload));
+            setActionStatus(langPack[currentLang].saveOk);
+        }
 
-            // 辅助函数：找某年在截取数组中的起始和结束价格
-            years.forEach(yr => {
-                // 找到该年份在 labels 中的第一个和最后一个索引
-                const firstIdx = labels.findIndex(d => d.startsWith(yr));
-                // 找到该年份在 labels 中的最后一个索引
-                let lastIdx = -1;
-                for (let i = labels.length - 1; i >= 0; i--) { if (labels[i].startsWith(yr)) { lastIdx = i; break; } }
-
-                if (firstIdx !== -1 && lastIdx !== -1) {
-                    const o = prices[firstIdx], c = prices[lastIdx], ch = ((c - o) / o) * 100;
-                    tbody.innerHTML += `<tr><td><strong>${yr}</strong></td><td>$${o.toFixed(2)}</td><td>$${c.toFixed(2)}</td><td style="color:${ch >= 0 ? 'var(--up)' : 'var(--down)'}">${ch >= 0 ? '+' : ''}${ch.toFixed(2)}%</td></tr>`;
-                }
+        async function shareCurrentSetup() {
+            const params = new URLSearchParams({
+                ticker: document.getElementById('ticker').value,
+                compare: document.getElementById('compareTicker').value,
+                capital: document.getElementById('capital').value,
+                start: document.getElementById('startYear').value,
+                end: document.getElementById('endYear').value,
+                pmode: document.getElementById('portfolioMode').checked ? "1" : "0",
+                pconf: document.getElementById('portfolioConfig').value,
+                rfreq: document.getElementById('rebalanceFreq').value,
+                lang: currentLang
             });
+            const base = location.protocol === 'file:' ? location.href.split('?')[0] : `${location.origin}${location.pathname}`;
+            const url = `${base}?${params.toString()}`;
+            try {
+                await navigator.clipboard.writeText(url);
+                setActionStatus(langPack[currentLang].shareOk);
+            } catch (e) {
+                window.prompt("Copy URL", url);
+                setActionStatus(langPack[currentLang].shareFail);
+            }
+        }
+
+        function initAdSlots() {
+            const slots = Array.from(document.querySelectorAll('.adsbygoogle'));
+            slots.forEach(slot => {
+                const id = slot.getAttribute('data-ad-slot') || "";
+                if (!/^\d+$/.test(id)) return;
+                try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { }
+            });
+        }
+
+        function applyQuerySetup() {
+            const q = new URLSearchParams(location.search);
+            if (!q.toString()) return;
+            const ticker = q.get('ticker');
+            const compare = q.get('compare');
+            const capital = q.get('capital');
+            const start = q.get('start');
+            const end = q.get('end');
+            const pmode = q.get('pmode');
+            const pconf = q.get('pconf');
+            const rfreq = q.get('rfreq');
+            const lang = q.get('lang');
+            if (ticker) document.getElementById('ticker').value = ticker;
+            if (compare) document.getElementById('compareTicker').value = compare;
+            if (capital) document.getElementById('capital').value = capital;
+            if (typeof pmode === "string") document.getElementById('portfolioMode').checked = pmode === "1";
+            if (pconf) document.getElementById('portfolioConfig').value = pconf;
+            if (rfreq) document.getElementById('rebalanceFreq').value = rfreq;
+            if (lang && langPack[lang]) setLang(lang);
+            handleModeChange();
+            if (start) document.getElementById('startYear').value = start;
+            if (end) document.getElementById('endYear').value = end;
         }
 
         function resetZoom() { if (window.myChart) { window.myChart.resetZoom(); document.getElementById('resetZoomBtn').style.display = 'none'; } }
@@ -591,7 +2310,10 @@
         function drawChart(labels, datasets, hasComp) {
             const ctx = document.getElementById('chartCanvas').getContext('2d');
             if (window.myChart) window.myChart.destroy();
-            const bP1 = datasets[0].data[0], bP2 = hasComp ? datasets[1].data[0] : null;
+            const baseDataset = datasets[0];
+            const compDataset = hasComp ? datasets.find(ds => ds.yAxisID === 'y1') : null;
+            const bP1 = baseDataset?.data?.[0];
+            const bP2 = compDataset?.data?.[0];
             window.myChart = new Chart(ctx, {
                 type: 'line',
                 data: { labels, datasets },
@@ -607,7 +2329,10 @@
                                 title: (ctx) => langPack[currentLang].toolDate + ctx[0].label,
                                 label: (ctx) => {
                                     if (isDragging) return null;
-                                    const val = ctx.parsed.y, bP = ctx.datasetIndex === 0 ? bP1 : bP2;
+                                    const val = ctx.parsed.y;
+                                    if (ctx.dataset?.isMA) return `${ctx.dataset.label}: $${val.toFixed(2)}`;
+                                    const bP = ctx.dataset.yAxisID === 'y1' ? bP2 : bP1;
+                                    if (!Number.isFinite(bP) || bP <= 0) return `${ctx.dataset.label}: $${val.toFixed(2)}`;
                                     const ch = ((val - bP) / bP * 100).toFixed(2);
                                     return `${ctx.dataset.label}: $${val.toFixed(2)} (${ch >= 0 ? '+' : ''}${ch}%${langPack[currentLang].toolChange})`;
                                 }
@@ -623,87 +2348,241 @@
                 }
             });
             const canvas = document.getElementById('chartCanvas');
-            canvas.onmousedown = (e) => { const pts = window.myChart.getElementsAtEventForMode(e, 'index', { intersect: false }, true); if (pts.length > 0) { isDragging = true; dragStartIdx = pts[0].index; dragEndIdx = dragStartIdx; } };
-            window.onmouseup = () => { isDragging = false; dragStartIdx = null; dragEndIdx = null; if (window.myChart) window.myChart.draw(); };
+            if (chartMouseDownHandler) canvas.removeEventListener('mousedown', chartMouseDownHandler);
+            chartMouseDownHandler = (e) => {
+                const pts = window.myChart.getElementsAtEventForMode(e, 'index', { intersect: false }, true);
+                if (pts.length > 0) {
+                    isDragging = true;
+                    dragStartIdx = pts[0].index;
+                    dragEndIdx = dragStartIdx;
+                }
+            };
+            canvas.addEventListener('mousedown', chartMouseDownHandler);
+            if (chartMouseUpHandler) window.removeEventListener('mouseup', chartMouseUpHandler);
+            chartMouseUpHandler = () => {
+                isDragging = false;
+                dragStartIdx = null;
+                dragEndIdx = null;
+                if (window.myChart) window.myChart.draw();
+            };
+            window.addEventListener('mouseup', chartMouseUpHandler);
         }
 
-        window.onload = () => { setLang('zh'); };
-        window.addEventListener('load', function () {
+        let riskIndexChart = null;
+        const STORAGE_KEYS = {
+            newsletter: 'finlogichub5:newsletter',
+            watchlist: 'finlogichub5:watchlist',
+            riskLight: 'finlogichub5:risk-light'
+        };
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+            toast.textContent = message;
+            toast.classList.add('show');
+            clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+        }
+
+        function loadWatchlist() {
+            const listEl = document.getElementById('watchlistItems');
+            if (!listEl) return;
+            const raw = localStorage.getItem(STORAGE_KEYS.watchlist);
+            const items = raw ? raw.split(',').map(s => s.trim()).filter(Boolean) : [];
+            if (!items.length) {
+                listEl.innerHTML = `<span class="risk-index-note">${langPack[currentLang].watchEmpty}</span>`;
+                return;
+            }
+            listEl.innerHTML = items.map(t => `<span class="watch-pill">${t}<button data-ticker="${t}">×</button></span>`).join('');
+            listEl.querySelectorAll('button[data-ticker]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tk = btn.getAttribute('data-ticker');
+                    const next = items.filter(i => i !== tk);
+                    localStorage.setItem(STORAGE_KEYS.watchlist, next.join(','));
+                    loadWatchlist();
+                });
+            });
+        }
+
+        function addToWatchlist(ticker) {
+            const raw = localStorage.getItem(STORAGE_KEYS.watchlist);
+            const items = raw ? raw.split(',').map(s => s.trim()).filter(Boolean) : [];
+            if (!items.includes(ticker)) items.push(ticker);
+            localStorage.setItem(STORAGE_KEYS.watchlist, items.join(','));
+            loadWatchlist();
+        }
+
+        function clearWatchlist() {
+            localStorage.removeItem(STORAGE_KEYS.watchlist);
+            loadWatchlist();
+        }
+
+        async function loadRiskIndex() {
+            const t = getI18n(currentLang);
+            try {
+                const res = await fetch('public/data/risk_index.json', { cache: 'no-store' });
+                const data = await res.json();
+                const lightMap = { green: '🟢', yellow: '🟡', red: '🔴' };
+                const lamp = document.getElementById('riskIndexLamp');
+                const scoreEl = document.getElementById('riskIndexScore');
+                const levelMap = { low: 'Low Risk', medium: 'Neutral Risk', high: 'High Risk' };
+                lamp.textContent = lightMap[data.light] || '🟡';
+                scoreEl.textContent = data.score;
+                document.getElementById('riskIndexLabel').textContent = `${t.market_risk_light || '风险灯'} · ${t.risk_temperature || '风险温度'}`;
+                document.getElementById('riskIndexEquity').textContent = `${t.equity_range || '仓位区间'} ${data.equityRange}`;
+                document.getElementById('riskIndexLevel').textContent = `Level ${data.level}`;
+                if (data.percentileRank === null || data.percentileRank === undefined) {
+                    document.getElementById('riskIndexPercentile').textContent = `Percentile --`;
+                    document.getElementById('riskIndexPercentile').title = data.percentileNote || '';
+                } else {
+                    document.getElementById('riskIndexPercentile').textContent = `Percentile ${data.percentileRank}`;
+                    document.getElementById('riskIndexPercentile').title = '';
+                }
+                document.getElementById('riskIndexConfidence').textContent = `Confidence ${data.confidenceLevel || '--'} · ${data.confidenceReason || ''}`;
+                document.getElementById('riskIndexComponents').textContent = `Trend ${data.components?.trend ?? '--'} · Stress ${data.components?.stress ?? '--'} · Regime ${data.components?.regime ?? '--'}`;
+                document.getElementById('riskIndexExplain').textContent = `Risk Index: ${levelMap[data.level] || 'Neutral Risk'} — ${t.risk_temperature || '风险温度'}参考。`;
+                document.getElementById('riskIndexMethod').textContent = `Method ${data.methodVersion || 'MRI-1.0'}`;
+                document.getElementById('riskIndexMethodToggle').textContent = '方法论';
+                document.getElementById('riskIndexInputs').textContent = `Inputs: ${(data.inputs || []).join(', ')} · ${data.explanation || ''}`;
+                document.getElementById('riskIndexDriversToggle').textContent = currentLang === 'zh' ? '为何如此？' : 'Why?';
+                document.getElementById('riskIndexDrivers').textContent = (data.keyDrivers || []).join(' / ');
+                const contrib = data.componentContrib || {};
+                const contribHtml = [
+                    { key: 'trend', label: 'Trend', val: contrib.trend ?? 0 },
+                    { key: 'stress', label: 'Stress', val: contrib.stress ?? 0 },
+                    { key: 'regime', label: 'Regime', val: contrib.regime ?? 0 }
+                ].map(item => {
+                    return `<div class="risk-index-note">${item.label} ${item.val}<div class="contrib-bar"><div class="contrib-fill" style="width:${Math.max(0, Math.min(100, item.val))}%"></div></div></div>`;
+                }).join('');
+                document.getElementById('riskIndexContrib').innerHTML = contribHtml;
+                const notes = data.componentNotes || {};
+                document.getElementById('riskIndexNotes').textContent = `Trend: ${notes.trend || '--'} / Stress: ${notes.stress || '--'} / Regime: ${notes.regime || '--'}`;
+
+                const levelText = data.level || 'medium';
+                const shareText = `MRI ${data.score} (${levelText.toUpperCase()}) · ${data.equityRange}`;
+                const shareUrl = `${location.origin}/market-risk-index.html`;
+                document.getElementById('shareXBtn').onclick = () => {
+                    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+                    window.open(url, '_blank', 'noopener');
+                };
+                document.getElementById('shareLinkedInBtn').onclick = () => {
+                    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+                    window.open(url, '_blank', 'noopener');
+                };
+                document.getElementById('copyLinkBtn').onclick = async () => {
+                    try {
+                        await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+                        showToast('Link copied');
+                    } catch (e) {
+                        showToast('Copy failed');
+                    }
+                };
+
+                const prev = localStorage.getItem(STORAGE_KEYS.riskLight);
+                if (prev && prev !== data.light) {
+                    const msg = langPack[currentLang].riskChanged.replace('{from}', prev).replace('{to}', data.light);
+                    showToast(msg);
+                }
+                localStorage.setItem(STORAGE_KEYS.riskLight, data.light);
+            } catch (e) {
+                document.getElementById('riskIndexExplain').textContent = t.load_fail || '数据加载失败，请稍后重试。';
+            }
+        }
+
+        async function loadRiskIndexHistory() {
+            try {
+                const res = await fetch('public/data/risk_index_history.json', { cache: 'no-store' });
+                const data = await res.json();
+                if (!Array.isArray(data) || !data.length) return;
+                const labels = data.map(item => item.date);
+                const series = data.map(item => item.score);
+                const last = data[data.length - 1];
+                if (last) {
+                    const delta = Number.isFinite(last.delta) ? last.delta : 0;
+                    const arrow = last.arrow || (delta > 0 ? '↑' : delta < 0 ? '↓' : '→');
+                    document.getElementById('riskIndexDelta').textContent = `Δ 昨日 ${arrow} ${delta >= 0 ? '+' : ''}${delta}`;
+                }
+                const ctx = document.getElementById('riskIndexChart').getContext('2d');
+                if (riskIndexChart) riskIndexChart.destroy();
+                riskIndexChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'Risk Index',
+                            data: series,
+                            borderColor: '#38bdf8',
+                            backgroundColor: 'rgba(56,189,248,0.12)',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            tension: 0.25,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { display: false },
+                            y: { display: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' }, min: 0, max: 100 }
+                        }
+                    }
+                });
+            } catch (e) {}
+        }
+
+        window.addEventListener('load', async function () {
             const tickerSelect = document.getElementById('ticker');
             const compareSelect = document.getElementById('compareTicker');
-            if (tickerSelect) tickerSelect.value = "NVDA";
-            if (compareSelect) compareSelect.value = "SPY";
-            setTimeout(() => { runAnalysis(); }, 600);
-        });
-    </script>
-
-    <script>
-        (function () {
-            const extLang = {
-                zh: { tab: "💊 后悔药计算器", title: "💊 如果当初...", labelTicker: "假如我买了这只股", labelStart: "从哪一年开始", labelEnd: "到哪一年为止", labelCap: "初始投入金额 ($)", labelDca: "之后每月追加 ($)", btnCalc: "吞下这颗后悔药", btnClose: "❮ 闭眼收起", resFinal: "现在的身价:", resRank: "财富等级:", factPrefix: "😱 扎心了！如果不买消费品改买 {t}，这笔钱现在够你在郊区付 {n} 个房子的首付了。", ranks: ["理财小白", "资深打工人", "财务自由入门", "亿万富翁预备役"] },
-                en: { tab: "💊 Regret Medicine", title: "💊 What If...", labelTicker: "If I bought this stock", labelStart: "Start Year", labelEnd: "End Year", labelCap: "Initial Investment ($)", labelDca: "Monthly DCA ($)", btnCalc: "Take the Regret Pill", btnClose: "❮ Close Eyes", resFinal: "Current Net Worth:", resRank: "Wealth Level:", factPrefix: "😱 Ouch! If you skip coffee and bought {t}, this money could pay for {n} house down payments now.", ranks: ["Novice", "Senior Pro", "Financial Freedom", "Future Billionaire"] }
-            };
-            const style = document.createElement('style');
-            style.innerHTML = `#independent-dca-calculator { position: fixed; left: 0; top: 50%; transform: translateY(-50%); width: 280px; background: #1a1c2e; border: 2px solid #facc15; border-left: none; border-radius: 0 15px 15px 0; padding: 20px; box-shadow: 10px 0 50px rgba(250, 204, 21, 0.2); z-index: 10000; font-family: 'Segoe UI', sans-serif; color: #f8fafc; transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1); } #independent-dca-calculator.collapsed { left: -280px; } #dca-toggle-btn { position: absolute; right: -40px; top: 50%; transform: translateY(-50%); width: 38px; height: 150px; background: linear-gradient(180deg, #facc15, #fb923c); border-radius: 0 10px 10px 0; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #1e293b; font-weight: 900; font-size: 14px; writing-mode: vertical-rl; text-orientation: mixed; box-shadow: 0 0 15px rgba(250, 204, 21, 0.5); animation: goldBreath 2s infinite ease-in-out; letter-spacing: 2px; } @keyframes goldBreath { 0% { box-shadow: 0 0 0 0px rgba(250, 204, 21, 0.7); filter: brightness(1); } 50% { box-shadow: 0 0 25px 12px rgba(250, 204, 21, 0); filter: brightness(1.3); } 100% { box-shadow: 0 0 0 0px rgba(250, 204, 21, 0.7); filter: brightness(1); } } .dca-title { color: #facc15; font-weight: 900; margin-bottom: 15px; font-size: 18px; text-align: center; border-bottom: 1px solid #334155; padding-bottom: 10px; } .dca-field { margin-bottom: 12px; } .dca-field label { display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: bold; } .dca-field input, .dca-field select { width: 100%; box-sizing: border-box; padding: 10px; background: #0f172a; border: 1px solid #475569; color: #facc15; border-radius: 8px; font-size: 14px; outline: none; } .dca-btn { width: 100%; padding: 14px; background: linear-gradient(90deg, #facc15, #fb923c); color: #0f172a; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; transition: 0.3s; font-size: 15px; margin-top: 10px; } .dca-res-card { margin-top: 15px; padding: 15px; background: rgba(250, 204, 21, 0.05); border-radius: 10px; border: 1px solid rgba(250, 204, 21, 0.2); display: none; } .res-line { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; } .res-val { font-weight: bold; color: #facc15; } @media (max-width: 1000px) { #independent-dca-calculator { display: none; } }`;
-            document.head.appendChild(style);
-            const dcaUI = document.createElement('div');
-            dcaUI.id = 'independent-dca-calculator'; dcaUI.className = 'collapsed';
-            dcaUI.innerHTML = `<div id="dca-toggle-btn">💊 后悔药计算器</div><div class="dca-title" id="ext-ui-title">💊 如果当初...</div><div class="dca-field"><label id="ext-ui-ticker">假如我买了这只股</label><select id="ext-ticker"><option value="NVDA">NVIDIA (NVDA)</option><option value="TSLA">Tesla (TSLA)</option><option value="AAPL">Apple (AAPL)</option><option value="MSFT">Microsoft (MSFT)</option><option value="GOOGL">Google (GOOGL)</option><option value="AMZN">Amazon (AMZN)</option><option value="META">Meta (META)</option><option value="SPY">S&P 500 (SPY)</option></select></div><div style="display:flex; gap:10px;"><div class="dca-field" style="flex:1;"><label id="ext-ui-start">从哪一年开始</label><select id="ext-start"></select></div><div class="dca-field" style="flex:1;"><label id="ext-ui-end">到哪一年为止</label><select id="ext-end"></select></div></div><div class="dca-field"><label id="ext-ui-cap">初始投入金额 ($)</label><input type="number" id="ext-capital" value="10000"></div><div class="dca-field"><label id="ext-ui-dca">之后每月追加 ($)</label><input type="number" id="ext-dca" value="500"></div><button class="dca-btn" id="ext-calc-btn">吞下这颗后悔药</button><div class="dca-res-card" id="ext-res-display"><div class="res-line"><span id="ext-ui-res-final">现在的身价:</span> <span class="res-val" id="ext-final-val">$0</span></div><div class="res-line"><span id="ext-ui-res-rank">财富等级:</span> <span id="ext-rank" style="font-weight:bold; color:#4ade80;">-</span></div><hr style="border:0; border-top:1px solid #334155; margin:10px 0;"><div id="ext-fun-fact" style="font-size:11px; color:#fb923c; font-style:italic;"></div></div>`;
-            document.body.appendChild(dcaUI);
-            function refreshExtLang() { const lang = (typeof currentLang !== 'undefined') ? currentLang : 'zh'; const lp = extLang[lang]; document.getElementById('dca-toggle-btn').innerText = dcaUI.classList.contains('collapsed') ? lp.tab : lp.btnClose; document.getElementById('ext-ui-title').innerText = lp.title; document.getElementById('ext-ui-ticker').innerText = lp.labelTicker; document.getElementById('ext-ui-start').innerText = lp.labelStart; document.getElementById('ext-ui-end').innerText = lp.labelEnd; document.getElementById('ext-ui-cap').innerText = lp.labelCap; document.getElementById('ext-ui-dca').innerText = lp.labelDca; document.getElementById('ext-calc-btn').innerText = lp.btnRun || lp.btnCalc; document.getElementById('ext-ui-res-final').innerText = lp.resFinal; document.getElementById('ext-ui-res-rank').innerText = lp.resRank; if (document.getElementById('ext-res-display').style.display === 'block') { const ev = new Event('click'); document.getElementById('ext-calc-btn').dispatchEvent(ev); } }
-            document.getElementById('ext-calc-btn').addEventListener('click', function () {
-                const lang = (typeof currentLang !== 'undefined') ? currentLang : 'zh';
-                const lp = extLang[lang];
-                const ticker = document.getElementById('ext-ticker').value;
-                const sY = document.getElementById('ext-start').value;
-                const eY = document.getElementById('ext-end').value;
-                const cap = parseFloat(document.getElementById('ext-capital').value) || 0;
-                const dca = parseFloat(document.getElementById('ext-dca').value) || 0;
-                if (typeof STOCK_HISTORICAL_DATA === 'undefined') return;
-
-                // ⚠️ 适配新数据结构
-                const stockObj = STOCK_HISTORICAL_DATA[ticker];
-                // 过滤日期
-                const indices = stockObj.dates.map((d, i) => (d.startsWith(sY) || d >= sY) && (d.startsWith(eY) || d <= eY) ? i : -1).filter(i => i !== -1);
-
-                if (indices.length === 0) return;
-
-                const prices = stockObj.prices;
-                const dates = stockObj.dates;
-
-                // 计算逻辑
-                let shares = cap / prices[indices[0]];
-                let invested = cap;
-                let lastM = dates[indices[0]].split('-')[1];
-
-                for (let i = 1; i < indices.length; i++) {
-                    const idx = indices[i];
-                    if (dates[idx].split('-')[1] !== lastM) {
-                        shares += dca / prices[idx];
-                        invested += dca;
-                        lastM = dates[idx].split('-')[1];
-                    }
-                }
-                const final = shares * prices[indices[indices.length - 1]];
-
-                const multiplier = final / invested; let rankIdx = 0; if (multiplier > 10) rankIdx = 3; else if (multiplier > 5) rankIdx = 2; else if (multiplier > 2) rankIdx = 1; document.getElementById('ext-res-display').style.display = 'block'; document.getElementById('ext-final-val').innerText = "$" + Math.round(final).toLocaleString(); document.getElementById('ext-rank').innerText = lp.ranks[rankIdx]; const houseDownPayments = (final / 250000).toFixed(1); document.getElementById('ext-fun-fact').innerText = lp.factPrefix.replace('{t}', ticker).replace('{n}', houseDownPayments);
-            });
-            document.getElementById('dca-toggle-btn').addEventListener('click', () => { dcaUI.classList.toggle('collapsed'); refreshExtLang(); });
-            const originalSetLang = window.setLang; window.setLang = function (lang) { if (typeof originalSetLang === 'function') originalSetLang(lang); setTimeout(refreshExtLang, 50); };
-            function initExtYears() {
-                const start = document.getElementById('ext-start');
-                const end = document.getElementById('ext-end');
-                if (typeof STOCK_HISTORICAL_DATA !== 'undefined') {
-                    // 适配 NVDA 的 dates 数组
-                    const stockObj = STOCK_HISTORICAL_DATA["NVDA"];
-                    if (!stockObj) return;
-                    const years = [...new Set(stockObj.dates.map(d => d.split('-')[0].trim()))].sort();
-                    years.forEach(yr => { start.add(new Option(yr, yr)); end.add(new Option(yr, yr)); });
-                    start.value = "2016"; end.value = years[years.length - 1];
-                }
+            let savedObj = null;
+            try {
+                const saved = localStorage.getItem('finlogichub5:last-strategy');
+                savedObj = saved ? JSON.parse(saved) : null;
+            } catch (e) {
+                savedObj = null;
             }
-            window.addEventListener('load', () => { initExtYears(); setTimeout(refreshExtLang, 100); });
-        })();
+            if (tickerSelect) tickerSelect.value = savedObj?.ticker || "NVDA";
+            if (compareSelect) compareSelect.value = savedObj?.compareTicker || "SPY";
+            if (savedObj?.capital) document.getElementById('capital').value = savedObj.capital;
+            if (savedObj?.portfolioConfig) document.getElementById('portfolioConfig').value = savedObj.portfolioConfig;
+            if (typeof savedObj?.portfolioMode === "boolean") document.getElementById('portfolioMode').checked = savedObj.portfolioMode;
+            if (savedObj?.rebalanceFreq) document.getElementById('rebalanceFreq').value = savedObj.rebalanceFreq;
+            setLang(savedObj?.lang && langPack[savedObj.lang] ? savedObj.lang : 'zh');
+            handleModeChange();
+            await initYearOptions();
+            if (savedObj?.startYear) document.getElementById('startYear').value = savedObj.startYear;
+            if (savedObj?.endYear) document.getElementById('endYear').value = savedObj.endYear;
+            applyQuerySetup();
+            await initYearOptions();
+            runDeferred(() => runIdle(async () => {
+                await runAnalysis();
+            }, 1500), 0);
+            runDeferred(() => runIdle(() => initAdSlots(), 2200), 200);
+            runDeferred(() => runIdle(() => { loadRiskIndex(); loadRiskIndexHistory(); }, 1200), 100);
+            runDeferred(() => runIdle(() => {
+                document.getElementById('subscribeBtn').addEventListener('click', () => {
+                    const email = document.getElementById('subscribeEmail').value.trim();
+                    const status = document.getElementById('subscribeStatus');
+                    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+                        status.textContent = langPack[currentLang].subscribeInvalid;
+                        return;
+                    }
+                    localStorage.setItem(STORAGE_KEYS.newsletter, email);
+                    status.textContent = langPack[currentLang].subscribeOk;
+                });
+                document.getElementById('addWatchBtn').addEventListener('click', () => {
+                    const ticker = document.getElementById('ticker').value;
+                    if (ticker) addToWatchlist(ticker);
+                });
+                document.getElementById('clearWatchBtn').addEventListener('click', () => {
+                    clearWatchlist();
+                });
+                const savedEmail = localStorage.getItem(STORAGE_KEYS.newsletter);
+                if (savedEmail) document.getElementById('subscribeEmail').value = savedEmail;
+                loadWatchlist();
+            }, 1400), 120);
+        });
     </script>
 </body>
 

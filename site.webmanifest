@@ -1,0 +1,10 @@
+{
+  "name": "FinLogicHub5",
+  "short_name": "FinLogic",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "description": "US stock backtesting dashboard for Magnificent Seven and SPY.",
+  "lang": "zh-CN"
+}

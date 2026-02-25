@@ -1,0 +1,88 @@
+{
+  "date": "2026-02-25",
+  "riskIndex": {
+    "score": 50,
+    "rawScore": 54,
+    "methodVersion": "MRI-1.0",
+    "updatedAt": "2026-02-25T21:28:51.449Z",
+    "inputs": [
+      "SPY",
+      "QQQ",
+      "TLT",
+      "GLD"
+    ],
+    "explanation": "本指数衡量市场风险状态，不预测收益",
+    "level": "medium",
+    "light": "yellow",
+    "equityRange": "40-60%",
+    "componentContrib": {
+      "trend": 6,
+      "stress": 13,
+      "regime": 31
+    },
+    "componentNotes": {
+      "trend": "趋势风险25：价格在MA200上方（rule: close_vs_ma200）",
+      "stress": "压力风险25：vol20 14.2%（rule: vol20_threshold）",
+      "regime": "偏好风险75：risk-off 比率走弱（rule: ratio_down_20d）"
+    },
+    "components": {
+      "trend": 25,
+      "stress": 25,
+      "regime": 75
+    },
+    "contribDefinition": "componentContrib 为对最终风险分的边际贡献（impact）",
+    "keyDrivers": [
+      "趋势风险偏低",
+      "压力风险偏低",
+      "风险偏好偏弱"
+    ],
+    "percentileRank": null,
+    "percentileNote": "样本不足（n=2），暂不显示分位",
+    "confidenceLevel": "medium",
+    "confidenceReason": "组件一致性中等"
+  },
+  "marketRisk": {
+    "score": 50,
+    "light": "yellow",
+    "equityRange": "40-60%"
+  },
+  "topThemes": [
+    {
+      "name": "Cybersecurity",
+      "score": 67,
+      "note": "20D 走强 +8.7%"
+    },
+    {
+      "name": "Energy",
+      "score": 61,
+      "note": "20D 走强 +5.6%"
+    },
+    {
+      "name": "Consumer",
+      "score": 46,
+      "note": "20D 回撤 -1.8%"
+    }
+  ],
+  "bottomThemes": [
+    {
+      "name": "AI",
+      "score": 29,
+      "note": "20D 回撤 -10.4%"
+    },
+    {
+      "name": "Healthcare",
+      "score": 39,
+      "note": "20D 回撤 -5.7%"
+    },
+    {
+      "name": "Defense",
+      "score": 44,
+      "note": "20D 回撤 -3.1%"
+    }
+  ],
+  "reasons": [
+    "SPY 站上 MA200（趋势 +）",
+    "MA50 高于 MA200（中期多头）",
+    "20D 波动率 14.2%（压力可控）"
+  ]
+}
