@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="美股核心资产深度研报：趋势、估值、均线策略与风险提示。">
+    <meta name="robots" content="index,follow">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="canonical" id="canonicalLink" href="https://finlogichub5.com/pages/stock.html">
+    <link rel="manifest" href="../site.webmanifest">
+    <title>个股深度研报 - 智算金融</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --dim: #94a3b8;
+            --line: #334155;
+            --blue: #38bdf8;
+            --accent: #38bdf8;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Segoe UI", system-ui, sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        .back {
+            color: var(--blue);
+            text-decoration: none;
+            font-size: 14px;
+            border: 1px solid var(--blue);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .back:hover {
+            background: var(--blue);
+            color: #000;
+        }
+
+        .header {
+            margin-top: 20px;
+            border-left: 4px solid var(--accent);
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: #334155;
+        }
+
+        h1 {
+            margin: 10px 0 5px 0;
+            font-size: 30px;
+        }
+
+        .subtitle {
+            color: var(--dim);
+            margin: 0;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .metric {
+            background: #171717;
+            border: 1px solid var(--line);
+            padding: 14px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .m-label {
+            font-size: 11px;
+            color: var(--dim);
+            text-transform: uppercase;
+        }
+
+        .m-val {
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        .chart-box {
+            height: 420px;
+            background: #0b1120;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            margin-bottom: 24px;
+        }
+
+        .article {
+            background: var(--card);
+            padding: 26px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        h2 {
+            border-bottom: 2px solid var(--line);
+            padding-bottom: 10px;
+            color: var(--accent);
+            margin-top: 0;
+        }
+
+        .strategy-box {
+            background: rgba(56, 189, 248, 0.05);
+            border: 1px solid var(--blue);
+            padding: 18px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+
+        .cta-box {
+            margin-top: 14px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .cta-btn {
+            text-decoration: none;
+            border: 1px solid #334155;
+            color: #cbd5e1;
+            background: #0b1120;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .cta-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .meta-note {
+            margin-top: 10px;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        .related-box {
+            background: var(--card);
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border: 1px solid var(--line);
+        }
+
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .related-link {
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            color: #cbd5e1;
+            font-size: 12px;
+            background: #0b1120;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .related-link:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        #errorBox {
+            display: none;
+            margin-top: 24px;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #7f1d1d;
+            background: rgba(127, 29, 29, 0.2);
+            color: #fecaca;
+        }
+
+        @media (max-width: 780px) {
+            .dashboard {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .related-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="../index.html" class="back">❮ 返回主屏幕</a>
+        <div class="header">
+            <span class="badge" id="trendTag">分析中...</span>
+            <h1 id="stockTitle">Loading...</h1>
+            <p class="subtitle" id="stockSubtitle">正在加载资产信息</p>
+        </div>
+
+        <div class="dashboard">
+            <div class="metric">
+                <div class="m-label">当前价格</div>
+                <div class="m-val" id="price">...</div>
+            </div>
+            <div class="metric">
+                <div class="m-label">总市值</div>
+                <div class="m-val" id="mcap">...</div>
+            </div>
+            <div class="metric">
+                <div class="m-label">市盈率 (PE)</div>
+                <div class="m-val" id="pe">...</div>
+            </div>
+            <div class="metric">
+                <div class="m-label">52周最高</div>
+                <div class="m-val" id="high52">...</div>
+            </div>
+        </div>
+
+        <div class="chart-box"><canvas id="mainChart"></canvas></div>
+
+        <div class="article">
+            <h2 id="logicTitle">🏢 核心逻辑</h2>
+            <div id="logicBody"></div>
+
+            <div class="strategy-box">
+                <h3 id="strategyTitle" style="margin-top:0;">🎓 策略观察</h3>
+                <ul id="strategyBullets" style="padding-left: 20px; color: #cbd5e1;"></ul>
+            </div>
+
+            <div class="cta-box">
+                <a id="backtestLink" class="cta-btn" href="../index.html">📊 一键回测本股 vs SPY</a>
+                <a id="homeLink" class="cta-btn" href="../index.html">🏠 返回主站策略台</a>
+            </div>
+            <p class="meta-note" id="updateNote">数据更新日期：-</p>
+        </div>
+
+        <div class="related-box">
+            <h2 style="margin-bottom:0;">🔁 继续研究其他资产</h2>
+            <div class="related-grid" id="relatedGrid"></div>
+        </div>
+        <div id="errorBox"></div>
+    </div>
+
+    <script src="../data/stock-loader.js"></script>
+    <script>
+        const CONTENT = {
+            NVDA: {
+                accent: "#76b900",
+                subtitle: "AI 算力生态的核心资产。",
+                logicTitle: "🏢 核心逻辑：算力垄断",
+                logicBody: [
+                    "GPU 架构、CUDA 生态和企业级产品矩阵构成了较高技术护城河。",
+                    "AI 训练与推理需求持续增长，供给侧扩产节奏会直接影响盈利弹性。"
+                ],
+                strategyTitle: "🎓 独家战法：NVDA 的节奏",
+                bullets: [
+                    "高估值阶段更应关注 MA200 与业绩兑现，避免在情绪极热追高。",
+                    "若回撤后重新站上 MA200 且量能修复，通常是趋势延续信号。"
+                ]
+            },
+            TSLA: {
+                accent: "#f87171",
+                subtitle: "电动车与机器人叙事共振。",
+                logicTitle: "🏢 核心逻辑：制造与软件双轮",
+                logicBody: [
+                    "规模化制造能力与软件迭代速度决定了长期利润率中枢。",
+                    "产品周期和宏观利率对估值影响较大，波动通常高于大盘。"
+                ],
+                strategyTitle: "🎓 独家战法：TSLA 的波段框架",
+                bullets: [
+                    "震荡区间优先看 MA200 方向，跌破后要控制仓位与回撤。",
+                    "趋势反转优先确认右侧信号，再分批建仓。"
+                ]
+            },
+            AAPL: {
+                accent: "#94a3b8",
+                subtitle: "现金流与生态闭环的防守型龙头。",
+                logicTitle: "🏢 核心逻辑：生态现金牛",
+                logicBody: [
+                    "硬件、服务与品牌溢价形成稳定现金流，回购进一步抬升每股收益。",
+                    "新品周期与全球消费需求影响短期增速，但长期韧性较强。"
+                ],
+                strategyTitle: "🎓 独家战法：AAPL 的防守进攻",
+                bullets: [
+                    "适合中长期配置，回撤至关键均线可分批吸纳。",
+                    "若长期跌破 MA200 且基本面转弱，应降低仓位等待修复。"
+                ]
+            },
+            MSFT: {
+                accent: "#0ea5e9",
+                subtitle: "云与企业软件的复利引擎。",
+                logicTitle: "🏢 核心逻辑：订阅与云复利",
+                logicBody: [
+                    "企业软件订阅和 Azure 云平台形成稳定增长和高粘性收入。",
+                    "AI 产品商业化提升 ARPU，是未来利润弹性的关键来源。"
+                ],
+                strategyTitle: "🎓 独家战法：MSFT 的趋势持有",
+                bullets: [
+                    "趋势向上阶段以持有为主，回撤到 MA50/MA200 再评估加仓。",
+                    "若连续失守长期均线并放量，优先保护本金。"
+                ]
+            },
+            GOOGL: {
+                accent: "#3b82f6",
+                subtitle: "搜索、视频与云的流量中枢。",
+                logicTitle: "🏢 核心逻辑：流量与数据飞轮",
+                logicBody: [
+                    "搜索与 YouTube 的广告现金流是基本盘，云业务提供第二增长曲线。",
+                    "AI 竞争与监管扰动会影响估值，但数据与分发优势仍在。"
+                ],
+                strategyTitle: "🎓 独家战法：GOOGL 的确认交易",
+                bullets: [
+                    "利空冲击后不急于抄底，优先等价格重回 MA200 上方。",
+                    "趋势确认后分批买入，控制单次仓位风险。"
+                ]
+            },
+            AMZN: {
+                accent: "#f97316",
+                subtitle: "电商履约 + AWS 利润引擎。",
+                logicTitle: "🏢 核心逻辑：飞轮与云基础设施",
+                logicBody: [
+                    "电商网络效应与物流效率构成竞争壁垒，AWS 提供高利润支撑。",
+                    "资本开支周期会影响短期利润率，但中长期护城河稳固。"
+                ],
+                strategyTitle: "🎓 独家战法：AMZN 的周期判断",
+                bullets: [
+                    "观察 MA200 与利润修复节奏，避免在扩张高峰盲目追高。",
+                    "震荡阶段可采用分层仓位和区间思维。"
+                ]
+            },
+            META: {
+                accent: "#06b6d4",
+                subtitle: "社交分发与广告效率平台。",
+                logicTitle: "🏢 核心逻辑：网络效应与效率革命",
+                logicBody: [
+                    "多平台流量矩阵带来广告收入韧性，AI 提升投放效率与变现能力。",
+                    "高弹性特征明显，情绪与执行偏差会放大波动。"
+                ],
+                strategyTitle: "🎓 独家战法：META 的弹性管理",
+                bullets: [
+                    "深跌后的反转优先等待 MA200 确认，减少左侧误判。",
+                    "盈利修复阶段可提高持仓，但要设置回撤阈值。"
+                ]
+            },
+            SPY: {
+                accent: "#10b981",
+                subtitle: "美国市场基准指数。",
+                logicTitle: "🏢 核心逻辑：系统性 Beta",
+                logicBody: [
+                    "成分股动态替换机制使其长期代表美股核心企业盈利能力。",
+                    "分散化强、单一公司风险低，是中长期配置的核心底仓。"
+                ],
+                strategyTitle: "🎓 独家战法：SPY 的风险开关",
+                bullets: [
+                    "价格在 MA200 上方可视为 Risk-On 环境，趋势策略胜率更高。",
+                    "跌破 MA200 进入 Risk-Off 时，优先防守与分批定投。"
+                ]
+            }
+        };
+        const KNOWN_TICKERS = ["NVDA", "TSLA", "AAPL", "MSFT", "GOOGL", "AMZN", "META", "SPY"];
+
+        function runIdle(task, timeout = 1200) {
+            if (typeof requestIdleCallback === "function") requestIdleCallback(() => task(), { timeout });
+            else setTimeout(task, timeout);
+        }
+
+        function showError(msg) {
+            const box = document.getElementById("errorBox");
+            box.style.display = "block";
+            box.innerText = msg;
+        }
+
+        function getTicker() {
+            const t = new URLSearchParams(window.location.search).get("ticker");
+            return (t || "NVDA").toUpperCase();
+        }
+
+        function renderRelated(ticker) {
+            const all = KNOWN_TICKERS;
+            const related = all.filter(t => t !== ticker);
+            document.getElementById("relatedGrid").innerHTML = related.map(t => {
+                const name = STOCK_HISTORICAL_DATA[t]?.meta?.name || t;
+                return `<a class="related-link" href="./stock.html?ticker=${t}">${t}<br><span style="font-size:10px;color:#94a3b8;font-weight:500;">${name}</span></a>`;
+            }).join("");
+        }
+
+        async function initPage() {
+            const ticker = getTicker();
+            if (!KNOWN_TICKERS.includes(ticker)) {
+                showError("未找到对应资产，请返回首页重试。");
+                return;
+            }
+            if (typeof loadTickerData !== "function") {
+                showError("数据加载器不可用，请刷新后重试。");
+                return;
+            }
+            try {
+                await loadTickerData(ticker);
+            } catch (e) {
+                showError("数据加载失败，请稍后重试。");
+                return;
+            }
+            const stockObj = STOCK_HISTORICAL_DATA[ticker];
+            const c = CONTENT[ticker];
+            if (!c || !stockObj) {
+                showError("未找到对应资产，请返回首页重试。");
+                return;
+            }
+            document.documentElement.style.setProperty("--accent", c.accent);
+            document.title = `${ticker} 深度研报 - 智算金融`;
+            document.getElementById("canonicalLink").href = `https://finlogichub5.com/pages/stock.html?ticker=${ticker}`;
+            document.getElementById("stockTitle").innerText = `${stockObj.meta.name} (${ticker})`;
+            document.getElementById("stockSubtitle").innerText = c.subtitle;
+            document.getElementById("logicTitle").innerText = c.logicTitle;
+            document.getElementById("strategyTitle").innerText = c.strategyTitle;
+            document.getElementById("logicBody").innerHTML = c.logicBody.map(p => `<p style="color:#cbd5e1">${p}</p>`).join("");
+            document.getElementById("strategyBullets").innerHTML = c.bullets.map(b => `<li>${b}</li>`).join("");
+
+            const meta = stockObj.meta;
+            const dates = stockObj.dates;
+            const prices = stockObj.prices;
+            const ma50 = stockObj.ma50;
+            const ma200 = stockObj.ma200;
+
+            document.getElementById("price").innerText = "$" + prices[prices.length - 1];
+            document.getElementById("mcap").innerText = meta.marketCap || "ETF";
+            document.getElementById("pe").innerText = meta.peRatio || "N/A";
+            document.getElementById("high52").innerText = "$" + meta.week52High;
+            document.getElementById("updateNote").innerText = `数据更新日期：${meta.lastUpdate || "-"}`;
+            document.getElementById("backtestLink").href = `../index.html?ticker=${ticker}&compare=SPY&capital=10000&start=2019&end=2026&pmode=0`;
+            const tag = document.getElementById("trendTag");
+            tag.innerText = meta.trend || "分析中";
+            if ((meta.trend || "").includes("牛")) {
+                tag.style.background = "rgba(16,185,129,0.2)";
+                tag.style.color = "#10b981";
+            } else {
+                tag.style.background = "rgba(248,113,113,0.2)";
+                tag.style.color = "#f87171";
+            }
+
+            const cutIdx = dates.findIndex(d => d >= "2020-01-01");
+            const i = cutIdx === -1 ? 0 : cutIdx;
+            new Chart(document.getElementById("mainChart"), {
+                type: "line",
+                data: {
+                    labels: dates.slice(i),
+                    datasets: [
+                        { label: "股价", data: prices.slice(i), borderColor: "#ffffff", borderWidth: 2, pointRadius: 0, order: 1 },
+                        { label: "MA50", data: ma50.slice(i), borderColor: "#facc15", borderWidth: 1, borderDash: [5, 5], pointRadius: 0, order: 2 },
+                        { label: "MA200", data: ma200.slice(i), borderColor: "#38bdf8", borderWidth: 2, pointRadius: 0, order: 0 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: "index", intersect: false },
+                    scales: { x: { display: false }, y: { position: "right", grid: { color: "#334155" } } }
+                }
+            });
+            renderRelated(ticker);
+            runIdle(() => {
+                loadTickersData(KNOWN_TICKERS).then(() => renderRelated(ticker)).catch(() => { });
+            }, 1600);
+        }
+
+        window.addEventListener("load", initPage);
+    </script>
+</body>
+
+</html>

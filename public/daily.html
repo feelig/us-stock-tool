@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="每日市场状态：风险灯、主题热度与今日要点。">
+  <meta name="robots" content="index,follow">
+  <meta name="theme-color" content="#0f172a">
+  <title>每日市场状态 - FinLogicHub5</title>
+  <!-- MRI_OG_START -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="MRI 50 · MEDIUM · 2026-02-25">
+<meta property="og:description" content="FinLogic MRI 50，风险等级 medium，仓位区间 40-60%，置信度 medium。">
+<meta property="og:url" content="https://finlogichub5.com/">
+<meta property="og:site_name" content="FinLogicHub5">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://finlogichub5.com/og/mri-latest.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MRI 50 · MEDIUM · 2026-02-25">
+<meta name="twitter:description" content="FinLogic MRI 50，风险等级 medium，仓位区间 40-60%，置信度 medium。">
+<meta name="twitter:image" content="https://finlogichub5.com/og/mri-latest.png">
+<!-- MRI_OG_END -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #38bdf8;
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --green: #4ade80;
+      --yellow: #facc15;
+      --red: #f87171;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+      background:
+        radial-gradient(1100px 600px at 8% -10%, rgba(56, 189, 248, 0.22), transparent 65%),
+        radial-gradient(900px 500px at 95% -6%, rgba(16, 185, 129, 0.18), transparent 62%),
+        linear-gradient(180deg, #040711 0%, #07101f 45%, #0a1426 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.78), rgba(15, 23, 42, 0.92));
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 28px 70px rgba(2, 6, 23, 0.65);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .topbar a {
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 6px 0 12px 0;
+      font-size: clamp(24px, 4vw, 36px);
+      color: #f8fdff;
+    }
+
+    .sub {
+      margin: 0 0 18px 0;
+      color: #bfdbfe;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      border-radius: 12px;
+      padding: 14px;
+      background: rgba(2, 6, 23, 0.42);
+    }
+
+    .risk-light {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .lamp {
+      font-size: 28px;
+    }
+
+    .score {
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 6px;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: #e2e8f0;
+    }
+
+    .list {
+      margin: 8px 0 0 0;
+      padding-left: 18px;
+      color: #e2e8f0;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .theme-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 13px;
+      border-bottom: 1px dashed rgba(148, 163, 184, 0.2);
+      padding: 6px 0;
+    }
+
+    .theme-row:last-child { border-bottom: none; }
+
+    .note {
+      color: var(--text-dim);
+      font-size: 12px;
+    }
+
+    .footer {
+      margin-top: 16px;
+      color: var(--text-dim);
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .glossary {
+      margin-top: 12px;
+      border: 1px dashed rgba(148, 163, 184, 0.25);
+      border-radius: 12px;
+      padding: 8px 12px;
+      background: rgba(2, 6, 23, 0.3);
+    }
+
+    .glossary summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    .glossary summary::-webkit-details-marker { display: none; }
+
+    .glossary-hint {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .glossary-list {
+      margin-top: 8px;
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+      color: #e2e8f0;
+    }
+
+    .glossary-item span {
+      color: #94a3b8;
+    }
+
+    .recent {
+      margin-top: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+      padding: 12px;
+      background: rgba(2, 6, 23, 0.35);
+    }
+
+    .recent-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 8px;
+    }
+
+    .recent-list {
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    .recent-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: #cbd5e1;
+      text-decoration: none;
+      padding-bottom: 6px;
+      border-bottom: 1px dashed rgba(148, 163, 184, 0.18);
+    }
+
+    .recent-item:last-child { border-bottom: none; }
+
+    .archive-grid {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+    }
+
+    .archive-card {
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+      padding: 12px;
+      background: rgba(2, 6, 23, 0.32);
+    }
+
+    .archive-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 8px;
+    }
+
+    .archive-list {
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    .risk-index-card {
+      margin-top: 8px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(2, 6, 23, 0.42);
+      display: grid;
+      gap: 8px;
+    }
+
+    .risk-index-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .risk-index-score {
+      font-size: 40px;
+      font-weight: 800;
+    }
+
+    .risk-index-lamp {
+      font-size: 36px;
+      line-height: 1;
+    }
+
+    .risk-index-note {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .risk-index-details summary {
+      cursor: pointer;
+      color: #93c5fd;
+      font-size: 12px;
+      list-style: none;
+    }
+
+    .risk-index-details summary::-webkit-details-marker { display: none; }
+
+    .contrib-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(148, 163, 184, 0.2);
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 4px 0 8px 0;
+    }
+
+    .contrib-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #38bdf8, #22d3ee);
+    }
+
+    .risk-green { color: var(--green); }
+    .risk-yellow { color: var(--yellow); }
+    .risk-red { color: var(--red); }
+
+    @media (max-width: 720px) {
+      body { padding: 12px; }
+      .container { padding: 16px; }
+      .topbar { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div style="font-weight:700; color:#dbeafe;">FinLogicHub5</div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <a href="../market-risk-index.html" id="riskIndexEntry">市场风险指数</a>
+        <a href="../index.html" id="backHome"></a>
+      </div>
+    </div>
+
+    <h1 id="dailyTitle"></h1>
+    <p class="sub" id="dailySub"></p>
+
+    <div class="risk-index-card" id="riskIndexCard">
+      <div class="risk-index-row">
+        <div class="risk-index-lamp" id="riskIndexLamp">🟡</div>
+        <div>
+          <div class="risk-index-note" id="riskIndexLabel"></div>
+          <div class="risk-index-score" id="riskIndexScore">--</div>
+        </div>
+      </div>
+      <div class="risk-index-note" id="riskIndexEquity">--</div>
+      <div class="risk-index-note" id="riskIndexLevel">--</div>
+      <div class="risk-index-note" id="riskIndexPercentile">--</div>
+      <div class="risk-index-note" id="riskIndexConfidence">--</div>
+      <div class="risk-index-note" id="riskIndexDelta">Δ --</div>
+      <div class="risk-index-note" id="riskIndexComponents">--</div>
+      <div class="risk-index-note" id="riskIndexExplain"></div>
+      <div class="risk-index-note" id="riskIndexMethod">--</div>
+      <details class="risk-index-details">
+        <summary id="riskIndexMethodToggle">方法论</summary>
+        <div class="risk-index-note" id="riskIndexInputs">--</div>
+      </details>
+      <details class="risk-index-details">
+        <summary id="riskIndexDriversToggle">为何如此？</summary>
+        <div class="risk-index-note" id="riskIndexDrivers">--</div>
+        <div class="risk-index-note" id="riskIndexContrib">--</div>
+        <div class="risk-index-note" id="riskIndexNotes">--</div>
+      </details>
+      <div class="action-row">
+        <button class="ghost-btn" id="shareXBtn">Share on X</button>
+        <button class="ghost-btn" id="shareLinkedInBtn">Share on LinkedIn</button>
+        <button class="ghost-btn" id="copyLinkBtn">Copy Link</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="risk-light">
+          <div class="lamp" id="riskLamp">🟡</div>
+          <div>
+            <div class="note" id="riskScoreLabel"></div>
+            <div class="score" id="riskScore">--</div>
+            <div class="note" id="equityRange">--</div>
+          </div>
+        </div>
+        <div class="badge" id="riskLabel"></div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:700; margin-bottom:6px;" id="topThemesTitle"></div>
+        <div id="topThemes"></div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:700; margin-bottom:6px;" id="bottomThemesTitle"></div>
+        <div id="bottomThemes"></div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:700; margin-bottom:6px;" id="reasonsTitle"></div>
+        <ul class="list" id="reasons"></ul>
+      </div>
+    </div>
+
+    <details class="glossary" id="glossary">
+      <summary><span id="glossaryTitle"></span><span class="glossary-hint">i</span></summary>
+      <div class="glossary-list" id="glossaryList"></div>
+    </details>
+
+    <div class="recent">
+      <div class="recent-title" id="recentTitle"></div>
+      <div class="recent-list" id="recentList"></div>
+    </div>
+
+    <div class="archive-grid">
+      <div class="archive-card">
+        <div class="archive-title" id="recent30Title"></div>
+        <div class="archive-list" id="recent30List"></div>
+      </div>
+      <div class="archive-card">
+        <div class="archive-title" id="monthlyTitle"></div>
+        <div class="archive-list" id="monthlyList"></div>
+      </div>
+    </div>
+
+    <div class="footer"><span id="updatedAtLabel"></span>：<span id="updateDate">--</span></div>
+  </div>
+
+  <script src="../js/i18n.js"></script>
+  <script>
+    function getDailyLang() {
+      try {
+        const saved = localStorage.getItem('finlogichub5:last-strategy');
+        const savedObj = saved ? JSON.parse(saved) : null;
+        if (savedObj?.lang) return savedObj.lang;
+      } catch (e) {}
+      const q = new URLSearchParams(location.search);
+      const qLang = q.get('lang');
+      if (qLang === 'en' || qLang === 'zh') return qLang;
+      return navigator.language?.toLowerCase().includes('zh') ? 'zh' : 'en';
+    }
+
+    function getI18n(lang) {
+      const base = window.FINLOGIC_I18N || {};
+      return base[lang] || base.zh || {};
+    }
+
+    function applyI18n(lang) {
+      const t = getI18n(lang);
+      document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+      document.title = `${t.daily_title || '每日市场状态'} - FinLogicHub5`;
+      document.getElementById('riskIndexEntry').textContent = lang === 'zh' ? '市场风险指数' : 'Market Risk Index';
+      document.getElementById('backHome').textContent = t.back_home || '返回首页';
+      document.getElementById('dailyTitle').textContent = t.daily_title || '每日市场状态';
+      document.getElementById('dailySub').textContent = t.daily_sub || '';
+      document.getElementById('riskScoreLabel').textContent = t.risk_score || '风险分';
+      document.getElementById('equityRange').textContent = `${t.equity_range || '仓位区间'} --`;
+      document.getElementById('riskLabel').textContent = t.market_risk_light || '风险灯';
+      document.getElementById('topThemesTitle').textContent = t.top_themes || '主题热度榜 Top 3';
+      document.getElementById('bottomThemesTitle').textContent = t.bottom_themes || '主题热度榜 Bottom 3';
+      document.getElementById('reasonsTitle').textContent = t.reasons_title || '今日要点';
+      document.getElementById('updatedAtLabel').textContent = t.updated_at || '更新时间';
+      document.getElementById('glossaryTitle').textContent = t.glossary_title || '术语说明';
+      document.getElementById('recentTitle').textContent = t.recent_title || '最近7天历史记录';
+      document.getElementById('recent30Title').textContent = t.recent30_title || '最近30天';
+      document.getElementById('monthlyTitle').textContent = t.monthly_title || '按月归档';
+      const glossaryList = document.getElementById('glossaryList');
+      glossaryList.innerHTML = (t.glossary_items || []).map(item => {
+        return `<div class="glossary-item"><strong>${item.term}</strong>：<span>${item.text}</span></div>`;
+      }).join('');
+      return t;
+    }
+
+    const lightMap = {
+      green: { emoji: '🟢', cls: 'risk-green' },
+      yellow: { emoji: '🟡', cls: 'risk-yellow' },
+      red: { emoji: '🔴', cls: 'risk-red' }
+    };
+
+    function renderThemeList(el, list) {
+      el.innerHTML = list.map(item => {
+        return `<div class="theme-row"><span>${item.name}</span><span>${item.score}</span></div><div class="note">${item.note}</div>`;
+      }).join('');
+    }
+
+    async function loadDaily() {
+      const lang = getDailyLang();
+      const t = applyI18n(lang);
+      try {
+        const res = await fetch('../public/data/daily.json', { cache: 'no-store' });
+        const data = await res.json();
+        const lightKey = data.marketRisk.light;
+        const light = lightMap[lightKey] || lightMap.yellow;
+        const riskLamp = document.getElementById('riskLamp');
+        const riskScore = document.getElementById('riskScore');
+        const equityRange = document.getElementById('equityRange');
+        const riskLabel = document.getElementById('riskLabel');
+
+        riskLamp.textContent = light.emoji;
+        riskLamp.className = `lamp ${light.cls}`;
+        riskScore.textContent = data.marketRisk.score;
+        riskScore.className = `score ${light.cls}`;
+        equityRange.textContent = `${t.equity_range || '仓位区间'} ${data.marketRisk.equityRange}`;
+        const level = (t.light_levels && t.light_levels[lightKey]) ? t.light_levels[lightKey] : (lightKey || '').toUpperCase();
+        riskLabel.textContent = `${t.market_risk_light || '风险灯'} · ${level}`;
+
+        renderThemeList(document.getElementById('topThemes'), data.topThemes);
+        renderThemeList(document.getElementById('bottomThemes'), data.bottomThemes);
+
+        document.getElementById('reasons').innerHTML = data.reasons.map(r => `<li>${r}</li>`).join('');
+        document.getElementById('updateDate').textContent = data.date;
+      } catch (e) {
+        document.getElementById('reasons').innerHTML = `<li>${(getI18n(getDailyLang()).load_fail || '数据加载失败，请稍后重试。')}</li>`;
+      }
+    }
+
+    async function loadRecent() {
+      const t = getI18n(getDailyLang());
+      const listEl = document.getElementById('recentList');
+      try {
+        const res = await fetch('daily/recent.json', { cache: 'no-store' });
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) {
+          listEl.innerHTML = `<div class="note">${t.recent_empty || '暂无历史记录'}</div>`;
+          return;
+        }
+        listEl.innerHTML = data.map(item => {
+          const level = (t.light_levels && t.light_levels[item.light]) ? t.light_levels[item.light] : (item.light || '').toUpperCase();
+          const label = t.market_risk_light || '风险灯';
+          const href = item.urlHtml || `daily/${item.date}.html`;
+          return `<a class="recent-item" href="${href}"><span>${item.date}</span><span>${label} · ${level} · ${item.score}</span></a>`;
+        }).join('');
+      } catch (e) {
+        listEl.innerHTML = `<div class="note">${t.recent_empty || '暂无历史记录'}</div>`;
+      }
+    }
+
+    async function loadRecent30() {
+      const t = getI18n(getDailyLang());
+      const listEl = document.getElementById('recent30List');
+      try {
+        const res = await fetch('daily/recent30.json', { cache: 'no-store' });
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) {
+          listEl.innerHTML = `<div class="note">${t.recent30_empty || '暂无记录'}</div>`;
+          return;
+        }
+        listEl.innerHTML = data.map(item => {
+          return `<a class="recent-item" href="${item.urlHtml || `daily/${item.date}.html`}"><span>${item.date}</span><span>${item.score}</span></a>`;
+        }).join('');
+      } catch (e) {
+        listEl.innerHTML = `<div class="note">${t.recent30_empty || '暂无记录'}</div>`;
+      }
+    }
+
+    async function loadMonthly() {
+      const t = getI18n(getDailyLang());
+      const listEl = document.getElementById('monthlyList');
+      try {
+        const res = await fetch('daily/monthly.json', { cache: 'no-store' });
+        const data = await res.json();
+        const months = data?.months || [];
+        if (!Array.isArray(months) || months.length === 0) {
+          listEl.innerHTML = `<div class="note">${t.monthly_empty || '暂无归档'}</div>`;
+          return;
+        }
+        listEl.innerHTML = months.map(item => {
+          const label = `${item.month} (${item.dates.length})`;
+          const href = item.latest ? `daily/${item.latest}.html` : '#';
+          return `<a class="recent-item" href="${href}"><span>${label}</span><span>${item.latest || ''}</span></a>`;
+        }).join('');
+      } catch (e) {
+        listEl.innerHTML = `<div class="note">${t.monthly_empty || '暂无归档'}</div>`;
+      }
+    }
+
+    async function loadRiskIndex() {
+      const t = getI18n(getDailyLang());
+      const label = t.market_risk_light || '风险灯';
+      try {
+        const res = await fetch('../public/data/risk_index.json', { cache: 'no-store' });
+        const data = await res.json();
+        const light = lightMap[data.light] || lightMap.yellow;
+        document.getElementById('riskIndexLamp').textContent = light.emoji;
+        document.getElementById('riskIndexLamp').className = `lamp ${light.cls}`;
+        document.getElementById('riskIndexScore').textContent = data.score;
+        document.getElementById('riskIndexScore').className = `risk-index-score ${light.cls}`;
+        document.getElementById('riskIndexLabel').textContent = `${label} · ${t.risk_temperature || '风险温度'}`;
+        document.getElementById('riskIndexEquity').textContent = `${t.equity_range || '仓位区间'} ${data.equityRange}`;
+        document.getElementById('riskIndexLevel').textContent = `Level ${data.level}`;
+        if (data.percentileRank === null || data.percentileRank === undefined) {
+          document.getElementById('riskIndexPercentile').textContent = `Percentile --`;
+          document.getElementById('riskIndexPercentile').title = data.percentileNote || '';
+        } else {
+          document.getElementById('riskIndexPercentile').textContent = `Percentile ${data.percentileRank}`;
+          document.getElementById('riskIndexPercentile').title = '';
+        }
+        document.getElementById('riskIndexConfidence').textContent = `Confidence ${data.confidenceLevel || '--'} · ${data.confidenceReason || ''}`;
+        document.getElementById('riskIndexComponents').textContent = `Trend ${data.components?.trend ?? '--'} · Stress ${data.components?.stress ?? '--'} · Regime ${data.components?.regime ?? '--'}`;
+        const levelMap = { low: 'Low Risk', medium: 'Neutral Risk', high: 'High Risk' };
+        document.getElementById('riskIndexExplain').textContent = `Risk Index: ${levelMap[data.level] || 'Neutral Risk'} — ${t.risk_temperature || '风险温度'}参考。`;
+        document.getElementById('riskIndexMethod').textContent = `Method ${data.methodVersion || 'MRI-1.0'}`;
+        document.getElementById('riskIndexMethodToggle').textContent = '方法论';
+        document.getElementById('riskIndexInputs').textContent = `Inputs: ${(data.inputs || []).join(', ')} · ${data.explanation || ''}`;
+        document.getElementById('riskIndexDriversToggle').textContent = lang === 'zh' ? '为何如此？' : 'Why?';
+        document.getElementById('riskIndexDrivers').textContent = (data.keyDrivers || []).join(' / ');
+        const contrib = data.componentContrib || {};
+        const contribHtml = [
+          { label: 'Trend', val: contrib.trend ?? 0 },
+          { label: 'Stress', val: contrib.stress ?? 0 },
+          { label: 'Regime', val: contrib.regime ?? 0 }
+        ].map(item => {
+          return `<div class="risk-index-note">${item.label} ${item.val}<div class="contrib-bar"><div class="contrib-fill" style="width:${Math.max(0, Math.min(100, item.val))}%"></div></div></div>`;
+        }).join('');
+        document.getElementById('riskIndexContrib').innerHTML = contribHtml;
+        const notes = data.componentNotes || {};
+        document.getElementById('riskIndexNotes').textContent = `Trend: ${notes.trend || '--'} / Stress: ${notes.stress || '--'} / Regime: ${notes.regime || '--'}`;
+        const levelText = data.level || 'medium';
+        const shareText = `MRI ${data.score} (${levelText.toUpperCase()}) · ${data.equityRange}`;
+        const shareUrl = `${location.origin}/market-risk-index.html`;
+        document.getElementById('shareXBtn').onclick = () => {
+          const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+          window.open(url, '_blank', 'noopener');
+        };
+        document.getElementById('shareLinkedInBtn').onclick = () => {
+          const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+          window.open(url, '_blank', 'noopener');
+        };
+        document.getElementById('copyLinkBtn').onclick = async () => {
+          try {
+            await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+            alert('Link copied');
+          } catch (e) {
+            alert('Copy failed');
+          }
+        };
+      } catch (e) {
+        document.getElementById('riskIndexExplain').textContent = t.load_fail || '数据加载失败，请稍后重试。';
+      }
+    }
+
+    async function loadRiskIndexDelta() {
+      try {
+        const res = await fetch('../public/data/risk_index_history.json', { cache: 'no-store' });
+        const data = await res.json();
+        if (!Array.isArray(data) || !data.length) return;
+        const last = data[data.length - 1];
+        const delta = Number.isFinite(last.delta) ? last.delta : 0;
+        const arrow = last.arrow || (delta > 0 ? '↑' : delta < 0 ? '↓' : '→');
+        document.getElementById('riskIndexDelta').textContent = `Δ 昨日 ${arrow} ${delta >= 0 ? '+' : ''}${delta}`;
+      } catch (e) {}
+    }
+
+    loadDaily();
+    loadRecent();
+    loadRiskIndex();
+    loadRiskIndexDelta();
+    loadRecent30();
+    loadMonthly();
+  </script>
+</body>
+</html>
