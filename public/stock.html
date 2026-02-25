@@ -219,7 +219,7 @@
 
 <body>
     <div class="container">
-        <a href="../index.html" class="back">❮ 返回主屏幕</a>
+        <a href="/" class="back">❮ 返回主屏幕</a>
         <div class="header">
             <span class="badge" id="trendTag">分析中...</span>
             <h1 id="stockTitle">Loading...</h1>
@@ -257,8 +257,8 @@
             </div>
 
             <div class="cta-box">
-                <a id="backtestLink" class="cta-btn" href="../index.html">📊 一键回测本股 vs SPY</a>
-                <a id="homeLink" class="cta-btn" href="../index.html">🏠 返回主站策略台</a>
+                <a id="backtestLink" class="cta-btn" href="/">📊 一键回测本股 vs SPY</a>
+                <a id="homeLink" class="cta-btn" href="/">🏠 返回主站策略台</a>
             </div>
             <p class="meta-note" id="updateNote">数据更新日期：-</p>
         </div>
@@ -456,7 +456,7 @@
             document.getElementById("pe").innerText = meta.peRatio || "N/A";
             document.getElementById("high52").innerText = "$" + meta.week52High;
             document.getElementById("updateNote").innerText = `数据更新日期：${meta.lastUpdate || "-"}`;
-            document.getElementById("backtestLink").href = `../index.html?ticker=${ticker}&compare=SPY&capital=10000&start=2019&end=2026&pmode=0`;
+            document.getElementById("backtestLink").href = `/?ticker=${ticker}&compare=SPY&capital=10000&start=2019&end=2026&pmode=0`;
             const tag = document.getElementById("trendTag");
             tag.innerText = meta.trend || "分析中";
             if ((meta.trend || "").includes("牛")) {
