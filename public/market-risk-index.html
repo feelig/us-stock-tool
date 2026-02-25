@@ -10,15 +10,15 @@
   <link rel="canonical" href="https://finlogichub5.com/market-risk-index.html">
   <!-- MRI_OG_START -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="MRI 50 · MEDIUM · 2026-02-25">
-<meta property="og:description" content="FinLogic MRI 50，风险等级 medium，仓位区间 40-60%，置信度 medium。">
+<meta property="og:title" content="MRI 64 · HIGH · 2026-02-25">
+<meta property="og:description" content="FinLogic MRI 64，风险等级 high，仓位区间 20-40%，置信度 medium。">
 <meta property="og:url" content="https://finlogichub5.com/market-risk-index.html">
 <meta property="og:site_name" content="FinLogicHub5">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://finlogichub5.com/og/mri-latest.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="MRI 50 · MEDIUM · 2026-02-25">
-<meta name="twitter:description" content="FinLogic MRI 50，风险等级 medium，仓位区间 40-60%，置信度 medium。">
+<meta name="twitter:title" content="MRI 64 · HIGH · 2026-02-25">
+<meta name="twitter:description" content="FinLogic MRI 64，风险等级 high，仓位区间 20-40%，置信度 medium。">
 <meta name="twitter:image" content="https://finlogichub5.com/og/mri-latest.png">
 <!-- MRI_OG_END -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -175,7 +175,7 @@
   <script>
     async function loadRiskIndex() {
       try {
-        const res = await fetch('/public/data/risk_index.json', { cache: 'no-store' });
+        const res = await fetch('/data/risk_index.json', { cache: 'no-store' });
         const data = await res.json();
         const lightMap = { green: '🟢', yellow: '🟡', red: '🔴' };
         document.getElementById('riskLamp').textContent = lightMap[data.light] || '🟡';
@@ -210,7 +210,7 @@
 
     async function loadHistory() {
       try {
-        const res = await fetch('/public/data/risk_index_history.json', { cache: 'no-store' });
+        const res = await fetch('/data/risk_index_history.json', { cache: 'no-store' });
         const data = await res.json();
         if (!Array.isArray(data) || !data.length) return;
         const labels = data.map(item => item.date);

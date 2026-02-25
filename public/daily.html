@@ -9,15 +9,15 @@
   <title>每日市场状态 - FinLogicHub5</title>
   <!-- MRI_OG_START -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="MRI 50 · MEDIUM · 2026-02-25">
-<meta property="og:description" content="FinLogic MRI 50，风险等级 medium，仓位区间 40-60%，置信度 medium。">
-<meta property="og:url" content="https://finlogichub5.com/">
+<meta property="og:title" content="MRI 64 · HIGH · 2026-02-25">
+<meta property="og:description" content="FinLogic MRI 64，风险等级 high，仓位区间 20-40%，置信度 medium。">
+<meta property="og:url" content="https://finlogichub5.com/daily.html">
 <meta property="og:site_name" content="FinLogicHub5">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://finlogichub5.com/og/mri-latest.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="MRI 50 · MEDIUM · 2026-02-25">
-<meta name="twitter:description" content="FinLogic MRI 50，风险等级 medium，仓位区间 40-60%，置信度 medium。">
+<meta name="twitter:title" content="MRI 64 · HIGH · 2026-02-25">
+<meta name="twitter:description" content="FinLogic MRI 64，风险等级 high，仓位区间 20-40%，置信度 medium。">
 <meta name="twitter:image" content="https://finlogichub5.com/og/mri-latest.png">
 <!-- MRI_OG_END -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -429,7 +429,7 @@
     <div class="footer"><span id="updatedAtLabel"></span>：<span id="updateDate">--</span></div>
   </div>
 
-  <script src="../js/i18n.js"></script>
+  <script src="/js/i18n.js"></script>
   <script>
     function getDailyLang() {
       try {
@@ -490,7 +490,7 @@
       const lang = getDailyLang();
       const t = applyI18n(lang);
       try {
-        const res = await fetch('../public/data/daily.json', { cache: 'no-store' });
+        const res = await fetch('/data/daily.json', { cache: 'no-store' });
         const data = await res.json();
         const lightKey = data.marketRisk.light;
         const light = lightMap[lightKey] || lightMap.yellow;
@@ -581,7 +581,7 @@
       const t = getI18n(getDailyLang());
       const label = t.market_risk_light || '风险灯';
       try {
-        const res = await fetch('../public/data/risk_index.json', { cache: 'no-store' });
+        const res = await fetch('/data/risk_index.json', { cache: 'no-store' });
         const data = await res.json();
         const light = lightMap[data.light] || lightMap.yellow;
         document.getElementById('riskIndexLamp').textContent = light.emoji;
@@ -644,7 +644,7 @@
 
     async function loadRiskIndexDelta() {
       try {
-        const res = await fetch('../public/data/risk_index_history.json', { cache: 'no-store' });
+        const res = await fetch('/data/risk_index_history.json', { cache: 'no-store' });
         const data = await res.json();
         if (!Array.isArray(data) || !data.length) return;
         const last = data[data.length - 1];
