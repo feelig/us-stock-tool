@@ -28,11 +28,12 @@ jobs:
 
       - name: Commit & push if changed
         run: |
-          git status --porcelain
-          if [ -n "$(git status --porcelain)" ]; then
-            git add public/data public/og public/daily sitemap.xml public/index.html public/daily.html public/market-risk-index.html
-            git commit -m "chore: daily data update"
-            git push
-          else
-            echo "No changes to commit"
+          git config user.name "finlogichub-bot"
+          git config user.email "bot@finlogichub5.com"
+          git add public sitemap.xml tools/cache/prices.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
           fi
+          git commit -m "Daily: auto update"
+          git push
