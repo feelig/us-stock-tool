@@ -1,7 +1,7 @@
 [
   {
     "date": "2026-02-25",
-    "score": 62,
+    "score": 63,
     "rawScore": 64,
     "light": "red",
     "level": "high",
@@ -14,11 +14,11 @@
     "componentContrib": {
       "trend": 18,
       "stress": 13,
-      "regime": 31
+      "regime": 32
     },
     "componentNotes": {
       "trend": "趋势风险75：价格在MA200下方（rule: close_vs_ma200）",
-      "stress": "压力风险25：vol20 15.7%（rule: vol20_threshold）",
+      "stress": "压力风险25：vol20 17.7%（rule: vol20_threshold）",
       "regime": "偏好风险75：risk-off 比率走弱（rule: ratio_down_20d）"
     },
     "trendDirection": "flat",
