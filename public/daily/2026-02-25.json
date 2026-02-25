@@ -1,10 +1,10 @@
 {
   "date": "2026-02-25",
   "riskIndex": {
-    "score": 64,
-    "rawScore": 64,
+    "score": 57,
+    "rawScore": 54,
     "methodVersion": "MRI-1.0",
-    "updatedAt": "2026-02-25T22:20:20.160Z",
+    "updatedAt": "2026-02-25T23:05:10.225Z",
     "inputs": [
       "SPY",
       "QQQ",
@@ -12,77 +12,78 @@
       "GLD"
     ],
     "explanation": "本指数衡量市场风险状态，不预测收益",
-    "level": "high",
-    "light": "red",
-    "equityRange": "20-40%",
+    "level": "medium",
+    "light": "yellow",
+    "equityRange": "40-60%",
     "componentContrib": {
-      "trend": 18,
-      "stress": 14,
-      "regime": 32
+      "trend": 7,
+      "stress": 15,
+      "regime": 35
     },
     "componentNotes": {
-      "trend": "趋势风险75：价格在MA200下方（rule: close_vs_ma200）",
-      "stress": "压力风险25：vol20 15.7%（rule: vol20_threshold）",
+      "trend": "趋势风险25：价格在MA200上方（rule: close_vs_ma200）",
+      "stress": "压力风险25：vol20 14.6%（rule: vol20_threshold）",
       "regime": "偏好风险75：risk-off 比率走弱（rule: ratio_down_20d）"
     },
     "components": {
-      "trend": 75,
+      "trend": 25,
       "stress": 25,
       "regime": 75
     },
     "contribDefinition": "componentContrib 为对最终风险分的边际贡献（impact）",
     "keyDrivers": [
-      "趋势风险偏高",
+      "趋势风险偏低",
       "压力风险偏低",
       "风险偏好偏弱"
     ],
     "percentileRank": null,
-    "percentileNote": "样本不足（n=1），暂不显示分位",
+    "percentileNote": "样本不足（n=2），暂不显示分位",
     "confidenceLevel": "medium",
     "confidenceReason": "组件一致性中等"
   },
   "marketRisk": {
-    "score": 64,
-    "light": "red",
-    "equityRange": "20-40%"
+    "score": 57,
+    "light": "yellow",
+    "equityRange": "40-60%"
   },
   "topThemes": [
     {
       "name": "Cybersecurity",
-      "score": 72,
-      "note": "20D 走强 +11.0%"
+      "score": 74,
+      "note": "20D 走强 +12.1%"
     },
     {
       "name": "Energy",
-      "score": 59,
-      "note": "20D 走强 +4.4%"
+      "score": 68,
+      "note": "20D 走强 +9.0%"
     },
     {
       "name": "Consumer",
-      "score": 49,
-      "note": "20D 回撤 -0.3%"
+      "score": 47,
+      "note": "20D 回撤 -1.4%"
     }
   ],
   "bottomThemes": [
     {
       "name": "AI",
-      "score": 28,
-      "note": "20D 回撤 -11.0%"
-    },
-    {
-      "name": "Defense",
-      "score": 40,
-      "note": "20D 回撤 -4.8%"
+      "score": 26,
+      "note": "20D 回撤 -11.9%"
     },
     {
       "name": "Healthcare",
+      "score": 39,
+      "note": "20D 回撤 -5.3%"
+    },
+    {
+      "name": "Defense",
       "score": 44,
-      "note": "20D 回撤 -3.2%"
+      "note": "20D 回撤 -2.9%"
     }
   ],
   "reasons": [
-    "SPY 跌破 MA200（趋势 -）",
+    "SPY 站上 MA200（趋势 +）",
     "MA50 高于 MA200（中期多头）",
-    "20D 波动率 15.7%（压力可控）"
-  ]
+    "20D 波动率 14.6%（压力可控）"
+  ],
+  "dataStatus": "fresh"
 }
