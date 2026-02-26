@@ -28,7 +28,48 @@ jobs:
         run: npm install
 
       - name: Generate daily data
-        run: node tools/generate_daily.js
+        run: |
+          set -euo pipefail
+          mkdir -p tools/cache
+          node tools/generate_daily.js | tee tools/cache/daily_run.log
+
+      - name: Smoke check outputs
+        run: |
+          set -euo pipefail
+          {
+            echo "== Output Checks ==";
+            test -f public/data/risk_index.json && echo "OK: public/data/risk_index.json" || (echo "MISSING: public/data/risk_index.json" && exit 1);
+            test -f public/data/daily.json && echo "OK: public/data/daily.json" || (echo "MISSING: public/data/daily.json" && exit 1);
+            test -f public/data/risk_index_history.json && echo "OK: public/data/risk_index_history.json" || (echo "MISSING: public/data/risk_index_history.json" && exit 1);
+            test -f public/data/share_text.json && echo "OK: public/data/share_text.json" || (echo "MISSING: public/data/share_text.json" && exit 1);
+            test -f public/og/mri-latest.png && echo "OK: public/og/mri-latest.png" || (echo "MISSING: public/og/mri-latest.png" && exit 1);
+            test -f sitemap.xml && echo "OK: sitemap.xml" || (echo "MISSING: sitemap.xml" && exit 1);
+          } | tee tools/cache/smoke.txt
+
+      - name: Write Actions Summary
+        run: |
+          set -euo pipefail
+          gen_date=$(node -e "try{const d=require('./public/data/daily.json');console.log(d.date||'');}catch(e){console.log('');}")
+          daily_json_count=$(ls public/daily/*.json 2>/dev/null | wc -l | tr -d ' ')
+          daily_html_count=$(ls public/daily/*.html 2>/dev/null | wc -l | tr -d ' ')
+          {
+            echo "## Daily MRI Update Summary";
+            echo "";
+            echo "- Date: ${gen_date:-unknown}";
+            echo "- Daily JSON count: ${daily_json_count:-0}";
+            echo "- Daily HTML count: ${daily_html_count:-0}";
+            echo "";
+            echo "### Key Outputs";
+            echo "- public/data/risk_index.json";
+            echo "- public/data/daily.json";
+            echo "- public/data/risk_index_history.json";
+            echo "- public/data/share_text.json";
+            echo "- public/og/mri-latest.png";
+            echo "- sitemap.xml";
+            echo "";
+            echo "### Smoke Check";
+            cat tools/cache/smoke.txt || true;
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Commit & push if changed
         run: |
@@ -42,3 +83,16 @@ jobs:
           git commit -m "Daily: auto update"
           git pull --rebase origin main
           git push origin main
+
+      - name: Upload debug artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-mri-failure-${{ github.run_id }}
+          path: |
+            tools/cache/daily_run.log
+            tools/cache/smoke.txt
+            public/data/daily.json
+            public/data/risk_index.json
+            public/data/risk_index_history.json
+            public/data/share_text.json
