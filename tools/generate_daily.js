@@ -20,7 +20,7 @@ const ARCHIVE_DIR = path.resolve(__dirname, '..', 'public', 'daily');
 const RECENT_PATH = path.resolve(ARCHIVE_DIR, 'recent.json');
 const RECENT30_PATH = path.resolve(ARCHIVE_DIR, 'recent30.json');
 const MONTHLY_PATH = path.resolve(ARCHIVE_DIR, 'monthly.json');
-const SITEMAP_PATH = path.resolve(__dirname, '..', 'sitemap.xml');
+const SITEMAP_PATH = path.resolve(__dirname, '..', 'public', 'sitemap.xml');
 const SITE_ROOT = 'https://finlogichub5.com';
 const REPORT_TZ = 'America/New_York';
 const PRIVACY_PATH = path.resolve(__dirname, '..', 'privacy.html');
@@ -884,6 +884,9 @@ async function main() {
       const html = fs.readFileSync(reportHtmlPath, 'utf-8');
       if (html.includes(`${reportDate} 市场风险状态`) && html.includes('Report date is based on America/New_York timezone.')) {
         console.log(`report exists, skip generation: ${reportHtmlPath}`);
+        const recent30 = buildRecentList(30);
+        writeSitemap(recent30.map(item => `${item.date}.html`));
+        console.log('sitemap.xml updated:', SITEMAP_PATH);
         return;
       }
     } catch (e) {}
