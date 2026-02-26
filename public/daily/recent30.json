@@ -4,7 +4,7 @@
     "urlHtml": "/daily/2026-02-26.html",
     "urlJson": "/daily/2026-02-26.json",
     "light": "yellow",
-    "score": 57,
+    "score": 51,
     "equityRange": "40-60%"
   },
   {
@@ -12,7 +12,7 @@
     "urlHtml": "/daily/2026-02-25.html",
     "urlJson": "/daily/2026-02-25.json",
     "light": "red",
-    "score": 63,
+    "score": 62,
     "equityRange": "20-40%"
   }
 ]

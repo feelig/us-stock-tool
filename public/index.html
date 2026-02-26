@@ -8,15 +8,19 @@
   <title>FinLogicHub5 - 市场风险指数与回测主页</title>
   <meta name="description" content="FinLogicHub5 主页：展示今日 MRI 市场风险指数、风险等级与更新时间，并提供进入指数页、Daily 归档与股票工具入口。">
   <link rel="canonical" href="https://finlogichub5.com/">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="FinLogicHub5 - 市场风险指数与回测主页">
-  <meta property="og:description" content="展示今日 MRI 市场风险指数、风险等级与更新时间，进入指数页、Daily 归档与股票工具入口。">
-  <meta property="og:url" content="https://finlogichub5.com/">
-  <meta property="og:image" content="https://finlogichub5.com/og/mri-latest.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="FinLogicHub5 - 市场风险指数与回测主页">
-  <meta name="twitter:description" content="展示今日 MRI 市场风险指数、风险等级与更新时间。">
-  <meta name="twitter:image" content="https://finlogichub5.com/og/mri-latest.png">
+  <!-- MRI_OG_START -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="MRI 51 · MEDIUM · 2026-02-26">
+<meta property="og:description" content="MRI 51｜市场风险中性。建议仓位40-60%。趋势下降，置信度medium。查看→ https://finlogichub5.com">
+<meta property="og:url" content="https://finlogichub5.com/">
+<meta property="og:site_name" content="FinLogicHub5">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://finlogichub5.com/og/mri-latest.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MRI 51 · MEDIUM · 2026-02-26">
+<meta name="twitter:description" content="MRI 51｜市场风险中性。建议仓位40-60%。趋势下降，置信度medium。查看→ https://finlogichub5.com">
+<meta name="twitter:image" content="https://finlogichub5.com/og/mri-latest.png">
+<!-- MRI_OG_END -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -87,6 +91,17 @@
       font-size: 13px;
     }
     .btn:hover { border-color: var(--primary); color: var(--primary); }
+    .share-row { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .ghost-btn {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      background: rgba(15, 23, 42, 0.45);
+      color: #e2e8f0;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .ghost-btn:hover { border-color: var(--primary); color: var(--primary); }
     @media (max-width: 720px) { body { padding: 12px; } .container { padding: 16px; } }
   </style>
 </head>
@@ -107,6 +122,11 @@
       <div class="note" id="mriLevel">Risk Level: --</div>
       <div class="note" id="mriUpdated">Updated: --</div>
       <div class="note" id="mriEquity">Equity Range: --</div>
+    </div>
+    <div class="share-row">
+      <button class="ghost-btn" id="shareXBtn">Share on X</button>
+      <button class="ghost-btn" id="shareLinkedInBtn">Share on LinkedIn</button>
+      <button class="ghost-btn" id="copyShareBtn">Copy Link</button>
     </div>
 
     <div class="actions">
@@ -135,7 +155,32 @@
         document.getElementById('mriUpdated').textContent = 'Updated: -';
       }
     }
+
+    async function initShare() {
+      let shareText = 'FinLogic MRI';
+      try {
+        const shareRes = await fetch('/data/share_text.json', { cache: 'no-store' });
+        const shareData = await shareRes.json();
+        if (shareData?.shareText) shareText = shareData.shareText;
+      } catch (e) {}
+      const shareUrl = `${location.origin}/market-risk-index.html`;
+      document.getElementById('shareXBtn').onclick = () => {
+        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+        window.open(url, '_blank');
+      };
+      document.getElementById('shareLinkedInBtn').onclick = () => {
+        const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+        window.open(url, '_blank');
+      };
+      document.getElementById('copyShareBtn').onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+          document.getElementById('copyShareBtn').textContent = 'Copied';
+        } catch (e) {}
+      };
+    }
     loadMRI();
+    initShare();
   </script>
 </body>
 </html>

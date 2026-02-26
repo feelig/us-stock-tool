@@ -14,6 +14,7 @@ const MOCK_PATH = path.resolve(__dirname, 'mock_prices.json');
 const OUT_PATH = path.resolve(DATA_DIR, 'daily.json');
 const RISK_INDEX_PATH = path.resolve(DATA_DIR, 'risk_index.json');
 const RISK_INDEX_HISTORY_PATH = path.resolve(DATA_DIR, 'risk_index_history.json');
+const SHARE_TEXT_PATH = path.resolve(DATA_DIR, 'share_text.json');
 const OG_DIR = path.resolve(__dirname, '..', 'public', 'og');
 const ARCHIVE_DIR = path.resolve(__dirname, '..', 'public', 'daily');
 const RECENT_PATH = path.resolve(ARCHIVE_DIR, 'recent.json');
@@ -826,6 +827,15 @@ function calcConfidence(components) {
   return { level: "low", reason: "组件分歧小，信号偏弱" };
 }
 
+function generateShareText(riskData, trend) {
+  const mri = riskData.score ?? 0;
+  const riskLevel = mri < 30 ? "低" : mri <= 70 ? "中性" : "高";
+  const range = riskData.equityRange || "--";
+  const confidence = riskData.confidenceLevel || "medium";
+  const trendText = trend === "up" ? "上升" : trend === "down" ? "下降" : "持平";
+  return `MRI ${mri}｜市场风险${riskLevel}。建议仓位${range}。趋势${trendText}，置信度${confidence}。查看→ https://finlogichub5.com`;
+}
+
 async function main() {
   const { data, status } = await loadDataSource();
   const yesterday = getYesterdayRisk();
@@ -840,6 +850,20 @@ async function main() {
     }
   };
   daily.dataStatus = status;
+
+  const trend = yesterday?.score
+    ? (daily.riskIndex.score > yesterday.score ? "up" : daily.riskIndex.score < yesterday.score ? "down" : "flat")
+    : "flat";
+  const shareText = generateShareText(daily.riskIndex, trend);
+  const sharePayload = {
+    date: daily.date,
+    mri: daily.riskIndex.score,
+    riskLevel: daily.riskIndex.level,
+    equityRange: daily.riskIndex.equityRange,
+    trend,
+    confidence: daily.riskIndex.confidenceLevel || "medium",
+    shareText
+  };
   fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.writeFileSync(OUT_PATH, JSON.stringify(daily, null, 2));
   console.log('daily.json updated:', OUT_PATH);
@@ -866,6 +890,8 @@ async function main() {
   };
   fs.writeFileSync(RISK_INDEX_PATH, JSON.stringify(daily.riskIndex, null, 2));
   console.log('risk_index.json updated:', RISK_INDEX_PATH);
+  fs.writeFileSync(SHARE_TEXT_PATH, JSON.stringify(sharePayload, null, 2));
+  console.log('share_text.json updated:', SHARE_TEXT_PATH);
 
   fs.mkdirSync(ARCHIVE_DIR, { recursive: true });
   const archiveJsonPath = path.join(ARCHIVE_DIR, `${daily.date}.json`);
@@ -936,7 +962,7 @@ async function main() {
   }
 
   const ogTitle = `MRI ${daily.riskIndex.score} · ${daily.riskIndex.level.toUpperCase()} · ${daily.date}`;
-  const ogDesc = `FinLogic MRI ${daily.riskIndex.score}，风险等级 ${daily.riskIndex.level}，仓位区间 ${daily.riskIndex.equityRange}，置信度 ${daily.riskIndex.confidenceLevel}。`;
+  const ogDesc = shareText;
   const ogImage = `${SITE_ROOT}/og/mri-latest.png`;
   const ogBlock = [
     `<meta property="og:type" content="website">`,
