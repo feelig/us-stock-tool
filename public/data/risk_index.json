@@ -1,8 +1,8 @@
 {
-  "score": 53,
-  "rawScore": 54,
+  "score": 54,
+  "rawScore": 64,
   "methodVersion": "MRI-1.0",
-  "updatedAt": "2026-02-26T05:23:42.242Z",
+  "updatedAt": "2026-02-26T05:32:07.337Z",
   "inputs": [
     "SPY",
     "QQQ",
@@ -14,23 +14,23 @@
   "light": "yellow",
   "equityRange": "40-60%",
   "componentContrib": {
-    "trend": 6,
-    "stress": 14,
-    "regime": 33
+    "trend": 16,
+    "stress": 11,
+    "regime": 27
   },
   "componentNotes": {
-    "trend": "趋势风险25：价格在MA200上方（rule: close_vs_ma200）",
-    "stress": "压力风险25：vol20 15.5%（rule: vol20_threshold）",
+    "trend": "趋势风险75：价格在MA200下方（rule: close_vs_ma200）",
+    "stress": "压力风险25：vol20 16.6%（rule: vol20_threshold）",
     "regime": "偏好风险75：risk-off 比率走弱（rule: ratio_down_20d）"
   },
   "components": {
-    "trend": 25,
+    "trend": 75,
     "stress": 25,
     "regime": 75
   },
   "contribDefinition": "componentContrib 为对最终风险分的边际贡献（impact）",
   "keyDrivers": [
-    "趋势风险偏低",
+    "趋势风险偏高",
     "压力风险偏低",
     "风险偏好偏弱"
   ],

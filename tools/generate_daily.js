@@ -827,13 +827,39 @@ function calcConfidence(components) {
   return { level: "low", reason: "组件分歧小，信号偏弱" };
 }
 
-function generateShareText(riskData, trend) {
+function generateShareText(riskData, trend, delta) {
   const mri = riskData.score ?? 0;
   const riskLevel = mri < 30 ? "低" : mri <= 70 ? "中性" : "高";
+  const riskLevelEn = riskData.level || "medium";
   const range = riskData.equityRange || "--";
   const confidence = riskData.confidenceLevel || "medium";
-  const trendText = trend === "up" ? "上升" : trend === "down" ? "下降" : "持平";
-  return `MRI ${mri}｜市场风险${riskLevel}。建议仓位${range}。趋势${trendText}，置信度${confidence}。查看→ https://finlogichub5.com`;
+  const confidenceCN = confidence === "high" ? "高" : confidence === "low" ? "低" : "中等";
+  const trendTextCN = trend === "up" ? "风险上行" : trend === "down" ? "风险下降" : "风险稳定";
+  const trendTextEn = trend === "up" ? "up" : trend === "down" ? "down" : "flat";
+  const deltaText = Number.isFinite(delta) ? (delta > 0 ? `+${delta}` : `${delta}`) : "0";
+
+  const cnShareText = [
+    `📊 今日市场风险指数（MRI）：${mri} (${deltaText})`,
+    `风险等级：${riskLevel}`,
+    `建议股票仓位：${range}`,
+    `趋势：${trendTextCN}`,
+    `置信度：${confidenceCN}`,
+    "",
+    "查看完整指数 → https://finlogichub5.com"
+  ].join("\n");
+
+  const enShareText = [
+    `MRI ${mri} (${deltaText})`,
+    "",
+    `Risk Level: ${riskLevelEn}`,
+    `Equity Range: ${range}`,
+    `Trend: ${trendTextEn}`,
+    `Confidence: ${confidence}`,
+    "",
+    "Full report → https://finlogichub5.com"
+  ].join("\n");
+
+  return { cnShareText, enShareText, shareText: cnShareText };
 }
 
 async function main() {
@@ -851,10 +877,13 @@ async function main() {
   };
   daily.dataStatus = status;
 
-  const trend = yesterday?.score
-    ? (daily.riskIndex.score > yesterday.score ? "up" : daily.riskIndex.score < yesterday.score ? "down" : "flat")
-    : "flat";
-  const shareText = generateShareText(daily.riskIndex, trend);
+  const prevScore = Number.isFinite(yesterday?.score) ? yesterday.score : null;
+  const trend = prevScore === null
+    ? "flat"
+    : (daily.riskIndex.score > prevScore ? "up" : daily.riskIndex.score < prevScore ? "down" : "flat");
+  const delta = prevScore === null ? 0 : (daily.riskIndex.score - prevScore);
+  const shareTexts = generateShareText(daily.riskIndex, trend, delta);
+  const shareText = shareTexts.shareText;
   const sharePayload = {
     date: daily.date,
     mri: daily.riskIndex.score,
@@ -862,7 +891,10 @@ async function main() {
     equityRange: daily.riskIndex.equityRange,
     trend,
     confidence: daily.riskIndex.confidenceLevel || "medium",
-    shareText
+    delta,
+    cnShareText: shareTexts.cnShareText,
+    enShareText: shareTexts.enShareText,
+    shareText: shareTexts.shareText
   };
   fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.writeFileSync(OUT_PATH, JSON.stringify(daily, null, 2));
