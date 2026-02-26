@@ -503,6 +503,8 @@ function renderArchiveHtml(daily, ctx = {}) {
     .share-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(148,163,184,0.4); background: rgba(15,23,42,0.5); color: #e2e8f0; font-size: 12px; text-decoration: none; cursor: pointer; }
     .share-btn:hover { border-color: #38bdf8; color: #38bdf8; }
     .footer-links a { color: #93c5fd; text-decoration: none; }
+    .ad-slot { margin: 14px 0; padding: 12px; border: 1px dashed rgba(148,163,184,0.35); border-radius: 12px; background: rgba(7,15,30,0.45); }
+    .ad-slot .ad-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
     @media (max-width: 720px) { body { padding: 12px; } .container { padding: 16px; } }
   </style>
 </head>
@@ -516,6 +518,10 @@ function renderArchiveHtml(daily, ctx = {}) {
     <h1>${date} 市场风险状态</h1>
     <p class="sub">市场气候由趋势健康度、压力与风险偏好综合判断，仅作风险感知。</p>
     <p class="note">Report date is based on America/New_York timezone.</p>
+    <div class="ad-slot">
+      <div class="ad-label">Ad Slot (Header)</div>
+      <div class="note">Reserved for future monetization</div>
+    </div>
     <div class="grid">
       <div class="card">
         <div class="risk-light">
@@ -572,6 +578,10 @@ function renderArchiveHtml(daily, ctx = {}) {
       </div>
     </div>
     <div class="explain">${explanation}</div>
+    <div class="ad-slot">
+      <div class="ad-label">Ad Slot (Mid)</div>
+      <div class="note">Reserved for future monetization</div>
+    </div>
     ${buildSeoContent(daily)}
     <div class="share-row">
       <a class="share-btn" href="https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(canonical)}" target="_blank" rel="noopener">Share to X</a>
@@ -582,6 +592,10 @@ function renderArchiveHtml(daily, ctx = {}) {
       ${prevLink ? `<a href="${prevLink}">Yesterday (${ctx.prevDate})</a>` : `<a href="${SITE_ROOT}/daily.html">Yesterday (Archive)</a>`}
       <a href="${SITE_ROOT}/daily.html">Archive</a>
       <a href="${SITE_ROOT}/market-risk-index.html">MRI Index</a>
+    </div>
+    <div class="ad-slot">
+      <div class="ad-label">Ad Slot (Footer)</div>
+      <div class="note">Reserved for future monetization</div>
     </div>
     <div class="footer-links">
       ${prevLink ? `<a href="${prevLink}">上一天</a>` : ''}
@@ -861,6 +875,9 @@ function writeSitemap(archiveHtmlFiles) {
     { loc: `${SITE_ROOT}/`, changefreq: 'daily', priority: '1.0', lastmod: today },
     { loc: `${SITE_ROOT}/daily.html`, changefreq: 'daily', priority: '0.7', lastmod: today },
     { loc: `${SITE_ROOT}/market-risk-index.html`, changefreq: 'daily', priority: '0.7', lastmod: today },
+    { loc: `${SITE_ROOT}/market-risk-history.html`, changefreq: 'weekly', priority: '0.6', lastmod: today },
+    { loc: `${SITE_ROOT}/risk-level-explained.html`, changefreq: 'monthly', priority: '0.5', lastmod: today },
+    { loc: `${SITE_ROOT}/stock-risk-strategy.html`, changefreq: 'monthly', priority: '0.5', lastmod: today },
     { loc: `${SITE_ROOT}/pages/stock.html`, changefreq: 'daily', priority: '0.7', lastmod: today },
     { loc: `${SITE_ROOT}/privacy.html`, changefreq: 'monthly', priority: '0.3', lastmod: getMtimeDate(PRIVACY_PATH) },
     { loc: `${SITE_ROOT}/disclaimer.html`, changefreq: 'monthly', priority: '0.3', lastmod: getMtimeDate(DISCLAIMER_PATH) }
@@ -940,25 +957,33 @@ async function main() {
   const yesterday = getYesterdayRisk();
   const reportDate = getDateInTZ();
   const reportHtmlPath = path.join(ARCHIVE_DIR, `${reportDate}.html`);
+  const reportJsonPath = path.join(ARCHIVE_DIR, `${reportDate}.json`);
+  let daily = null;
+  let reuseExisting = false;
   if (fs.existsSync(reportHtmlPath)) {
     try {
       const html = fs.readFileSync(reportHtmlPath, 'utf-8');
-      if (html.includes(`${reportDate} 市场风险状态`)
+      const ok = html.includes(`${reportDate} 市场风险状态`)
         && html.includes('Report date is based on America/New_York timezone.')
         && html.includes('seo-content-block')
-        && html.includes('Share to Reddit')) {
-        console.log(`report exists, skip generation: ${reportHtmlPath}`);
-        const recent30 = buildRecentList(30);
-        writeSitemap(recent30.map(item => `${item.date}.html`));
-        console.log('sitemap.xml updated:', SITEMAP_PATH);
-        return;
+        && html.includes('Share to Reddit')
+        && html.includes('Ad Slot (Footer)');
+      if (ok && fs.existsSync(reportJsonPath)) {
+        daily = JSON.parse(fs.readFileSync(reportJsonPath, 'utf-8'));
+        daily.dataStatus = status;
+        reuseExisting = true;
+        console.log(`report exists, reuse daily data: ${reportJsonPath}`);
       }
     } catch (e) {}
   }
 
-  let daily = buildDaily(data, reportDate);
-  daily = applySmoothing(daily, yesterday);
-  delete daily._ctx;
+  if (!daily) {
+    daily = buildDaily(data, reportDate);
+  }
+  if (!reuseExisting) {
+    daily = applySmoothing(daily, yesterday);
+    delete daily._ctx;
+  }
   daily = {
     ...daily,
     riskIndex: {
@@ -1047,6 +1072,8 @@ async function main() {
 
   const ogDatePng = path.join(OG_DIR, `mri-${daily.date}.png`);
   const ogLatestPng = path.join(OG_DIR, `mri-latest.png`);
+  const ogDateWebp = path.join(OG_DIR, `mri-${daily.date}.webp`);
+  const ogLatestWebp = path.join(OG_DIR, `mri-latest.webp`);
   if (sharp) {
     try {
       const bufDate = await sharp(Buffer.from(svg))
@@ -1060,6 +1087,17 @@ async function main() {
       fs.writeFileSync(ogDatePng, bufDate);
       fs.writeFileSync(ogLatestPng, bufLatest);
       console.log('og png updated:', ogLatestPng);
+      const webpDate = await sharp(Buffer.from(svg))
+        .resize(1200, 630, { fit: 'fill', background: '#0b162c' })
+        .webp({ quality: 92 })
+        .toBuffer();
+      const webpLatest = await sharp(Buffer.from(svg))
+        .resize(1200, 630, { fit: 'fill', background: '#0b162c' })
+        .webp({ quality: 92 })
+        .toBuffer();
+      fs.writeFileSync(ogDateWebp, webpDate);
+      fs.writeFileSync(ogLatestWebp, webpLatest);
+      console.log('og webp updated:', ogLatestWebp);
     } catch (e) {
       console.error('png generation failed:', e.message);
       process.exitCode = 1;

@@ -27,7 +27,7 @@
   },
   {
     "date": "2026-02-26",
-    "score": 50,
+    "score": 53,
     "rawScore": 54,
     "light": "yellow",
     "level": "medium",
@@ -39,16 +39,16 @@
     },
     "componentContrib": {
       "trend": 6,
-      "stress": 13,
-      "regime": 31
+      "stress": 14,
+      "regime": 33
     },
     "componentNotes": {
       "trend": "趋势风险25：价格在MA200上方（rule: close_vs_ma200）",
-      "stress": "压力风险25：vol20 13.5%（rule: vol20_threshold）",
+      "stress": "压力风险25：vol20 14.3%（rule: vol20_threshold）",
       "regime": "偏好风险75：risk-off 比率走弱（rule: ratio_down_20d）"
     },
     "trendDirection": "down",
-    "delta": -13,
+    "delta": -10,
     "arrow": "↓"
   }
 ]
