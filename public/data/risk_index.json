@@ -2,7 +2,7 @@
   "score": 32,
   "rawScore": 23,
   "methodVersion": "MRI-1.0",
-  "updatedAt": "2026-02-26T06:05:03.642Z",
+  "updatedAt": "2026-02-26T06:19:24.922Z",
   "inputs": [
     "SPY",
     "QQQ",
@@ -20,7 +20,7 @@
   },
   "componentNotes": {
     "trend": "趋势风险25：价格在MA200上方（rule: close_vs_ma200）",
-    "stress": "压力风险25：vol20 15.4%（rule: vol20_threshold）",
+    "stress": "压力风险25：vol20 14.3%（rule: vol20_threshold）",
     "regime": "偏好风险50：risk-off 比率走弱（rule: ratio_down_20d）"
   },
   "components": {

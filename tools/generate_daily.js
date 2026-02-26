@@ -22,12 +22,23 @@ const RECENT30_PATH = path.resolve(ARCHIVE_DIR, 'recent30.json');
 const MONTHLY_PATH = path.resolve(ARCHIVE_DIR, 'monthly.json');
 const SITEMAP_PATH = path.resolve(__dirname, '..', 'sitemap.xml');
 const SITE_ROOT = 'https://finlogichub5.com';
+const REPORT_TZ = 'America/New_York';
 const PRIVACY_PATH = path.resolve(__dirname, '..', 'privacy.html');
 const DISCLAIMER_PATH = path.resolve(__dirname, '..', 'disclaimer.html');
 
 function readMock() {
   const raw = fs.readFileSync(MOCK_PATH, 'utf-8');
   return JSON.parse(raw);
+}
+
+function getDateInTZ(date = new Date(), timeZone = REPORT_TZ) {
+  const dtf = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  return dtf.format(date);
 }
 
 function fetchCsv(symbol) {
@@ -273,7 +284,7 @@ function buildDaily(mock) {
   const topThemes = themeScores.slice(0, 3);
   const bottomThemes = themeScores.slice(-3).reverse();
 
-  const date = new Date().toISOString().slice(0, 10);
+  const date = getDateInTZ();
 
   return {
     date,
@@ -775,7 +786,7 @@ function buildMonthlyIndex() {
 }
 
 function writeSitemap(archiveHtmlFiles) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getDateInTZ();
   const getMtimeDate = (filePath) => {
     try {
       const stat = fs.statSync(filePath);

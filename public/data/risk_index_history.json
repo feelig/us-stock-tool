@@ -44,7 +44,7 @@
     },
     "componentNotes": {
       "trend": "趋势风险25：价格在MA200上方（rule: close_vs_ma200）",
-      "stress": "压力风险25：vol20 15.4%（rule: vol20_threshold）",
+      "stress": "压力风险25：vol20 14.3%（rule: vol20_threshold）",
       "regime": "偏好风险50：risk-off 比率走弱（rule: ratio_down_20d）"
     },
     "trendDirection": "down",
