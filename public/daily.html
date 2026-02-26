@@ -594,6 +594,7 @@
       const label = t.market_risk_light || '风险灯';
       try {
         const res = await fetch('/data/risk_index.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`risk_index.json ${res.status}`);
         const data = await res.json();
         const light = lightMap[data.light] || lightMap.yellow;
         document.getElementById('riskIndexLamp').textContent = light.emoji;
@@ -656,19 +657,23 @@
         };
       } catch (e) {
         document.getElementById('riskIndexExplain').textContent = t.load_fail || '数据加载失败，请稍后重试。';
+        console.error('Risk index load failed:', e);
       }
     }
 
     async function loadRiskIndexDelta() {
       try {
         const res = await fetch('/data/risk_index_history.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`risk_index_history.json ${res.status}`);
         const data = await res.json();
         if (!Array.isArray(data) || !data.length) return;
         const last = data[data.length - 1];
         const delta = Number.isFinite(last.delta) ? last.delta : 0;
         const arrow = last.arrow || (delta > 0 ? '↑' : delta < 0 ? '↓' : '→');
         document.getElementById('riskIndexDelta').textContent = `Δ 昨日 ${arrow} ${delta >= 0 ? '+' : ''}${delta}`;
-      } catch (e) {}
+      } catch (e) {
+        console.error('Risk index history load failed:', e);
+      }
     }
 
     loadDaily();

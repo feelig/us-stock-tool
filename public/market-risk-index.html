@@ -188,6 +188,7 @@
     async function loadRiskIndex() {
       try {
         const res = await fetch('/data/risk_index.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`risk_index.json ${res.status}`);
         const data = await res.json();
         const lightMap = { green: '🟢', yellow: '🟡', red: '🔴' };
         document.getElementById('riskLamp').textContent = lightMap[data.light] || '🟡';
@@ -222,12 +223,18 @@
             alert('Copy failed');
           }
         };
-      } catch (e) {}
+      } catch (e) {
+        document.getElementById('riskScore').textContent = '--';
+        document.getElementById('riskMeta').textContent = 'Data unavailable';
+        document.getElementById('riskExplain').textContent = 'Failed to load /data/risk_index.json';
+        console.error('Risk index load failed:', e);
+      }
     }
 
     async function loadHistory() {
       try {
         const res = await fetch('/data/risk_index_history.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`risk_index_history.json ${res.status}`);
         const data = await res.json();
         if (!Array.isArray(data) || !data.length) return;
         const labels = data.map(item => item.date);
@@ -238,7 +245,9 @@
           data: { labels, datasets: [{ data: series, borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,0.12)', borderWidth: 2, pointRadius: 0, tension: 0.25, fill: true }] },
           options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { min: 0, max: 100, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } } } }
         });
-      } catch (e) {}
+      } catch (e) {
+        console.error('Risk index history load failed:', e);
+      }
     }
 
     loadRiskIndex();
