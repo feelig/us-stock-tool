@@ -405,6 +405,9 @@ function renderArchiveHtml(daily, ctx = {}) {
   const explanation = buildExplanation(daily);
   const metaDesc = buildMetaDescription(daily);
   const lightText = lightLabel(riskIndex.light);
+  const levelUpper = (riskIndex.level || 'medium').toUpperCase();
+  const shareTitle = `Today Market Risk Index: ${riskIndex.score ?? '--'} (${levelUpper})`;
+  const shareText = `${shareTitle}\nFull analysis → ${canonical}`;
   const prevScore = Number.isFinite(ctx.prevScore) ? ctx.prevScore : null;
   const delta = prevScore === null ? 0 : Number((riskIndex.score - prevScore).toFixed(1));
   const deltaText = prevScore === null ? "—" : `${delta >= 0 ? "+" : ""}${delta}`;
@@ -424,6 +427,11 @@ function renderArchiveHtml(daily, ctx = {}) {
   <meta property="og:title" content="${date} 市场风险状态 - FinLogicHub5">
   <meta property="og:description" content="${metaDesc}">
   <meta property="og:url" content="${canonical}">
+  <meta property="og:image" content="${SITE_ROOT}/og/mri-latest.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${date} 市场风险状态 - FinLogicHub5">
+  <meta name="twitter:description" content="${metaDesc}">
+  <meta name="twitter:image" content="${SITE_ROOT}/og/mri-latest.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -491,6 +499,9 @@ function renderArchiveHtml(daily, ctx = {}) {
     .seo-block h3 { margin: 12px 0 6px 0; font-size: 14px; color: #c7d2fe; }
     .seo-block p { margin: 0 0 8px 0; }
     .footer-links { margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; }
+    .share-row { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .share-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(148,163,184,0.4); background: rgba(15,23,42,0.5); color: #e2e8f0; font-size: 12px; text-decoration: none; cursor: pointer; }
+    .share-btn:hover { border-color: #38bdf8; color: #38bdf8; }
     .footer-links a { color: #93c5fd; text-decoration: none; }
     @media (max-width: 720px) { body { padding: 12px; } .container { padding: 16px; } }
   </style>
@@ -562,6 +573,11 @@ function renderArchiveHtml(daily, ctx = {}) {
     </div>
     <div class="explain">${explanation}</div>
     ${buildSeoContent(daily)}
+    <div class="share-row">
+      <a class="share-btn" href="https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(canonical)}" target="_blank" rel="noopener">Share to X</a>
+      <a class="share-btn" href="https://www.reddit.com/submit?title=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(canonical)}" target="_blank" rel="noopener">Share to Reddit</a>
+      <button class="share-btn" onclick="navigator.clipboard.writeText('${shareText.replace(/'/g, "\\'")}');">Copy link</button>
+    </div>
     <div class="footer-links">
       ${prevLink ? `<a href="${prevLink}">Yesterday (${ctx.prevDate})</a>` : `<a href="${SITE_ROOT}/daily.html">Yesterday (Archive)</a>`}
       <a href="${SITE_ROOT}/daily.html">Archive</a>
@@ -927,7 +943,10 @@ async function main() {
   if (fs.existsSync(reportHtmlPath)) {
     try {
       const html = fs.readFileSync(reportHtmlPath, 'utf-8');
-      if (html.includes(`${reportDate} 市场风险状态`) && html.includes('Report date is based on America/New_York timezone.') && html.includes('seo-content-block')) {
+      if (html.includes(`${reportDate} 市场风险状态`)
+        && html.includes('Report date is based on America/New_York timezone.')
+        && html.includes('seo-content-block')
+        && html.includes('Share to Reddit')) {
         console.log(`report exists, skip generation: ${reportHtmlPath}`);
         const recent30 = buildRecentList(30);
         writeSitemap(recent30.map(item => `${item.date}.html`));

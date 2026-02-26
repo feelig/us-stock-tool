@@ -1,12 +1,12 @@
 {
   "date": "2026-02-26",
-  "mri": 40,
+  "mri": 50,
   "riskLevel": "medium",
   "equityRange": "40-60%",
   "trend": "up",
   "confidence": "medium",
-  "delta": 14,
-  "cnShareText": "📊 今日市场风险指数（MRI）：40 (+14)\n风险等级：中性\n建议股票仓位：40-60%\n趋势：风险上行\n置信度：中等\n\n查看完整指数 → https://finlogichub5.com",
-  "enShareText": "MRI 40 (+14)\n\nRisk Level: medium\nEquity Range: 40-60%\nTrend: up\nConfidence: medium\n\nFull report → https://finlogichub5.com",
-  "shareText": "📊 今日市场风险指数（MRI）：40 (+14)\n风险等级：中性\n建议股票仓位：40-60%\n趋势：风险上行\n置信度：中等\n\n查看完整指数 → https://finlogichub5.com"
+  "delta": 10,
+  "cnShareText": "📊 今日市场风险指数（MRI）：50 (+10)\n风险等级：中性\n建议股票仓位：40-60%\n趋势：风险上行\n置信度：中等\n\n查看完整指数 → https://finlogichub5.com",
+  "enShareText": "MRI 50 (+10)\n\nRisk Level: medium\nEquity Range: 40-60%\nTrend: up\nConfidence: medium\n\nFull report → https://finlogichub5.com",
+  "shareText": "📊 今日市场风险指数（MRI）：50 (+10)\n风险等级：中性\n建议股票仓位：40-60%\n趋势：风险上行\n置信度：中等\n\n查看完整指数 → https://finlogichub5.com"
 }
