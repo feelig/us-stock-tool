@@ -871,17 +871,24 @@ function writeSitemap(archiveHtmlFiles) {
       return today;
     }
   };
+  const pagesDir = path.resolve(__dirname, '..', 'public', 'pages');
+  let seoPages = [];
+  try {
+    seoPages = fs.readdirSync(pagesDir).filter(f => f.endsWith('.html'));
+  } catch (e) {
+    seoPages = [];
+  }
   const urls = [
     { loc: `${SITE_ROOT}/`, changefreq: 'daily', priority: '1.0', lastmod: today },
     { loc: `${SITE_ROOT}/daily.html`, changefreq: 'daily', priority: '0.7', lastmod: today },
     { loc: `${SITE_ROOT}/market-risk-index.html`, changefreq: 'daily', priority: '0.7', lastmod: today },
-    { loc: `${SITE_ROOT}/market-risk-history.html`, changefreq: 'weekly', priority: '0.6', lastmod: today },
-    { loc: `${SITE_ROOT}/risk-level-explained.html`, changefreq: 'monthly', priority: '0.5', lastmod: today },
-    { loc: `${SITE_ROOT}/stock-risk-strategy.html`, changefreq: 'monthly', priority: '0.5', lastmod: today },
     { loc: `${SITE_ROOT}/pages/stock.html`, changefreq: 'daily', priority: '0.7', lastmod: today },
     { loc: `${SITE_ROOT}/privacy.html`, changefreq: 'monthly', priority: '0.3', lastmod: getMtimeDate(PRIVACY_PATH) },
     { loc: `${SITE_ROOT}/disclaimer.html`, changefreq: 'monthly', priority: '0.3', lastmod: getMtimeDate(DISCLAIMER_PATH) }
   ];
+  seoPages.forEach((file) => {
+    urls.push({ loc: `${SITE_ROOT}/pages/${file}`, changefreq: 'monthly', priority: '0.4', lastmod: today });
+  });
   for (const file of archiveHtmlFiles) {
     const date = file.slice(0, 10);
     urls.push({ loc: `${SITE_ROOT}/daily/${file}`, changefreq: 'daily', priority: '0.5', lastmod: date });
