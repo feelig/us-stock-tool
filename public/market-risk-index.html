@@ -36,7 +36,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -231,6 +230,53 @@
       }
     }
 
+    function drawRiskChart(labels, series) {
+      const canvas = document.getElementById('riskChart');
+      if (!canvas) return;
+      const parent = canvas.parentElement;
+      const width = parent ? parent.clientWidth : 600;
+      const height = 180;
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.clearRect(0, 0, width, height);
+
+      const padding = 18;
+      const min = 0;
+      const max = 100;
+      const w = width - padding * 2;
+      const h = height - padding * 2;
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const y = padding + (h / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(padding + w, y);
+        ctx.stroke();
+      }
+
+      if (!series.length) return;
+      ctx.beginPath();
+      series.forEach((val, i) => {
+        const x = padding + (w * (i / (series.length - 1 || 1)));
+        const y = padding + h - ((val - min) / (max - min)) * h;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.lineTo(padding + w, padding + h);
+      ctx.lineTo(padding, padding + h);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(56,189,248,0.12)';
+      ctx.fill();
+    }
+
     async function loadHistory() {
       try {
         const res = await fetch('/data/risk_index_history.json', { cache: 'no-store' });
@@ -239,12 +285,8 @@
         if (!Array.isArray(data) || !data.length) return;
         const labels = data.map(item => item.date);
         const series = data.map(item => item.score);
-        const ctx = document.getElementById('riskChart').getContext('2d');
-        new Chart(ctx, {
-          type: 'line',
-          data: { labels, datasets: [{ data: series, borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,0.12)', borderWidth: 2, pointRadius: 0, tension: 0.25, fill: true }] },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { min: 0, max: 100, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } } } }
-        });
+        window.__riskHistory = { labels, series };
+        drawRiskChart(labels, series);
       } catch (e) {
         console.error('Risk index history load failed:', e);
       }
@@ -252,6 +294,10 @@
 
     loadRiskIndex();
     loadHistory();
+    window.addEventListener('resize', () => {
+      const data = window.__riskHistory;
+      if (data?.series?.length) drawRiskChart(data.labels, data.series);
+    });
   </script>
 </body>
 </html>
