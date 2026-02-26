@@ -35,7 +35,11 @@
       "趋势风险偏低",
       "压力风险偏低",
       "风险偏好偏弱"
-    ]
+    ],
+    "percentileRank": null,
+    "percentileNote": "样本不足（n=2），暂不显示分位",
+    "confidenceLevel": "medium",
+    "confidenceReason": "组件一致性中等"
   },
   "marketRisk": {
     "score": 57,

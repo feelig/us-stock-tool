@@ -24,5 +24,31 @@
     "trendDirection": "flat",
     "delta": 0,
     "arrow": "→"
+  },
+  {
+    "date": "2026-02-26",
+    "score": 57,
+    "rawScore": 54,
+    "light": "yellow",
+    "level": "medium",
+    "equityRange": "40-60%",
+    "components": {
+      "trend": 25,
+      "stress": 25,
+      "regime": 75
+    },
+    "componentContrib": {
+      "trend": 7,
+      "stress": 15,
+      "regime": 35
+    },
+    "componentNotes": {
+      "trend": "趋势风险25：价格在MA200上方（rule: close_vs_ma200）",
+      "stress": "压力风险25：vol20 13.8%（rule: vol20_threshold）",
+      "regime": "偏好风险75：risk-off 比率走弱（rule: ratio_down_20d）"
+    },
+    "trendDirection": "down",
+    "delta": -6,
+    "arrow": "↓"
   }
 ]
