@@ -27,28 +27,28 @@
   },
   {
     "date": "2026-02-26",
-    "score": 54,
-    "rawScore": 64,
+    "score": 32,
+    "rawScore": 23,
     "light": "yellow",
     "level": "medium",
     "equityRange": "40-60%",
     "components": {
-      "trend": 75,
+      "trend": 25,
       "stress": 25,
-      "regime": 75
+      "regime": 50
     },
     "componentContrib": {
-      "trend": 16,
-      "stress": 11,
-      "regime": 27
+      "trend": 5,
+      "stress": 10,
+      "regime": 17
     },
     "componentNotes": {
-      "trend": "趋势风险75：价格在MA200下方（rule: close_vs_ma200）",
-      "stress": "压力风险25：vol20 16.6%（rule: vol20_threshold）",
-      "regime": "偏好风险75：risk-off 比率走弱（rule: ratio_down_20d）"
+      "trend": "趋势风险25：价格在MA200上方（rule: close_vs_ma200）",
+      "stress": "压力风险25：vol20 15.4%（rule: vol20_threshold）",
+      "regime": "偏好风险50：risk-off 比率走弱（rule: ratio_down_20d）"
     },
     "trendDirection": "down",
-    "delta": -9,
+    "delta": -31,
     "arrow": "↓"
   }
 ]

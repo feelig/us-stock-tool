@@ -1,8 +1,8 @@
 {
-  "score": 54,
-  "rawScore": 64,
+  "score": 32,
+  "rawScore": 23,
   "methodVersion": "MRI-1.0",
-  "updatedAt": "2026-02-26T05:32:07.337Z",
+  "updatedAt": "2026-02-26T06:05:03.642Z",
   "inputs": [
     "SPY",
     "QQQ",
@@ -14,28 +14,28 @@
   "light": "yellow",
   "equityRange": "40-60%",
   "componentContrib": {
-    "trend": 16,
-    "stress": 11,
-    "regime": 27
+    "trend": 5,
+    "stress": 10,
+    "regime": 17
   },
   "componentNotes": {
-    "trend": "趋势风险75：价格在MA200下方（rule: close_vs_ma200）",
-    "stress": "压力风险25：vol20 16.6%（rule: vol20_threshold）",
-    "regime": "偏好风险75：risk-off 比率走弱（rule: ratio_down_20d）"
+    "trend": "趋势风险25：价格在MA200上方（rule: close_vs_ma200）",
+    "stress": "压力风险25：vol20 15.4%（rule: vol20_threshold）",
+    "regime": "偏好风险50：risk-off 比率走弱（rule: ratio_down_20d）"
   },
   "components": {
-    "trend": 75,
+    "trend": 25,
     "stress": 25,
-    "regime": 75
+    "regime": 50
   },
   "contribDefinition": "componentContrib 为对最终风险分的边际贡献（impact）",
   "keyDrivers": [
-    "趋势风险偏高",
+    "趋势风险偏低",
     "压力风险偏低",
-    "风险偏好偏弱"
+    "风险偏好中性"
   ],
   "percentileRank": null,
   "percentileNote": "样本不足（n=3），暂不显示分位",
-  "confidenceLevel": "medium",
-  "confidenceReason": "组件一致性中等"
+  "confidenceLevel": "low",
+  "confidenceReason": "组件分歧小，信号偏弱"
 }
