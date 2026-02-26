@@ -195,7 +195,7 @@ function jitterLast(series) {
   return copy;
 }
 
-function buildDaily(mock) {
+function buildDaily(mock, reportDate) {
   const dates = mock.dates;
   const s = mock.series;
 
@@ -284,7 +284,7 @@ function buildDaily(mock) {
   const topThemes = themeScores.slice(0, 3);
   const bottomThemes = themeScores.slice(-3).reverse();
 
-  const date = getDateInTZ();
+  const date = reportDate || getDateInTZ();
 
   return {
     date,
@@ -465,6 +465,7 @@ function renderArchiveHtml(daily, ctx = {}) {
     </div>
     <h1>${date} 市场风险状态</h1>
     <p class="sub">市场气候由趋势健康度、压力与风险偏好综合判断，仅作风险感知。</p>
+    <p class="note">Report date is based on America/New_York timezone.</p>
     <div class="grid">
       <div class="card">
         <div class="risk-light">
@@ -876,7 +877,19 @@ function generateShareText(riskData, trend, delta) {
 async function main() {
   const { data, status } = await loadDataSource();
   const yesterday = getYesterdayRisk();
-  let daily = buildDaily(data);
+  const reportDate = getDateInTZ();
+  const reportHtmlPath = path.join(ARCHIVE_DIR, `${reportDate}.html`);
+  if (fs.existsSync(reportHtmlPath)) {
+    try {
+      const html = fs.readFileSync(reportHtmlPath, 'utf-8');
+      if (html.includes(`${reportDate} 市场风险状态`) && html.includes('Report date is based on America/New_York timezone.')) {
+        console.log(`report exists, skip generation: ${reportHtmlPath}`);
+        return;
+      }
+    } catch (e) {}
+  }
+
+  let daily = buildDaily(data, reportDate);
   daily = applySmoothing(daily, yesterday);
   delete daily._ctx;
   daily = {

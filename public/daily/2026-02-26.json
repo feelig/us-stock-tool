@@ -1,10 +1,10 @@
 {
   "date": "2026-02-26",
   "riskIndex": {
-    "score": 32,
+    "score": 26,
     "rawScore": 23,
     "methodVersion": "MRI-1.0",
-    "updatedAt": "2026-02-26T06:19:24.922Z",
+    "updatedAt": "2026-02-26T06:27:24.753Z",
     "inputs": [
       "SPY",
       "QQQ",
@@ -12,17 +12,17 @@
       "GLD"
     ],
     "explanation": "本指数衡量市场风险状态，不预测收益",
-    "level": "medium",
-    "light": "yellow",
-    "equityRange": "40-60%",
+    "level": "low",
+    "light": "green",
+    "equityRange": "60-80%",
     "componentContrib": {
-      "trend": 5,
-      "stress": 10,
-      "regime": 17
+      "trend": 4,
+      "stress": 8,
+      "regime": 14
     },
     "componentNotes": {
       "trend": "趋势风险25：价格在MA200上方（rule: close_vs_ma200）",
-      "stress": "压力风险25：vol20 14.3%（rule: vol20_threshold）",
+      "stress": "压力风险25：vol20 14.8%（rule: vol20_threshold）",
       "regime": "偏好风险50：risk-off 比率走弱（rule: ratio_down_20d）"
     },
     "components": {
@@ -42,37 +42,37 @@
     "confidenceReason": "组件分歧小，信号偏弱"
   },
   "marketRisk": {
-    "score": 32,
-    "light": "yellow",
-    "equityRange": "40-60%"
+    "score": 26,
+    "light": "green",
+    "equityRange": "60-80%"
   },
   "topThemes": [
     {
       "name": "Cybersecurity",
-      "score": 69,
-      "note": "20D 走强 +9.5%"
+      "score": 70,
+      "note": "20D 走强 +10.2%"
     },
     {
       "name": "Energy",
-      "score": 67,
-      "note": "20D 走强 +8.3%"
+      "score": 64,
+      "note": "20D 走强 +7.0%"
     },
     {
       "name": "Consumer",
-      "score": 57,
-      "note": "20D 走强 +3.7%"
+      "score": 56,
+      "note": "20D 走强 +3.1%"
     }
   ],
   "bottomThemes": [
     {
       "name": "AI",
-      "score": 33,
-      "note": "20D 回撤 -8.4%"
+      "score": 25,
+      "note": "20D 回撤 -12.6%"
     },
     {
       "name": "Healthcare",
-      "score": 41,
-      "note": "20D 回撤 -4.6%"
+      "score": 42,
+      "note": "20D 回撤 -4.0%"
     },
     {
       "name": "Defense",
@@ -83,7 +83,7 @@
   "reasons": [
     "SPY 站上 MA200（趋势 +）",
     "MA50 高于 MA200（中期多头）",
-    "20D 波动率 14.3%（压力可控）"
+    "20D 波动率 14.8%（压力可控）"
   ],
   "dataStatus": "stale"
 }
