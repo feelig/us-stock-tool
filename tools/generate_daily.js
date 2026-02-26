@@ -363,6 +363,41 @@ function renderThemeRows(list) {
   return list.map(item => `<div class="theme-row"><span>${item.name}</span><span>${item.score}</span></div><div class="note">${item.note}</div>`).join('');
 }
 
+function buildSeoContent(daily) {
+  const risk = daily.riskIndex || daily.marketRisk || {};
+  const reasons = Array.isArray(daily.reasons) ? daily.reasons : [];
+  const topThemes = (daily.topThemes || []).map(t => t.name).filter(Boolean);
+  const bottomThemes = (daily.bottomThemes || []).map(t => t.name).filter(Boolean);
+  const levelMap = { low: '低', medium: '中性', high: '偏高' };
+  const levelCN = levelMap[risk.level] || '中性';
+  const score = Number.isFinite(risk.score) ? risk.score : '--';
+  const eq = risk.equityRange || '--';
+  const trend = risk.components?.trend ?? '--';
+  const stress = risk.components?.stress ?? '--';
+  const regime = risk.components?.regime ?? '--';
+  const reasonText = reasons.length ? reasons.join('；') : '市场结构保持中性，等待确认';
+  const topText = topThemes.length ? topThemes.join('、') : '暂无';
+  const bottomText = bottomThemes.length ? bottomThemes.join('、') : '暂无';
+
+  return `
+      <section class="seo-block" id="seo-content-block">
+        <h2>今日市场风险解读（market risk index / stock market risk / MRI）</h2>
+        <p>本页用于记录 ${daily.date} 的市场风险状态（Market Risk Index, MRI）。当前风险分为 ${score}，风险等级偏${levelCN}，权益仓位区间参考 ${eq}。趋势风险组件为 ${trend}，压力风险组件为 ${stress}，风险偏好组件为 ${regime}，整体反映市场处于可观察的风险温度区间。今日要点包括：${reasonText}。主题热度方面，Top 主题为 ${topText}，Bottom 主题为 ${bottomText}。这些信号主要用于观察市场结构与风险偏好变化，不构成收益预测，也不构成投资建议。</p>
+
+        <h3>投资策略建议（参考框架）</h3>
+        <p>在 MRI 为偏${levelCN} 的区间内，建议优先关注仓位纪律与回撤管理。若风险分维持在中低区间，可采用分批配置与核心仓位管理的方式；若风险分持续上行，则应适当降低高波动资产敞口，并将风险控制在可承受范围。仓位区间 ${eq} 仅为风险感知参考，具体配置需结合个人风险承受能力与交易周期。</p>
+
+        <h3>风险趋势解读</h3>
+        <p>趋势风险反映价格相对长期均线的稳定性，压力风险反映波动与回撤强度，风险偏好反映风险资产与防御资产的相对强弱。今日趋势/压力/偏好三组件分布为 ${trend}/${stress}/${regime}，提示市场风险温度处于可控区间但仍需关注结构性变化。若连续多日出现风险分上升，则应关注仓位护栏与分散配置；若风险分下降且趋势稳定，则可逐步提高风险资产权重。</p>
+
+        <h3>FAQ</h3>
+        <p><strong>Q1: MRI 是什么？</strong> A: MRI 是 Market Risk Index（市场风险指数），用于衡量市场风险状态与风险偏好变化。</p>
+        <p><strong>Q2: MRI 能直接指导买卖吗？</strong> A: 不能。MRI 仅用于风险感知与历史观察，不构成投资建议。</p>
+        <p><strong>Q3: stock market risk 如何使用？</strong> A: 将 MRI 作为风险温度参考，结合仓位区间与个人风险偏好制定交易计划。</p>
+      </section>
+  `;
+}
+
 function renderArchiveHtml(daily, ctx = {}) {
   const { date, reasons, topThemes, bottomThemes } = daily;
   const riskIndex = daily.riskIndex || daily.marketRisk || {};
@@ -451,6 +486,10 @@ function renderArchiveHtml(daily, ctx = {}) {
     .risk-yellow { color: var(--yellow); }
     .risk-red { color: var(--red); }
     .explain { margin-top: 16px; color: #e2e8f0; font-size: 13px; line-height: 1.75; }
+    .seo-block { margin-top: 18px; padding-top: 12px; border-top: 1px dashed rgba(148, 163, 184, 0.25); color: #e2e8f0; font-size: 13px; line-height: 1.8; }
+    .seo-block h2 { margin: 0 0 8px 0; font-size: 16px; color: #e2e8f0; }
+    .seo-block h3 { margin: 12px 0 6px 0; font-size: 14px; color: #c7d2fe; }
+    .seo-block p { margin: 0 0 8px 0; }
     .footer-links { margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; }
     .footer-links a { color: #93c5fd; text-decoration: none; }
     @media (max-width: 720px) { body { padding: 12px; } .container { padding: 16px; } }
@@ -522,6 +561,12 @@ function renderArchiveHtml(daily, ctx = {}) {
       </div>
     </div>
     <div class="explain">${explanation}</div>
+    ${buildSeoContent(daily)}
+    <div class="footer-links">
+      ${prevLink ? `<a href="${prevLink}">Yesterday (${ctx.prevDate})</a>` : `<a href="${SITE_ROOT}/daily.html">Yesterday (Archive)</a>`}
+      <a href="${SITE_ROOT}/daily.html">Archive</a>
+      <a href="${SITE_ROOT}/market-risk-index.html">MRI Index</a>
+    </div>
     <div class="footer-links">
       ${prevLink ? `<a href="${prevLink}">上一天</a>` : ''}
       ${nextLink ? `<a href="${nextLink}">下一天</a>` : ''}
@@ -882,7 +927,7 @@ async function main() {
   if (fs.existsSync(reportHtmlPath)) {
     try {
       const html = fs.readFileSync(reportHtmlPath, 'utf-8');
-      if (html.includes(`${reportDate} 市场风险状态`) && html.includes('Report date is based on America/New_York timezone.')) {
+      if (html.includes(`${reportDate} 市场风险状态`) && html.includes('Report date is based on America/New_York timezone.') && html.includes('seo-content-block')) {
         console.log(`report exists, skip generation: ${reportHtmlPath}`);
         const recent30 = buildRecentList(30);
         writeSitemap(recent30.map(item => `${item.date}.html`));
