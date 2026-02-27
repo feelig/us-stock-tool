@@ -314,12 +314,265 @@ function renderPage(slug, idx) {
 </html>`;
 }
 
+const GROWTH_PAGES = [
+  { slug: 'risk-levels', title: 'Risk Levels Explained', summary: 'Risk-on, neutral, and risk-off levels with allocation guidance.', theme: 'risk levels' },
+  { slug: 'risk-regime', title: 'Risk Regime Guide', summary: 'What a risk regime is, how it shifts, and how to use it.', theme: 'risk regime' },
+  { slug: 'risk-history', title: 'Risk History Overview', summary: 'Historical risk trends, regime duration, and cycle context.', theme: 'risk history' },
+  { slug: 'market-risk-explained', title: 'Market Risk Explained', summary: 'How the Market Risk Index (MRI) model works.', theme: 'market risk index' },
+  { slug: 'asset-allocation-guide', title: 'Asset Allocation Guide', summary: 'How to adjust allocation based on market risk.', theme: 'asset allocation' }
+];
+
+function wordCount(html) {
+  return html.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+}
+
+function buildLongContent(topic) {
+  const paragraphs = [
+    `The market risk index is built to translate complex market signals into a single risk level. A ${topic} framework helps investors read the environment without chasing noise. This page explains how to interpret the signal, when to adjust exposure, and why risk discipline matters.`,
+    `Risk-on periods typically reflect stable trend conditions and lower volatility. Neutral periods often appear when trend is mixed or stress is rising but not extreme. Risk-off conditions often coincide with elevated volatility, defensive asset strength, and weaker breadth.`,
+    `A clear ${topic} plan focuses on allocation ranges rather than precise price forecasts. By aligning exposure with a risk level, investors can reduce behavioral errors and avoid overreacting to single-day headlines.`,
+    `The MRI uses trend, stress, and regime as primary components. Trend reflects price stability relative to long-term averages. Stress captures volatility and drawdown pressure. Regime captures risk-on vs risk-off appetite.`,
+    `When the risk score rises, the goal is not to predict a crash but to reduce fragility. Lowering equity exposure, raising cash, or diversifying into defensive assets are common responses.`,
+    `Risk history matters. A single day reading is less informative than a multi-week trend. A sustained risk-on regime suggests stability, while an extended risk-off regime often signals caution.`,
+    `An effective ${topic} approach includes a written playbook. Define actions at low, neutral, and high risk levels. Define rebalancing cadence and drawdown tolerance.`,
+    `Investors often confuse risk and volatility. Volatility measures dispersion of returns, while risk is the probability of adverse outcomes. The MRI incorporates both trend stability and stress to provide a broader view of market risk.`,
+    `Market risk signals are best used alongside personal risk capacity. A conservative investor may reduce exposure earlier, while an aggressive investor may tolerate higher drawdowns.`,
+    `The ${topic} lens also improves communication. Teams can reference a common risk level when discussing allocation. This reduces ambiguity and creates consistent reporting.`,
+    `Even a disciplined system will experience false positives and false negatives. That is why the risk index emphasizes ranges rather than exact timing.`,
+    `The Daily and Weekly pages provide real-time and periodic context. The Daily page highlights the current score and short-term change. The Weekly report summarizes regime dynamics and allocation posture.`,
+    `In summary, ${topic} is about consistency. The MRI helps investors structure decisions based on measurable risk conditions rather than emotion.`
+  ];
+  let content = '';
+  let idx = 0;
+  while (wordCount(content) < 1600 && idx < 30) {
+    content += `<p>${paragraphs[idx % paragraphs.length]}</p>\n`;
+    idx += 1;
+  }
+  return content;
+}
+
+function buildFaqBlock() {
+  const faqs = [
+    ['What is the Market Risk Index?', 'The MRI is a structured score that summarizes market risk using trend, stress, and regime signals.'],
+    ['Does MRI predict returns?', 'No. It measures risk conditions and supports allocation discipline rather than forecasting price direction.'],
+    ['How should I use MRI?', 'Use it as a risk lens for position sizing, rebalancing, and drawdown control.']
+  ];
+  return `\n  <h2 id="faq">FAQ</h2>\n  ${faqs.map(f => `<h3>${f[0]}</h3><p>${f[1]}</p>`).join('')}\n`;
+}
+
+function renderGrowthPage(page) {
+  const latestDaily = getLatestDailyPath();
+  const canonical = `${SITE_ROOT}/${page.slug}/`;
+  const content = buildLongContent(page.theme);
+  const faqBlock = buildFaqBlock();
+  const articleJson = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": `${page.title} | FinLogicHub5`,
+    "datePublished": new Date().toISOString().slice(0, 10),
+    "dateModified": new Date().toISOString().slice(0, 10),
+    "mainEntityOfPage": canonical,
+    "description": page.summary,
+    "author": { "@type": "Organization", "name": "FinLogicHub5" }
+  };
+  const faqJson = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "What is the Market Risk Index?", "acceptedAnswer": { "@type": "Answer", "text": "A structured score that summarizes market risk using trend, stress, and regime signals." } },
+      { "@type": "Question", "name": "Does MRI predict returns?", "acceptedAnswer": { "@type": "Answer", "text": "No. It measures risk conditions and supports allocation discipline." } },
+      { "@type": "Question", "name": "How should I use MRI?", "acceptedAnswer": { "@type": "Answer", "text": "Use it as a risk lens for position sizing, rebalancing, and drawdown control." } }
+    ]
+  };
+  const wordTarget = wordCount(content + faqBlock);
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="index,follow">
+  <meta name="theme-color" content="#0B0F1A">
+  <title>${page.title} | FinLogicHub5</title>
+  <meta name="description" content="${page.summary}">
+  <link rel="canonical" href="${canonical}">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="${page.title} | FinLogicHub5">
+  <meta property="og:description" content="${page.summary}">
+  <meta property="og:url" content="${canonical}">
+  <meta property="og:image" content="${SITE_ROOT}/og/mri-latest.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${page.title} | FinLogicHub5">
+  <meta name="twitter:description" content="${page.summary}">
+  <meta name="twitter:image" content="${SITE_ROOT}/og/mri-latest.png">
+  <script type="application/ld+json">${JSON.stringify(articleJson)}</script>
+  <script type="application/ld+json">${JSON.stringify(faqJson)}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0B0F1A; --panel:rgba(12,19,32,0.7); --text:#E5EDFF; --muted:#8FA3C8; --cyan:#00E5FF; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Space Grotesk",sans-serif; background:#0B0F1A; color:var(--text); }
+    .container { max-width: 980px; margin:0 auto; padding: 24px; }
+    .nav { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--muted); }
+    .nav a { padding:6px 10px; border-radius:999px; background:rgba(255,255,255,0.05); }
+    h1 { margin:16px 0 8px 0; font-size: clamp(28px, 5vw, 48px); }
+    h2 { margin-top: 20px; font-size: 20px; }
+    h3 { margin-top: 16px; font-size: 16px; }
+    p { color: var(--muted); line-height:1.8; }
+    .panel { margin: 16px 0; padding: 16px; border-radius: 14px; background: var(--panel); border:1px solid rgba(255,255,255,0.08); }
+    .chart { height: 160px; margin-top: 10px; }
+    .links { margin-top: 14px; display:flex; gap:10px; flex-wrap:wrap; font-size:12px; }
+    .links a { color: var(--cyan); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <a href="/">Daily Risk</a>
+      <a href="/weekly/">Weekly Strategy</a>
+      <a href="/archive/">Risk Archive</a>
+      <a href="/methodology/">Methodology</a>
+      <a href="/lab/">Lab</a>
+    </div>
+    <h1>${page.title}</h1>
+    <div class="panel">
+      <strong>Chart</strong>
+      <div class="chart">
+        <svg width="100%" height="160" viewBox="0 0 600 160" preserveAspectRatio="none">
+          <polyline fill="none" stroke="#00E5FF" stroke-width="2" points="0,130 120,90 240,100 360,60 480,80 600,40" />
+        </svg>
+      </div>
+      <p>${page.summary}</p>
+    </div>
+    <div>${content}</div>
+    ${faqBlock}
+    <div class="links">
+      <a href="/daily/">Daily</a>
+      <a href="/weekly/">Weekly</a>
+      <a href="/archive/">Archive</a>
+      <a href="${latestDaily}">Latest Daily</a>
+    </div>
+    <p style="font-size:12px;color:#8FA3C8;">Word count: ${wordTarget}</p>
+  </div>
+</body>
+</html>`;
+}
+
+function generateGrowthPages() {
+  GROWTH_PAGES.forEach(page => {
+    const dir = path.resolve(__dirname, '..', 'public', page.slug);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'index.html'), renderGrowthPage(page));
+  });
+}
+
+function generateRiskRegimeHistory() {
+  const dir = path.resolve(__dirname, '..', 'public', 'risk-regime-history');
+  fs.mkdirSync(dir, { recursive: true });
+  const html = renderGrowthPage({ slug: 'risk-regime-history', title: 'Risk Regime History', summary: 'Historical regime duration and risk transitions.', theme: 'risk regime history' });
+  fs.writeFileSync(path.join(dir, 'index.html'), html);
+}
+
+function generateMarketRiskToday() {
+  const dir = path.resolve(__dirname, '..', 'public', 'market-risk-today');
+  fs.mkdirSync(dir, { recursive: true });
+  const html = renderGrowthPage({ slug: 'market-risk-today', title: 'Market Risk Today', summary: 'Daily market risk snapshot with MRI context and allocation guidance.', theme: 'market risk today' });
+  fs.writeFileSync(path.join(dir, 'index.html'), html);
+}
+
+function generateRiskMonthlyPages() {
+  const monthlyPath = path.resolve(__dirname, '..', 'public', 'daily', 'monthly.json');
+  let months = [];
+  try {
+    const raw = JSON.parse(fs.readFileSync(monthlyPath, 'utf-8'));
+    months = Array.isArray(raw) ? raw : (raw.months || []);
+  } catch (e) {}
+  months.forEach(m => {
+    const [y, mm] = m.month.split('-');
+    const dir = path.resolve(__dirname, '..', 'public', 'risk', y, mm);
+    fs.mkdirSync(dir, { recursive: true });
+    const content = buildLongContent('monthly risk archive');
+    const list = (m.dates || []).map(d => `<li><a href="/daily/${d}">${d}</a></li>`).join('');
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="index,follow">
+  <meta name="theme-color" content="#0B0F1A">
+  <title>Market Risk Archive — ${m.month} | FinLogicHub5</title>
+  <meta name="description" content="Market risk archive for ${m.month}. Browse daily MRI reports and regime context.">
+  <link rel="canonical" href="${SITE_ROOT}/risk/${y}/${mm}/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Market Risk Archive — ${m.month} | FinLogicHub5">
+  <meta property="og:description" content="Market risk archive for ${m.month}. Browse daily MRI reports and regime context.">
+  <meta property="og:url" content="${SITE_ROOT}/risk/${y}/${mm}/">
+  <meta property="og:image" content="${SITE_ROOT}/og/mri-latest.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Market Risk Archive — ${m.month} | FinLogicHub5">
+  <meta name="twitter:description" content="Market risk archive for ${m.month}. Browse daily MRI reports and regime context.">
+  <meta name="twitter:image" content="${SITE_ROOT}/og/mri-latest.png">
+  <script type="application/ld+json">${JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": `Market Risk Archive — ${m.month}`,
+    "datePublished": m.month + "-01",
+    "dateModified": m.month + "-01",
+    "mainEntityOfPage": `${SITE_ROOT}/risk/${y}/${mm}/`,
+    "description": `Market risk archive for ${m.month}.`
+  })}</script>
+  <script type="application/ld+json">${JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "What is this page?", "acceptedAnswer": { "@type": "Answer", "text": "A monthly archive of daily Market Risk Index reports." } },
+      { "@type": "Question", "name": "How should I use this archive?", "acceptedAnswer": { "@type": "Answer", "text": "Review daily risk regimes and track allocation discipline over time." } }
+    ]
+  })}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { margin:0; font-family:"Space Grotesk",sans-serif; background:#0B0F1A; color:#E5EDFF; }
+    .container { max-width: 980px; margin:0 auto; padding: 24px; }
+    .nav { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:#8FA3C8; }
+    .nav a { padding:6px 10px; border-radius:999px; background:rgba(255,255,255,0.05); }
+    h1 { margin:16px 0 8px 0; font-size: clamp(28px, 5vw, 48px); }
+    ul { line-height:1.8; }
+    p { color:#8FA3C8; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <a href="/">Daily Risk</a>
+      <a href="/weekly/">Weekly Strategy</a>
+      <a href="/archive/">Risk Archive</a>
+      <a href="/methodology/">Methodology</a>
+      <a href="/lab/">Lab</a>
+    </div>
+    <h1>Market Risk Archive — ${m.month}</h1>
+    <p>Daily MRI reports for ${m.month}.</p>
+    <ul>${list}</ul>
+    <div>${content}</div>
+  </div>
+</body>
+</html>`;
+    fs.writeFileSync(path.join(dir, 'index.html'), html);
+  });
+}
+
 function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
   SLUGS.forEach((slug, idx) => {
     const html = renderPage(slug, idx);
     fs.writeFileSync(path.join(OUT_DIR, `${slug}.html`), html);
   });
+  generateGrowthPages();
+  generateRiskRegimeHistory();
+  generateMarketRiskToday();
+  generateRiskMonthlyPages();
   const guidesBreadcrumb = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",

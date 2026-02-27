@@ -525,6 +525,18 @@ Full analysis → ${canonical}`;
   const actionHint = (riskIndex.score ?? 0) > 65
     ? "Allocation adjustment likely if risk > 65."
     : "No allocation change suggested today.";
+  const relatedLinks = `
+    <div class="panel">
+      <h2 style="margin:0 0 8px 0; font-size:18px;">Related Links</h2>
+      <div class="footer-links">
+        <a href="/risk-levels/">Risk Levels</a>
+        <a href="/risk-regime/">Risk Regime</a>
+        <a href="/asset-allocation-guide/">Asset Allocation Guide</a>
+        <a href="/archive/">Archive</a>
+        <a href="/weekly/">Weekly</a>
+      </div>
+    </div>
+  `;
   const recent7Rows = (ctx.recent7 || []).map(item => {
     const score = item.score ?? '--';
     const range = item.equityRange || '--';
@@ -682,6 +694,8 @@ Full analysis → ${canonical}`;
         <tbody>${recent7Rows || '<tr><td colspan=\"3\" style=\"padding:8px 0;\">No data</td></tr>'}</tbody>
       </table>
     </div>
+
+    ${relatedLinks}
 
     <div class="ads">Ad Slot — Footer</div>
 
@@ -1008,9 +1022,32 @@ function writeSitemap(archiveHtmlFiles) {
     { loc: `${SITE_ROOT}/privacy.html`, changefreq: 'monthly', priority: '0.3', lastmod: getMtimeDate(PRIVACY_PATH) },
     { loc: `${SITE_ROOT}/disclaimer.html`, changefreq: 'monthly', priority: '0.3', lastmod: getMtimeDate(DISCLAIMER_PATH) }
   ];
+  const growthPages = [
+    'risk-levels',
+    'risk-regime',
+    'risk-history',
+    'market-risk-explained',
+    'asset-allocation-guide',
+    'risk-regime-history',
+    'market-risk-today'
+  ];
+  growthPages.forEach((slug) => {
+    urls.push({ loc: `${SITE_ROOT}/${slug}/`, changefreq: 'monthly', priority: '0.5', lastmod: today });
+  });
   seoPages.forEach((file) => {
     urls.push({ loc: `${SITE_ROOT}/pages/${file}`, changefreq: 'monthly', priority: '0.4', lastmod: today });
   });
+  const riskDir = path.resolve(__dirname, '..', 'public', 'risk');
+  if (fs.existsSync(riskDir)) {
+    const years = fs.readdirSync(riskDir).filter(y => /^\d{4}$/.test(y));
+    years.forEach((y) => {
+      const yDir = path.join(riskDir, y);
+      const months = fs.readdirSync(yDir).filter(m => /^\d{2}$/.test(m));
+      months.forEach((m) => {
+        urls.push({ loc: `${SITE_ROOT}/risk/${y}/${m}/`, changefreq: 'monthly', priority: '0.4', lastmod: today });
+      });
+    });
+  }
   for (const file of archiveHtmlFiles) {
     const date = file.slice(0, 10);
     urls.push({ loc: `${SITE_ROOT}/daily/${file}`, changefreq: 'daily', priority: '0.5', lastmod: date });
