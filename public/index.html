@@ -151,6 +151,8 @@
           <div class="hero-score" id="heroScore">--</div>
           <div class="hero-level" id="heroLevel">--</div>
           <div class="delta" id="heroDelta">--</div>
+          <div class="delta" id="heroMomentum">Risk Momentum: --</div>
+          <div class="delta" id="heroRegime">Current Regime: -- · Duration -- days</div>
 
           <div class="alloc">
             <h4>Suggested Allocation</h4>
@@ -265,6 +267,10 @@
         document.getElementById('heroLevel').textContent = levelMap[data.level] || data.level || '--';
         document.getElementById('riskLabel').textContent = levelMap[data.level] || 'NEUTRAL';
         document.getElementById('riskTemp').textContent = `Risk Signal · ${data.equityRange || '--'}`;
+        document.getElementById('heroMomentum').textContent = `Risk Momentum: ${data.momentum || '--'}`;
+        const regimeText = (data.level || '--').toUpperCase();
+        const duration = Number.isFinite(data.regimeDuration) ? data.regimeDuration : '--';
+        document.getElementById('heroRegime').textContent = `Current Regime: ${regimeText} · Duration ${duration} days`;
 
         const alloc = allocationFor(data.level);
         document.getElementById('allocEquity').textContent = alloc.equity;

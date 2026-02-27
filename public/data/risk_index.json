@@ -37,5 +37,7 @@
   "percentileRank": null,
   "percentileNote": "样本不足（n=4），暂不显示分位",
   "confidenceLevel": "low",
-  "confidenceReason": "组件分歧小，信号偏弱"
+  "confidenceReason": "组件分歧小，信号偏弱",
+  "momentum": "Stable",
+  "regimeDuration": 2
 }

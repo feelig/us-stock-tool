@@ -519,6 +519,17 @@ Full analysis → ${canonical}`;
   const nextLink = ctx.nextDate ? `${SITE_ROOT}/daily/${ctx.nextDate}` : '';
   const alloc = allocationByLevel(riskIndex.level);
   const explanation = buildExplanation(daily);
+  const regimeLabel = (riskIndex.level || 'neutral').toUpperCase();
+  const regimeDuration = Number.isFinite(ctx.regimeDuration) ? ctx.regimeDuration : 0;
+  const regimeContext = `We are currently in a ${regimeDuration}-day ${regimeLabel} regime.`;
+  const actionHint = (riskIndex.score ?? 0) > 65
+    ? "Allocation adjustment likely if risk > 65."
+    : "No allocation change suggested today.";
+  const recent7Rows = (ctx.recent7 || []).map(item => {
+    const score = item.score ?? '--';
+    const range = item.equityRange || '--';
+    return `<tr><td>${item.date}</td><td>${score}</td><td>${range}</td></tr>`;
+  }).join('');
   const breadcrumbJson = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -634,6 +645,11 @@ Full analysis → ${canonical}`;
     <div class="ads">Ad Slot — Top</div>
 
     <div class="panel">
+      <h2 style="margin:0 0 8px 0; font-size:18px;">Regime Context</h2>
+      <p class="meta" style="line-height:1.7;">${regimeContext}</p>
+    </div>
+
+    <div class="panel">
       <h2 style="margin:0 0 8px 0; font-size:18px;">Explanation</h2>
       <p class="meta" style="line-height:1.7;">${explanation}</p>
     </div>
@@ -656,6 +672,15 @@ Full analysis → ${canonical}`;
     <div class="panel">
       <h2 style="margin:0 0 8px 0; font-size:18px;">What Changed</h2>
       <p class="meta" style="line-height:1.7;">${(reasons || []).slice(0,3).join(' · ') || 'Risk components remained within expected ranges.'}</p>
+      <p class="meta" style="margin-top:6px;">${actionHint}</p>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 8px 0; font-size:18px;">Recent 7-Day Allocation</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;color:#cbd5f5;">
+        <thead><tr><th style="text-align:left;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.08);">Date</th><th style="text-align:left;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.08);">Risk</th><th style="text-align:left;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.08);">Allocation</th></tr></thead>
+        <tbody>${recent7Rows || '<tr><td colspan=\"3\" style=\"padding:8px 0;\">No data</td></tr>'}</tbody>
+      </table>
     </div>
 
     <div class="ads">Ad Slot — Footer</div>
@@ -907,6 +932,33 @@ function buildRiskIndexHistory(limit = 30) {
   });
 }
 
+function calcMomentum(history) {
+  if (!Array.isArray(history) || history.length < 10) return "Stable";
+  const scores = history.map(h => Number(h.score)).filter(v => Number.isFinite(v));
+  if (scores.length < 10) return "Stable";
+  const last5 = scores.slice(-5);
+  const prev5 = scores.slice(-10, -5);
+  const avg = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
+  const recent = avg(last5);
+  const previous = avg(prev5);
+  if (recent > previous) return "Rising";
+  if (recent < previous) return "Falling";
+  return "Stable";
+}
+
+function calcRegimeDuration(history, idx) {
+  if (!Array.isArray(history) || history.length === 0) return 0;
+  const i = Number.isFinite(idx) ? idx : history.length - 1;
+  const current = history[i]?.level;
+  if (!current) return 0;
+  let count = 1;
+  for (let j = i - 1; j >= 0; j -= 1) {
+    if (history[j]?.level === current) count += 1;
+    else break;
+  }
+  return count;
+}
+
 function buildMonthlyIndex() {
   const files = listArchiveJsons();
   const dates = files.map(f => f.slice(0, 10)).sort();
@@ -1142,9 +1194,23 @@ async function main() {
     fs.writeFileSync(dailyHubPath, dailyHub);
   } catch (e) {}
 
-  const riskHistory = buildRiskIndexHistory(30);
+  const riskHistory = buildRiskIndexHistory(90);
   fs.writeFileSync(RISK_INDEX_HISTORY_PATH, JSON.stringify(riskHistory, null, 2));
   console.log('risk_index_history.json updated:', RISK_INDEX_HISTORY_PATH);
+
+  const momentum = calcMomentum(riskHistory);
+  const regimeDuration = calcRegimeDuration(riskHistory);
+  daily = {
+    ...daily,
+    riskIndex: {
+      ...daily.riskIndex,
+      momentum,
+      regimeDuration
+    }
+  };
+  fs.writeFileSync(RISK_INDEX_PATH, JSON.stringify(daily.riskIndex, null, 2));
+  fs.writeFileSync(OUT_PATH, JSON.stringify(daily, null, 2));
+  fs.writeFileSync(archiveJsonPath, JSON.stringify(daily, null, 2));
 
   fs.mkdirSync(OG_DIR, { recursive: true });
   const svg = buildShareSvg(daily);
@@ -1234,6 +1300,7 @@ async function main() {
 
   const archiveJsons = listArchiveJsons();
   const dates = archiveJsons.map(f => f.slice(0, 10)).sort();
+  const dateIndex = new Map(dates.map((d, i) => [d, i]));
   for (let i = 0; i < dates.length; i++) {
     const d = dates[i];
     const prevDate = i > 0 ? dates[i - 1] : '';
@@ -1253,7 +1320,20 @@ async function main() {
       const htmlDir = path.join(ARCHIVE_DIR, d);
       const htmlPath = path.join(htmlDir, 'index.html');
       fs.mkdirSync(htmlDir, { recursive: true });
-      const html = renderArchiveHtml(data, { prevDate, nextDate, prevScore, trendSeries: histScores.slice(-90) });
+      const idx = dateIndex.get(d);
+      const recent7 = riskHistory.slice(Math.max(0, idx - 6), idx + 1).map(row => ({
+        date: row.date,
+        score: row.score,
+        equityRange: row.equityRange
+      }));
+      const html = renderArchiveHtml(data, {
+        prevDate,
+        nextDate,
+        prevScore,
+        trendSeries: riskHistory.slice(Math.max(0, idx - 89), idx + 1).map(r => r.score),
+        regimeDuration: calcRegimeDuration(riskHistory, idx),
+        recent7
+      });
       fs.writeFileSync(htmlPath, html);
       // Legacy .html for backward compatibility
       fs.writeFileSync(path.join(ARCHIVE_DIR, `${d}.html`), html);
