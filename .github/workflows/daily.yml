@@ -86,10 +86,11 @@ jobs:
           }
           console.log('latest.json schema check passed');
 
-          const counts = data?.debug?.counts || {};
-          const short = Object.entries(counts).filter(([, n]) => typeof n === 'number' && n < 200);
-          if (short.length) {
-            console.warn('MA200 data short:', short.map(([s, n]) => `${s}:${n}`).join(', '));
+          const countsFromAlpha = data?.debug?.countsFromAlpha || {};
+          const countsFromHistory = data?.debug?.countsFromHistory || {};
+          const shortHistory = Object.entries(countsFromHistory).filter(([, n]) => typeof n === 'number' && n < 200);
+          if (shortHistory.length) {
+            console.warn('MA200 history short:', shortHistory.map(([s, n]) => `${s}:${n}`).join(', '));
           } else {
             console.log('MA200 data sufficient for all symbols.');
           }
@@ -99,9 +100,10 @@ jobs:
           if (fs.existsSync(cachePath)) {
             try { state = JSON.parse(fs.readFileSync(cachePath, 'utf-8')); } catch(e) {}
           }
-          if (short.length) {
+          const lowAlpha = Object.entries(countsFromAlpha).filter(([, n]) => typeof n === 'number' && n < 50);
+          if (shortHistory.length && lowAlpha.length) {
             state.consecutiveFails = (state.consecutiveFails || 0) + 1;
-            state.lastFail = { at: new Date().toISOString(), short };
+            state.lastFail = { at: new Date().toISOString(), shortHistory, lowAlpha };
           } else {
             state.consecutiveFails = 0;
             state.lastFail = null;

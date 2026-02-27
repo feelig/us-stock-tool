@@ -88,7 +88,7 @@ async function fetchDaily(symbol) {
   const { default: fetch } = await import("node-fetch");
   const url =
     `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY` +
-    `&symbol=${encodeURIComponent(symbol)}&outputsize=full&apikey=${API_KEY}`;
+    `&symbol=${encodeURIComponent(symbol)}&outputsize=compact&apikey=${API_KEY}`;
 
   const res = await fetch(url);
   const data = await res.json();
@@ -236,17 +236,47 @@ async function main() {
     await sleep(15000);
   }
 
+  const historyPath = path.join(process.cwd(), "public", "data", "history.json");
+  let history = {};
+  try {
+    history = JSON.parse(fs.readFileSync(historyPath, "utf-8"));
+  } catch {
+    history = {};
+  }
+
+  const countsFromAlpha = symbols.reduce((acc, sym) => {
+    acc[sym] = (market[sym] || []).length;
+    return acc;
+  }, {});
+
+  const merged = {};
+  for (const sym of symbols) {
+    const incoming = market[sym] || [];
+    const existing = Array.isArray(history[sym]) ? history[sym] : [];
+    const map = new Map();
+    for (const row of existing) map.set(row.date, row);
+    for (const row of incoming) map.set(row.date, row);
+    const mergedArr = Array.from(map.values())
+      .sort((a, b) => (a.date < b.date ? 1 : -1))
+      .slice(0, 260);
+    merged[sym] = mergedArr;
+  }
+
+  fs.mkdirSync(path.dirname(historyPath), { recursive: true });
+  fs.writeFileSync(historyPath, JSON.stringify(merged, null, 2));
+
+  const countsFromHistory = symbols.reduce((acc, sym) => {
+    acc[sym] = (merged[sym] || []).length;
+    return acc;
+  }, {});
+
   const mri = calculateMRI(market);
   const riskLevel = mri < 35 ? "low" : mri < 65 ? "neutral" : "high";
   const alloc = allocationFromRiskLevel(riskLevel);
   const inputsTable = symbols.map(sym => {
-    const closes = (market[sym] || []).map(p => p.close);
+    const closes = (merged[sym] || []).map(p => p.close);
     return toInputsRow(sym, closes);
   });
-  const counts = symbols.reduce((acc, sym) => {
-    acc[sym] = (market[sym] || []).length;
-    return acc;
-  }, {});
   const components = buildComponents(inputsTable);
   const outlook = buildOutlook(riskLevel);
   const responsePlan = buildResponsePlan(riskLevel);
@@ -263,7 +293,7 @@ async function main() {
     drivers: driversFromInputs(inputsTable, riskLevel),
     outlook,
     responsePlan,
-    debug: { counts }
+    debug: { countsFromAlpha, countsFromHistory }
   };
 
   const outPathA = path.join(process.cwd(), "public", "latest.json");
