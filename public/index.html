@@ -84,6 +84,7 @@
 
     .badge-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; font-size: 12px; color: var(--muted); }
     .badge { padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
+    .alert-banner { margin-top: 10px; padding: 10px 14px; border-radius: 12px; background: rgba(248,113,113,0.18); border: 1px solid rgba(248,113,113,0.35); font-size: 13px; display: none; }
 
     .gauge-card { background: var(--panel); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); position: relative; overflow: hidden; }
     .gauge {
@@ -148,6 +149,7 @@
             <span class="badge" id="liveBadge">● LIVE — Updated --</span>
             <span class="badge" id="engineBadge">Powered by MRI Engine</span>
           </div>
+          <div class="alert-banner" id="alertBanner"></div>
           <h1 class="hero-title">TODAY MARKET RISK</h1>
           <div class="hero-score" id="heroScore">--</div>
           <div class="hero-level" id="heroLevel">--</div>
@@ -228,6 +230,14 @@
       return { equity: 'Equity 40–60%', bond: 'Bond 20–40%', cash: 'Cash 10–20%' };
     }
 
+    function alertMessage(alerts) {
+      if (!Array.isArray(alerts) || !alerts.length) return '';
+      if (alerts.some(a => a.type === 'regime_change')) return 'Risk Alert: Regime Changed';
+      if (alerts.some(a => a.type === 'threshold_high')) return 'High Risk Warning';
+      if (alerts.some(a => a.type === 'threshold_low')) return 'Low Risk Warning';
+      return 'Risk Alert Triggered';
+    }
+
     function animateScore(el, value) {
       const target = Number(value);
       if (!Number.isFinite(target)) { el.textContent = '--'; return; }
@@ -297,6 +307,21 @@
       }
     }
 
+    async function loadAlerts() {
+      const banner = document.getElementById('alertBanner');
+      try {
+        const res = await fetch('/data/risk_alerts.json', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        const alerts = data.alerts || [];
+        const msg = alertMessage(alerts);
+        if (msg) {
+          banner.textContent = msg;
+          banner.style.display = 'block';
+        }
+      } catch (e) {}
+    }
+
     async function loadDeltaAndBrief() {
       try {
         const res = await fetch('/data/risk_index_history.json', { cache: 'no-store' });
@@ -333,6 +358,7 @@
 
     loadRisk();
     loadDeltaAndBrief();
+    loadAlerts();
 
     // Lazy-load ad slots (placeholder for actual ad code)
     const adSlots = document.querySelectorAll('.ads[data-ad-slot]');

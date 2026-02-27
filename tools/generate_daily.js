@@ -14,9 +14,12 @@ const MOCK_PATH = path.resolve(__dirname, 'mock_prices.json');
 const OUT_PATH = path.resolve(DATA_DIR, 'daily.json');
 const RISK_INDEX_PATH = path.resolve(DATA_DIR, 'risk_index.json');
 const RISK_INDEX_HISTORY_PATH = path.resolve(DATA_DIR, 'risk_index_history.json');
+const RISK_ALERTS_PATH = path.resolve(DATA_DIR, 'risk_alerts.json');
 const SHARE_TEXT_PATH = path.resolve(DATA_DIR, 'share_text.json');
 const OG_DIR = path.resolve(__dirname, '..', 'public', 'og');
 const ARCHIVE_DIR = path.resolve(__dirname, '..', 'public', 'daily');
+const ALERTS_DIR = path.resolve(__dirname, '..', 'public', 'alerts');
+const ALERTS_API_DIR = path.resolve(__dirname, '..', 'public', 'api', 'notify');
 const RECENT_PATH = path.resolve(ARCHIVE_DIR, 'recent.json');
 const RECENT30_PATH = path.resolve(ARCHIVE_DIR, 'recent30.json');
 const MONTHLY_PATH = path.resolve(ARCHIVE_DIR, 'monthly.json');
@@ -546,6 +549,8 @@ Full analysis → ${canonical}`;
   const actionHint = (riskIndex.score ?? 0) > 65
     ? "Allocation adjustment likely if risk > 65."
     : "No allocation change suggested today.";
+  const alertMsg = alertHeadline(ctx.alerts || []);
+  const alertBanner = alertMsg ? `<div class="alert-banner">${alertMsg}</div>` : '';
   const similar = (ctx.similar || []).map(item => `<a href="/daily/${item.date}">${item.date} · MRI ${item.score}</a>`).join("") || "<span>No similar periods found.</span>";
   const relatedLinks = `
     <div class="panel">
@@ -647,6 +652,7 @@ Full analysis → ${canonical}`;
     .ads { margin:16px 0; padding:14px; border:1px dashed rgba(255,255,255,0.15); border-radius:12px; color:var(--muted); font-size:12px; min-height:120px; display:flex; align-items:center; justify-content:center; }
     .ads[data-loaded="false"] { opacity: 0.6; }
     .footer-links { margin-top:16px; display:flex; gap:12px; flex-wrap:wrap; font-size:12px; }
+    .alert-banner { margin-top:12px; padding:10px 14px; border-radius:12px; background:rgba(248,113,113,0.18); border:1px solid rgba(248,113,113,0.35); font-size:13px; }
   </style>
 </head>
 <body>
@@ -660,6 +666,7 @@ Full analysis → ${canonical}`;
     </div>
     <h1>Market Risk Index — ${date}</h1>
     <div class="meta">Report date based on America/New_York timezone.</div>
+    ${alertBanner}
 
     <div class="panel">
       <div class="row" style="align-items:center;">
@@ -855,6 +862,27 @@ function getYesterdayRisk() {
   }
 }
 
+function getPrevDailyData(excludeDate) {
+  const files = listArchiveJsons();
+  if (!files.length) return null;
+  const dates = files.map(f => f.slice(0, 10)).sort();
+  let idx = dates.length - 1;
+  if (excludeDate) {
+    const found = dates.indexOf(excludeDate);
+    idx = found > 0 ? found - 1 : (found === 0 ? -1 : dates.length - 1);
+  }
+  if (idx < 0) return null;
+  const date = dates[idx];
+  const jsonPath = path.join(ARCHIVE_DIR, `${date}.json`);
+  try {
+    const data = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+    const risk = data.riskIndex || data.marketRisk || {};
+    return { date, risk };
+  } catch (e) {
+    return null;
+  }
+}
+
 function mapRisk(score) {
   let light = 'green';
   if (score >= 61) light = 'red';
@@ -876,6 +904,108 @@ function confirmExtreme(step, prevStep) {
   if (step === 0 && prevStep !== 0) return 25;
   if (step === 100 && prevStep !== 100) return 75;
   return step;
+}
+
+function mapLevelToRegime(level) {
+  if (level === 'low') return 'risk_on';
+  if (level === 'high') return 'risk_off';
+  return 'neutral';
+}
+
+function buildDailyAlerts(todayRisk, prevRisk, date) {
+  const alerts = [];
+  if (!todayRisk || !date) return alerts;
+  const todayLevel = todayRisk.level || '';
+  const todayRegime = mapLevelToRegime(todayLevel);
+  const prevLevel = prevRisk?.level || '';
+  const prevRegime = prevLevel ? mapLevelToRegime(prevLevel) : null;
+  if (prevRegime && todayRegime !== prevRegime) {
+    alerts.push({ type: 'regime_change', from: prevRegime, to: todayRegime, date });
+  }
+  const score = Number(todayRisk.score);
+  const prevScore = Number(prevRisk?.score);
+  if (Number.isFinite(score)) {
+    if (score > 70 && (!Number.isFinite(prevScore) || prevScore <= 70)) {
+      alerts.push({ type: 'threshold_high', level: 'high', score, date });
+    }
+    if (score < 30 && (!Number.isFinite(prevScore) || prevScore >= 30)) {
+      alerts.push({ type: 'threshold_low', level: 'low', score, date });
+    }
+  }
+  return alerts;
+}
+
+function mergeAlertHistory(history, alerts) {
+  const list = Array.isArray(history) ? history.slice() : [];
+  const key = (a) => `${a.type}:${a.date}:${a.from || ''}:${a.to || ''}:${a.level || ''}`;
+  const seen = new Set(list.map(key));
+  alerts.forEach((a) => {
+    const k = key(a);
+    if (!seen.has(k)) {
+      list.push(a);
+      seen.add(k);
+    }
+  });
+  list.sort((a, b) => (a.date < b.date ? 1 : -1));
+  return list;
+}
+
+function alertHeadline(alerts) {
+  if (!Array.isArray(alerts) || !alerts.length) return '';
+  const hasRegime = alerts.find(a => a.type === 'regime_change');
+  if (hasRegime) return 'Risk Alert: Regime Changed';
+  const hasHigh = alerts.find(a => a.type === 'threshold_high');
+  if (hasHigh) return 'High Risk Warning';
+  const hasLow = alerts.find(a => a.type === 'threshold_low');
+  if (hasLow) return 'Low Risk Warning';
+  return 'Risk Alert Triggered';
+}
+
+function renderAlertsPage(alertHistory = []) {
+  const rows = alertHistory.map(item => {
+    const label = item.type === 'regime_change'
+      ? `Regime Change: ${item.from} → ${item.to}`
+      : item.type === 'threshold_high'
+        ? 'High Risk Alert'
+        : item.type === 'threshold_low'
+          ? 'Low Risk Alert'
+          : item.type;
+    return `<tr><td>${item.date}</td><td>${label}</td><td><a href="/daily/${item.date}">Daily</a></td></tr>`;
+  }).join('');
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="index,follow">
+  <meta name="theme-color" content="#0B0F1A">
+  <title>Risk Alerts — FinLogicHub5</title>
+  <meta name="description" content="Historical market risk alerts, including regime changes and threshold warnings.">
+  <link rel="canonical" href="${SITE_ROOT}/alerts/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Risk Alerts — FinLogicHub5">
+  <meta property="og:description" content="Historical market risk alerts, including regime changes and threshold warnings.">
+  <meta property="og:url" content="${SITE_ROOT}/alerts/">
+  <meta property="og:image" content="${SITE_ROOT}/og/mri-latest.png">
+  <style>
+    body { margin:0; font-family:"Space Grotesk", sans-serif; background:#0B0F1A; color:#E5EDFF; }
+    .container { max-width: 860px; margin:0 auto; padding:24px; }
+    table { width:100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding:10px; border-bottom:1px solid rgba(255,255,255,0.08); text-align:left; }
+    a { color:#7DD3FC; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Risk Alerts</h1>
+    <p>Historical alerts for regime changes and risk thresholds.</p>
+    <table>
+      <thead><tr><th>Date</th><th>Alert</th><th>Daily</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="3">No alerts recorded.</td></tr>'}</tbody>
+    </table>
+  </div>
+</body>
+</html>`;
 }
 
 function buildComponentNotes(ctx, steps) {
@@ -1086,6 +1216,7 @@ function writeSitemap(archiveHtmlFiles) {
     { loc: `${SITE_ROOT}/lab/ai-analysis/`, changefreq: 'monthly', priority: '0.3', lastmod: today },
     { loc: `${SITE_ROOT}/lab/research/`, changefreq: 'monthly', priority: '0.3', lastmod: today },
     { loc: `${SITE_ROOT}/market-risk-index.html`, changefreq: 'daily', priority: '0.7', lastmod: today },
+    { loc: `${SITE_ROOT}/alerts/`, changefreq: 'daily', priority: '0.5', lastmod: today },
     { loc: `${SITE_ROOT}/stock.html`, changefreq: 'daily', priority: '0.6', lastmod: today },
     { loc: `${SITE_ROOT}/privacy.html`, changefreq: 'monthly', priority: '0.3', lastmod: getMtimeDate(PRIVACY_PATH) },
     { loc: `${SITE_ROOT}/disclaimer.html`, changefreq: 'monthly', priority: '0.3', lastmod: getMtimeDate(DISCLAIMER_PATH) }
@@ -1317,6 +1448,26 @@ async function main() {
   fs.writeFileSync(OUT_PATH, JSON.stringify(daily, null, 2));
   fs.writeFileSync(archiveJsonPath, JSON.stringify(daily, null, 2));
 
+  const prevDaily = getPrevDailyData(daily.date);
+  const todayAlerts = buildDailyAlerts(daily.riskIndex, prevDaily?.risk, daily.date);
+  let existingAlerts = null;
+  if (fs.existsSync(RISK_ALERTS_PATH)) {
+    try { existingAlerts = JSON.parse(fs.readFileSync(RISK_ALERTS_PATH, 'utf-8')); } catch (e) {}
+  }
+  const historyList = Array.isArray(existingAlerts)
+    ? existingAlerts
+    : (existingAlerts && Array.isArray(existingAlerts.history) ? existingAlerts.history : []);
+  const mergedHistory = mergeAlertHistory(historyList, todayAlerts);
+  const alertPayload = { date: daily.date, alerts: todayAlerts, history: mergedHistory };
+  fs.writeFileSync(RISK_ALERTS_PATH, JSON.stringify(alertPayload, null, 2));
+  console.log('risk_alerts.json updated:', RISK_ALERTS_PATH);
+  fs.mkdirSync(ALERTS_DIR, { recursive: true });
+  fs.writeFileSync(path.join(ALERTS_DIR, 'index.html'), renderAlertsPage(mergedHistory));
+  fs.mkdirSync(ALERTS_API_DIR, { recursive: true });
+  const apiPayload = { date: daily.date, hasAlert: todayAlerts.length > 0, alerts: todayAlerts };
+  fs.writeFileSync(path.join(ALERTS_API_DIR, 'index.json'), JSON.stringify(apiPayload, null, 2));
+  fs.writeFileSync(path.join(ALERTS_API_DIR, 'index.html'), JSON.stringify(apiPayload, null, 2));
+
   fs.mkdirSync(OG_DIR, { recursive: true });
   const svg = buildShareSvg(daily);
   const ogDatePath = path.join(OG_DIR, `mri-${daily.date}.svg`);
@@ -1438,7 +1589,8 @@ async function main() {
         prevScore,
         trendSeries: riskHistory.slice(Math.max(0, idx - 89), idx + 1).map(r => r.score),
         regimeDuration: calcRegimeDuration(riskHistory, idx),
-        recent7
+        recent7,
+        alerts: (mergedHistory || []).filter(a => a.date === d)
       });
       fs.writeFileSync(htmlPath, html);
       // Legacy .html for backward compatibility
