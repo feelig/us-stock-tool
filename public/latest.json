@@ -52,5 +52,19 @@
     "Stay within the neutral allocation band.",
     "Rebalance only if regime changes, not on noise.",
     "Track trend + bond stress for confirmation."
-  ]
+  ],
+  "debug": {
+    "countsFromAlpha": {
+      "SPY": 100,
+      "QQQ": 100,
+      "TLT": 100,
+      "GLD": 100
+    },
+    "countsFromHistory": {
+      "SPY": 100,
+      "QQQ": 100,
+      "TLT": 100,
+      "GLD": 100
+    }
+  }
 }
