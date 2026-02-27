@@ -3,10 +3,10 @@
   "mri": 32,
   "riskLevel": "medium",
   "equityRange": "40-60%",
-  "trend": "down",
-  "confidence": "medium",
-  "delta": -21,
-  "cnShareText": "📊 今日市场风险指数（MRI）：32 (-21)\n风险等级：中性\n建议股票仓位：40-60%\n趋势：风险下降\n置信度：中等\n\n查看完整指数 → https://finlogichub5.com",
-  "enShareText": "MRI 32 (-21)\n\nRisk Level: medium\nEquity Range: 40-60%\nTrend: down\nConfidence: medium\n\nFull report → https://finlogichub5.com",
-  "shareText": "📊 今日市场风险指数（MRI）：32 (-21)\n风险等级：中性\n建议股票仓位：40-60%\n趋势：风险下降\n置信度：中等\n\n查看完整指数 → https://finlogichub5.com"
+  "trend": "flat",
+  "confidence": "low",
+  "delta": 0,
+  "cnShareText": "📊 今日市场风险指数（MRI）：32 (0)\n风险等级：中性\n建议股票仓位：40-60%\n趋势：风险稳定\n置信度：低\n\n查看完整指数 → https://finlogichub5.com",
+  "enShareText": "MRI 32 (0)\n\nRisk Level: medium\nEquity Range: 40-60%\nTrend: flat\nConfidence: low\n\nFull report → https://finlogichub5.com",
+  "shareText": "📊 今日市场风险指数（MRI）：32 (0)\n风险等级：中性\n建议股票仓位：40-60%\n趋势：风险稳定\n置信度：低\n\n查看完整指数 → https://finlogichub5.com"
 }

@@ -37,7 +37,7 @@
       "风险偏好中性"
     ],
     "percentileRank": null,
-    "percentileNote": "样本不足（n=3），暂不显示分位",
+    "percentileNote": "样本不足（n=4），暂不显示分位",
     "confidenceLevel": "low",
     "confidenceReason": "组件分歧小，信号偏弱"
   },
