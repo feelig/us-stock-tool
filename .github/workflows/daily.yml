@@ -90,9 +90,9 @@ jobs:
           const countsFromHistory = data?.debug?.countsFromHistory || {};
           const shortHistory = Object.entries(countsFromHistory).filter(([, n]) => typeof n === 'number' && n < 200);
           if (shortHistory.length) {
-            console.warn('MA200 history short:', shortHistory.map(([s, n]) => `${s}:${n}`).join(', '));
+            console.warn('MA100 history short:', shortHistory.map(([s, n]) => `${s}:${n}`).join(', '));
           } else {
-            console.log('MA200 data sufficient for all symbols.');
+            console.log('MA100 data sufficient for all symbols.');
           }
 
           const cachePath = 'tools/cache/ma200_fail.json';
@@ -112,7 +112,7 @@ jobs:
           fs.writeFileSync(cachePath, JSON.stringify(state, null, 2));
 
           if (state.consecutiveFails >= 3) {
-            console.error('MA200 insufficient for 3 consecutive runs. Failing workflow.');
+            console.error('MA100 insufficient for 3 consecutive runs. Failing workflow.');
             process.exit(1);
           }
           NODE

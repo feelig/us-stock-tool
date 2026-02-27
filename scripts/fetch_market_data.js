@@ -27,12 +27,12 @@ function ma100Position(closes) {
   return { ma100, above: today >= ma100 };
 }
 
-function buildSignal(symbol, aboveMA200) {
+function buildSignal(symbol, aboveMA100) {
   const s = String(symbol || "").toUpperCase();
-  if (s === "SPY" || s === "QQQ") return aboveMA200 ? "Risk-on" : "Risk-off";
-  if (s === "TLT") return aboveMA200 ? "Relief" : "Stress";
-  if (s === "GLD") return aboveMA200 ? "Hedge" : "Neutral";
-  return aboveMA200 ? "Supportive" : "Defensive";
+  if (s === "SPY" || s === "QQQ") return aboveMA100 ? "Risk-on" : "Risk-off";
+  if (s === "TLT") return aboveMA100 ? "Relief" : "Stress";
+  if (s === "GLD") return aboveMA100 ? "Hedge" : "Neutral";
+  return aboveMA100 ? "Supportive" : "Defensive";
 }
 
 function formatMa100Pos(pos) {
@@ -175,9 +175,9 @@ function buildComponents(inputsTable) {
   const tlt = (inputsTable || []).find(x => x.asset === "TLT");
   const gld = (inputsTable || []).find(x => x.asset === "GLD");
 
-  const trend = (spy?.ma200Pos === "Above MA200" && qqq?.ma200Pos === "Above MA200") ? 25 : 75;
-  const stress = (tlt?.ma200Pos === "Below MA200") ? 75 : 25;
-  const regime = (gld?.ma200Pos === "Above MA200") ? 50 : 25;
+  const trend = (spy?.ma100Pos === "Above MA100" && qqq?.ma100Pos === "Above MA100") ? 25 : 75;
+  const stress = (tlt?.ma100Pos === "Below MA100") ? 75 : 25;
+  const regime = (gld?.ma100Pos === "Above MA100") ? 50 : 25;
 
   return { trend, stress, regime };
 }
@@ -187,20 +187,20 @@ function buildOutlook(riskLevel) {
   if (v === "high") {
     return {
       baseCase: "Defensive posture remains appropriate while risk stays elevated.",
-      upsideTrigger: "Risk regime improves with equities reclaiming MA200.",
+      upsideTrigger: "Risk regime improves with equities reclaiming MA100.",
       downsideTrigger: "Risk intensifies if bonds remain under pressure.",
     };
   }
   if (v === "low") {
     return {
       baseCase: "Risk environment supportive; maintain disciplined exposure.",
-      upsideTrigger: "Sustained trend strength in SPY/QQQ above MA200.",
-      downsideTrigger: "Bond stress returning or equity trend breaks MA200.",
+      upsideTrigger: "Sustained trend strength in SPY/QQQ above MA100.",
+      downsideTrigger: "Bond stress returning or equity trend breaks MA100.",
     };
   }
   return {
     baseCase: "Balanced regime; keep allocations within neutral ranges.",
-    upsideTrigger: "Risk-on tilt if SPY/QQQ hold above MA200.",
+    upsideTrigger: "Risk-on tilt if SPY/QQQ hold above MA100.",
     downsideTrigger: "Defensive shift if bond stress persists or trend breaks.",
   };
 }
