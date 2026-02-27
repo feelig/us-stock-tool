@@ -67,6 +67,24 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://finlogichub5.com/thanks/</loc>
+    <lastmod>2026-02-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://finlogichub5.com/privacy/</loc>
+    <lastmod>2026-02-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://finlogichub5.com/unsubscribe/</loc>
+    <lastmod>2026-02-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
     <loc>https://finlogichub5.com/stock.html</loc>
     <lastmod>2026-02-27</lastmod>
     <changefreq>daily</changefreq>

@@ -1,0 +1,36 @@
+name: Daily Risk Alerts Email
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 12 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  send-alerts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install deps
+        run: npm install --no-audit --no-fund
+
+      - name: Generate daily alerts
+        run: node tools/generate_daily.js
+
+      - name: Send alert email if needed
+        env:
+          ALERT_EMAIL_PROVIDER: ${{ secrets.ALERT_EMAIL_PROVIDER }}
+          ALERT_EMAIL_FROM: ${{ secrets.ALERT_EMAIL_FROM }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          BUTTONDOWN_API_KEY: ${{ secrets.BUTTONDOWN_API_KEY }}
+        run: node tools/send_alert_email.js

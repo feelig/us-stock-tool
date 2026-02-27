@@ -20,11 +20,13 @@ const OG_DIR = path.resolve(__dirname, '..', 'public', 'og');
 const ARCHIVE_DIR = path.resolve(__dirname, '..', 'public', 'daily');
 const ALERTS_DIR = path.resolve(__dirname, '..', 'public', 'alerts');
 const ALERTS_API_DIR = path.resolve(__dirname, '..', 'public', 'api', 'notify');
+const ALERTS_TODAY_DIR = path.resolve(__dirname, '..', 'public', 'api', 'alerts-today');
 const RECENT_PATH = path.resolve(ARCHIVE_DIR, 'recent.json');
 const RECENT30_PATH = path.resolve(ARCHIVE_DIR, 'recent30.json');
 const MONTHLY_PATH = path.resolve(ARCHIVE_DIR, 'monthly.json');
 const SITEMAP_PATH = path.resolve(__dirname, '..', 'public', 'sitemap.xml');
 const SITE_ROOT = 'https://finlogichub5.com';
+const SUBSCRIBE_URL = 'https://formspree.io/f/FORM_ID';
 const REPORT_TZ = 'America/New_York';
 const PRIVACY_PATH = path.resolve(__dirname, '..', 'privacy.html');
 const DISCLAIMER_PATH = path.resolve(__dirname, '..', 'disclaimer.html');
@@ -998,6 +1000,7 @@ function renderAlertsPage(alertHistory = []) {
 <body>
   <div class="container">
     <h1>Risk Alerts</h1>
+    <p><a href="${SUBSCRIBE_URL}">Subscribe for alerts</a></p>
     <p>Historical alerts for regime changes and risk thresholds.</p>
     <table>
       <thead><tr><th>Date</th><th>Alert</th><th>Daily</th></tr></thead>
@@ -1217,6 +1220,9 @@ function writeSitemap(archiveHtmlFiles) {
     { loc: `${SITE_ROOT}/lab/research/`, changefreq: 'monthly', priority: '0.3', lastmod: today },
     { loc: `${SITE_ROOT}/market-risk-index.html`, changefreq: 'daily', priority: '0.7', lastmod: today },
     { loc: `${SITE_ROOT}/alerts/`, changefreq: 'daily', priority: '0.5', lastmod: today },
+    { loc: `${SITE_ROOT}/thanks/`, changefreq: 'monthly', priority: '0.3', lastmod: today },
+    { loc: `${SITE_ROOT}/privacy/`, changefreq: 'monthly', priority: '0.3', lastmod: today },
+    { loc: `${SITE_ROOT}/unsubscribe/`, changefreq: 'monthly', priority: '0.3', lastmod: today },
     { loc: `${SITE_ROOT}/stock.html`, changefreq: 'daily', priority: '0.6', lastmod: today },
     { loc: `${SITE_ROOT}/privacy.html`, changefreq: 'monthly', priority: '0.3', lastmod: getMtimeDate(PRIVACY_PATH) },
     { loc: `${SITE_ROOT}/disclaimer.html`, changefreq: 'monthly', priority: '0.3', lastmod: getMtimeDate(DISCLAIMER_PATH) }
@@ -1467,6 +1473,15 @@ async function main() {
   const apiPayload = { date: daily.date, hasAlert: todayAlerts.length > 0, alerts: todayAlerts };
   fs.writeFileSync(path.join(ALERTS_API_DIR, 'index.json'), JSON.stringify(apiPayload, null, 2));
   fs.writeFileSync(path.join(ALERTS_API_DIR, 'index.html'), JSON.stringify(apiPayload, null, 2));
+  fs.mkdirSync(ALERTS_TODAY_DIR, { recursive: true });
+  const alertsTodayPayload = {
+    date: daily.date,
+    hasAlerts: todayAlerts.length > 0,
+    alerts: todayAlerts,
+    dailyUrl: `${SITE_ROOT}/daily/${daily.date}`,
+    alertsUrl: `${SITE_ROOT}/alerts/`
+  };
+  fs.writeFileSync(path.join(ALERTS_TODAY_DIR, 'index.json'), JSON.stringify(alertsTodayPayload, null, 2));
 
   fs.mkdirSync(OG_DIR, { recursive: true });
   const svg = buildShareSvg(daily);

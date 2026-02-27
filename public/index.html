@@ -81,6 +81,11 @@
     .alloc h4 { margin: 0 0 8px 0; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; }
     .alloc-line { display: flex; justify-content: space-between; font-size: 14px; padding: 6px 0; }
     .cta { margin-top: 18px; display: inline-flex; gap: 10px; padding: 12px 18px; border-radius: 999px; background: linear-gradient(90deg, var(--cyan), var(--purple)); color: #0B0F1A; font-weight: 700; }
+    .subscribe { margin-top: 16px; padding: 14px; border-radius: 14px; background: var(--glass); border: 1px solid rgba(255,255,255,0.08); }
+    .subscribe form { display: flex; gap: 8px; flex-wrap: wrap; }
+    .subscribe input { flex: 1 1 180px; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.2); color: var(--text); }
+    .subscribe button { padding: 10px 14px; border-radius: 8px; border: none; background: var(--cyan); color: #0B0F1A; font-weight: 700; cursor: pointer; }
+    .subscribe small { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }
 
     .badge-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; font-size: 12px; color: var(--muted); }
     .badge { padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
@@ -162,6 +167,14 @@
             <div class="alloc-line" id="allocEquity">Equity --</div>
             <div class="alloc-line" id="allocBond">Bond --</div>
             <div class="alloc-line" id="allocCash">Cash --</div>
+          </div>
+          <div class="subscribe">
+            <form action="https://formspree.io/f/FORM_ID" method="POST">
+              <input type="email" name="email" placeholder="Get risk alerts by email" required>
+              <input type="hidden" name="_next" value="https://finlogichub5.com/thanks/">
+              <button type="submit">Subscribe</button>
+            </form>
+            <small>Only notify on regime or high/low risk alerts.</small>
           </div>
 
           <a class="cta" href="/weekly/">View Weekly Strategy</a>
@@ -316,7 +329,7 @@
         const alerts = data.alerts || [];
         const msg = alertMessage(alerts);
         if (msg) {
-          banner.textContent = msg;
+          banner.innerHTML = `${msg} <a href="https://formspree.io/f/FORM_ID" style="color:#E5EDFF; text-decoration:underline; margin-left:8px;">Get Email Alerts</a>`;
           banner.style.display = 'block';
         }
       } catch (e) {}
