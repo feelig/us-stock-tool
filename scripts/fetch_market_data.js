@@ -30,6 +30,10 @@ async function fetchDaily(symbol) {
   return prices;
 }
 
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
 function movingAverage(data, n) {
   const slice = data.slice(0, n);
   return slice.reduce((a, b) => a + b.close, 0) / n;
@@ -52,6 +56,7 @@ async function main() {
 
   for (const s of symbols) {
     market[s] = await fetchDaily(s);
+    await sleep(15000);
   }
 
   const mri = calculateMRI(market);
