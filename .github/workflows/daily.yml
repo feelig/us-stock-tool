@@ -99,16 +99,10 @@ jobs:
           git pull --rebase origin main
           git push origin main
 
-      - name: Ping Google Sitemap
+      - name: Ping sitemap (Google disabled)
         run: |
-          set -euo pipefail
-          code=$(curl -sS -o /tmp/google_ping.txt -w "%{http_code}" "https://www.google.com/ping?sitemap=https://finlogichub5.com/sitemap.xml")
-          echo "Google ping status: ${code}"
-          cat /tmp/google_ping.txt || true
-          if [ "${code}" != "200" ]; then
-            echo "Google ping failed"
-            exit 1
-          fi
+          echo "Google sitemap ping deprecated — skipping."
+          exit 0
 
       - name: Upload debug artifacts on failure
         if: failure()
