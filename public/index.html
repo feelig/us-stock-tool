@@ -35,8 +35,9 @@
 查看完整指数 → https://finlogichub5.com">
 <meta name="twitter:image" content="https://finlogichub5.com/og/mri-latest.png">
 <!-- MRI_OG_END -->
+  <link rel="preload" as="fetch" href="/latest.json" crossorigin>
   <link rel="preload" as="fetch" href="/data/latest.json" crossorigin>
-  <link rel="preload" as="fetch" href="/data/risk_index.json" crossorigin>
+  <link rel="preload" as="fetch" href="/risk_index.json" crossorigin>
   <link rel="preload" as="fetch" href="/data/risk_index_history.json" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -99,15 +100,20 @@
     }
     .hero-grid { display: grid; grid-template-columns: 7fr 3fr; gap: 24px; position: relative; z-index: 1; }
     .hero-left .title { font-size: clamp(22px, 3vw, 28px); letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
-    .hero-left .mri { font-size: clamp(56px, 10vw, 110px); font-weight: 700; line-height: 1; }
+    .hero-left .mri { font-size: clamp(64px, 12vw, 120px); font-weight: 700; line-height: 1; }
     .hero-left .meta { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 12px 20px; font-size: 14px; color: #CFE9FF; }
+    .hero-left .source { margin-top: 10px; color: var(--muted); font-size: 12px; }
     .hero-right { background: var(--glass); border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 18px; }
     .box-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
-    .ranges { margin: 12px 0; display: grid; gap: 6px; font-size: 14px; }
+    .ranges { margin: 12px 0; display: grid; gap: 10px; }
+    .range-card { display:flex; justify-content:space-between; padding: 10px 12px; border-radius: 12px; border:1px solid rgba(255,255,255,0.12); background: rgba(12,19,32,0.7); font-size: 14px; }
     .cta { display: grid; gap: 10px; margin-top: 12px; }
     .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); color: var(--text); }
     .btn.primary { background: linear-gradient(90deg, var(--cyan), var(--purple)); color: #0B0F1A; font-weight: 700; border: none; }
     .note { margin-top: 10px; color: var(--muted); font-size: 12px; }
+    .risk-low { color: var(--green); }
+    .risk-neutral { color: var(--yellow); }
+    .risk-high { color: var(--red); }
     .subscribe { margin-top: 16px; padding: 14px; border-radius: 14px; background: var(--glass); border: 1px solid rgba(255,255,255,0.08); }
     .subscribe form { display: flex; gap: 8px; flex-wrap: wrap; }
     .subscribe input { flex: 1 1 180px; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.2); color: var(--text); }
@@ -116,24 +122,6 @@
 
     .badge-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; font-size: 12px; color: var(--muted); }
     .badge { padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
-    .alert-banner { margin-top: 10px; padding: 10px 14px; border-radius: 12px; background: rgba(248,113,113,0.18); border: 1px solid rgba(248,113,113,0.35); font-size: 13px; display: none; }
-
-    .gauge-card { background: var(--panel); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); position: relative; overflow: hidden; min-height: 360px; display:flex; flex-direction:column; justify-content:center; }
-    .gauge {
-      width: 240px; height: 240px; border-radius: 50%;
-      background: conic-gradient(var(--green) 0deg 120deg, var(--yellow) 120deg 240deg, var(--red) 240deg 360deg);
-      display: grid; place-items: center; margin: 0 auto; position: relative; animation: pulse 8s ease-in-out infinite;
-    }
-    .gauge::after {
-      content: ""; width: 170px; height: 170px; border-radius: 50%; background: #0B0F1A; border: 1px solid rgba(255,255,255,0.08);
-      box-shadow: inset 0 0 30px rgba(0,229,255,0.1);
-    }
-    .needle {
-      position: absolute; width: 6px; height: 110px; background: #fff; border-radius: 999px; top: 25px; left: 50%;
-      transform-origin: bottom center; transform: translateX(-50%) rotate(0deg); transition: transform 1.4s ease;
-      box-shadow: 0 0 12px rgba(0,229,255,0.6);
-    }
-    .gauge-center { position: absolute; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 0 14px rgba(0,229,255,0.7); }
 
     .section { padding: 48px 0; }
     .section h2 { margin: 0 0 12px 0; font-size: 22px; }
@@ -200,22 +188,26 @@
             <span id="deltaWrap" style="display:none; gap:8px;">
               Δ vs yesterday: <b id="deltaValue">--</b>
             </span>
+            <span>Trend: <b id="trendLabel">--</b></span>
+            <span>Regime duration: <b id="regimeDuration">--</b></span>
             <span>Updated: <b id="updatedDate">--</b></span>
           </div>
+          <div class="source">Data source: Alpha Vantage · Updated daily after market close</div>
         </div>
 
         <div class="hero-right">
           <div class="box-title">Suggested Allocation Range</div>
           <div class="ranges">
-            <div>Equity: <b id="equityRange">--</b></div>
-            <div>Bonds: <b id="bondsRange">--</b></div>
-            <div>Cash: <b id="cashRange">--</b></div>
+            <div class="range-card"><span>Equity</span><b id="equityRange">--</b></div>
+            <div class="range-card"><span>Bonds</span><b id="bondsRange">--</b></div>
+            <div class="range-card"><span>Cash</span><b id="cashRange">--</b></div>
           </div>
           <div class="cta">
             <a class="btn primary" href="/daily">View Today’s Full Report →</a>
             <a class="btn" href="/weekly">Read Weekly Strategy →</a>
           </div>
           <div class="note">Use as exposure guidance, not trading instruction. Not investment advice.</div>
+          <div class="note">Get notified when market risk changes.</div>
         </div>
       </div>
     </section>
@@ -228,7 +220,7 @@
     </section>
 
     <section class="section">
-      <h2>Today’s Actions</h2>
+      <h2>Next actions</h2>
       <div class="cta-grid">
         <div class="cta-card">
           <a href="/daily/" id="actionDaily" data-track="home_cta_click" data-target="daily">
@@ -255,24 +247,6 @@
     </section>
 
     <section class="section">
-      <h2>Risk Framework Hub</h2>
-      <div class="panel">
-        <ul style="margin:0;padding-left:18px;line-height:1.8;">
-          <li><a href="/pillar/market-risk-framework/">Market Risk Framework Explained</a> — foundational model for regime and allocation signals.</li>
-          <li><a href="/pillar/risk-regime-explained/">Risk Regime Explained</a> — how risk-on/neutral/risk-off regimes work.</li>
-          <li><a href="/pillar/asset-allocation-method/">Asset Allocation Strategy Guide</a> — translate MRI into allocation ranges.</li>
-          <li><a href="/pillar/market-risk-history-study/">Market Risk Index Model Study</a> — historical context and regime cycles.</li>
-          <li><a href="/pillar/regime-duration-analysis/">Regime Duration Analysis</a> — why duration matters for drawdowns.</li>
-          <li><a href="/pillar/how-to-use-mri/">How to Use MRI</a> — practical workflow for daily/weekly usage.</li>
-          <li><a href="/pillar/risk-signal-vs-timing/">Risk Signal vs Timing</a> — avoid noisy market timing.</li>
-          <li><a href="/pillar/risk-for-etf-investors/">Risk for ETF Investors</a> — risk-aware ETF exposure.</li>
-          <li><a href="/pillar/portfolio-risk-management/">Portfolio Risk Management</a> — regime-driven guardrails.</li>
-          <li><a href="/pillar/risk-threshold-strategy/">Risk Threshold Strategy</a> — using high/low risk triggers.</li>
-        </ul>
-      </div>
-    </section>
-
-    <section class="section">
       <h2>Risk Trend (90 Days)</h2>
       <div class="chart-wrap" id="chartWrap">
         <canvas id="riskChart" width="980" height="220" aria-label="90-day risk trend" role="img"></canvas>
@@ -286,72 +260,16 @@
       <div class="brief" id="riskBrief">Loading today’s brief...</div>
     </section>
 
-    <section class="section">
-      <h2>Recommended Next</h2>
-      <div class="cta-grid" id="recommendedNext"></div>
-    </section>
-
-    <section class="section">
-      <h2>Most visited</h2>
-      <div class="cta-grid">
-        <div class="cta-card"><a href="/archive/" data-track="home_most_visited_click" data-target="archive">Risk archive →</a><p>Historical daily reports and regime shifts.</p></div>
-        <div class="cta-card"><a href="/risk-levels/" data-track="home_most_visited_click" data-target="risk-levels">Risk levels explained →</a><p>Understand risk-on, neutral, risk-off.</p></div>
-        <div class="cta-card"><a href="/risk-regime/" data-track="home_most_visited_click" data-target="risk-regime">Risk regime guide →</a><p>How regimes change and persist.</p></div>
-        <div class="cta-card"><a href="/risk-history/" data-track="home_most_visited_click" data-target="risk-history">Risk history →</a><p>Historical MRI cycles and context.</p></div>
-        <div class="cta-card"><a href="/market-risk-today/" data-track="home_most_visited_click" data-target="risk-today">Market risk today →</a><p>Snapshot of today’s MRI signal.</p></div>
-        <div class="cta-card"><a href="/pillar/risk-regime-explained/" data-track="home_most_visited_click" data-target="pillar-regime">Risk regime explained →</a><p>Deep dive into regime mechanics.</p></div>
-      </div>
-    </section>
-
     <div class="ads" data-ad-slot="home-footer" data-loaded="false">Ad Slot — Footer (reserved)</div>
 
-    <div class="panel" style="margin-top:18px;">
-      <h2>Explore More</h2>
-      <p><a href="/daily/">Latest Daily</a> · <a href="/weekly/">Weekly Strategy</a> · <a href="/risk-levels/">Risk Levels</a> · <a href="/market-risk-explained/">Market Risk Explained</a> · <a href="/pillar/market-risk-framework/">Market Risk Framework</a> · <a href="/risk-history/">Risk History</a> · <a href="/market-risk-today/">Market Risk Today</a></p>
-    </div>
     <div class="footer-links">
       <a href="/market-risk-index.html">Market Risk Index</a>
-      <a href="/pages/guides.html">Guides Hub</a>
-      <a href="/pages/daily-hub.html">Daily Hub</a>
+      <a href="/weekly/">Weekly Strategy</a>
+      <a href="/archive/">Risk Archive</a>
     </div>
   </div>
 
   <script>
-    const levelMap = { low: 'LOW — RISK-ON', medium: 'NEUTRAL', high: 'HIGH — RISK-OFF' };
-
-    function formatDelta(delta) {
-      if (delta === null || delta === undefined) return '--';
-      const sign = delta > 0 ? '+' : '';
-      return `${sign}${delta} vs Yesterday`;
-    }
-
-    function allocationFor(level) {
-      if (level === 'low') return { equity: 'Equity 60–80%', bond: 'Bond 10–25%', cash: 'Cash 5–15%' };
-      if (level === 'high') return { equity: 'Equity 20–40%', bond: 'Bond 30–50%', cash: 'Cash 20–30%' };
-      return { equity: 'Equity 40–60%', bond: 'Bond 20–40%', cash: 'Cash 10–20%' };
-    }
-
-    function alertMessage(alerts) {
-      if (!Array.isArray(alerts) || !alerts.length) return '';
-      if (alerts.some(a => a.type === 'regime_change')) return 'Risk Alert: Regime Changed';
-      if (alerts.some(a => a.type === 'threshold_high')) return 'High Risk Warning';
-      if (alerts.some(a => a.type === 'threshold_low')) return 'Low Risk Warning';
-      return 'Risk Alert Triggered';
-    }
-
-    function animateScore(el, value) {
-      const target = Number(value);
-      if (!Number.isFinite(target)) { el.textContent = '--'; return; }
-      let start = 0;
-      const step = () => {
-        start += Math.max(1, Math.round(target / 40));
-        if (start >= target) { el.textContent = target; return; }
-        el.textContent = start;
-        requestAnimationFrame(step);
-      };
-      step();
-    }
-
     function drawChart(canvas, series) {
       const ctx = canvas.getContext('2d');
       const w = canvas.width; const h = canvas.height;
@@ -372,26 +290,6 @@
       ctx.moveTo(10, h - 20);
       ctx.lineTo(w - 10, h - 20);
       ctx.stroke();
-    }
-
-    async function loadRisk() {
-      return;
-    }
-
-    async function loadAlerts() {
-      const banner = document.getElementById('alertBanner');
-      if (!banner) return;
-      try {
-        const res = await fetch('/data/risk_alerts.json', { cache: 'no-store' });
-        if (!res.ok) return;
-        const data = await res.json();
-        const alerts = data.alerts || [];
-        const msg = alertMessage(alerts);
-        if (msg) {
-          banner.innerHTML = `${msg} <a href="https://formspree.io/f/FORM_ID" style="color:#E5EDFF; text-decoration:underline; margin-left:8px;">Get Email Alerts</a>`;
-          banner.style.display = 'block';
-        }
-      } catch (e) {}
     }
 
     async function loadDeltaAndBrief() {
@@ -423,9 +321,7 @@
       }
     }
 
-    loadRisk();
     loadDeltaAndBrief();
-    loadAlerts();
 
     function updateSession() {
       const sessionEl = document.getElementById('sessionStatus');
@@ -462,34 +358,6 @@
         trackEvent(el.dataset.track, { target: el.dataset.target || '' });
       });
     });
-
-    async function loadRecommended() {
-      const wrap = document.getElementById('recommendedNext');
-      try {
-        const dailyRes = await fetch('/data/daily.json', { cache: 'no-store' });
-        const daily = dailyRes.ok ? await dailyRes.json() : null;
-        const dailyDate = daily?.date;
-        const dailyUrl = dailyDate ? `/daily/${dailyDate}` : '/daily/';
-        const cards = [
-          { title: "Latest Daily Report", desc: "Full daily MRI report and allocation notes.", href: dailyUrl, target: "daily" },
-          { title: "This Week’s Strategy", desc: "Weekly allocation posture and risk summary.", href: "/weekly/", target: "weekly" },
-          { title: "Risk Framework Pillar", desc: "Understand MRI model and regime signals.", href: "/pillar/market-risk-framework/", target: "pillar" },
-          { title: "Risk History", desc: "Explore historical risk cycles.", href: "/risk-history/", target: "risk-history" }
-        ];
-        wrap.innerHTML = cards.map(c => `
-          <div class="cta-card">
-            <a href="${c.href}" data-track="home_recommend_click" data-target="${c.target}">${c.title} →</a>
-            <p>${c.desc}</p>
-          </div>
-        `).join('');
-        document.querySelectorAll('[data-track="home_recommend_click"]').forEach(el => {
-          el.addEventListener('click', () => trackEvent('home_recommend_click', { target: el.dataset.target || '' }));
-        });
-      } catch (e) {
-        wrap.innerHTML = '<div class="cta-card"><a href="/daily/">Latest Daily Report →</a><p>Open the latest daily MRI report.</p></div>';
-      }
-    }
-    loadRecommended();
 
     // Lazy-load ad slots (placeholder for actual ad code)
     const adSlots = document.querySelectorAll('.ads[data-ad-slot]');
@@ -545,6 +413,20 @@
     const wrap = document.getElementById("deltaWrap");
     if (wrap) wrap.style.display = "flex";
     setText("deltaValue", String(delta));
+  }
+
+  const trend = data.trend ?? data.trendDirection ?? data.momentum ?? "--";
+  const regimeDuration = data.regimeDuration ?? data.duration ?? "--";
+  setText("trendLabel", String(trend));
+  setText("regimeDuration", `${regimeDuration}${regimeDuration === "--" ? "" : " days"}`);
+
+  const riskEl = document.getElementById("riskLevel");
+  if (riskEl) {
+    riskEl.classList.remove("risk-low", "risk-neutral", "risk-high");
+    const lv = String(riskLevel).toLowerCase();
+    if (lv.includes("low")) riskEl.classList.add("risk-low");
+    else if (lv.includes("high")) riskEl.classList.add("risk-high");
+    else riskEl.classList.add("risk-neutral");
   }
 
   const drvWrap = document.getElementById("driversList");
