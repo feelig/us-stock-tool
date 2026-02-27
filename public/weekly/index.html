@@ -47,21 +47,37 @@
       <p><a href="https://formspree.io/f/FORM_ID">Subscribe for alerts</a></p>
     </div>
     <div class="panel">
-      <h2>Allocation Strategy</h2>
+      <h2 id="toc">Table of Contents</h2>
+      <ul>
+        <li><a href="#allocation-strategy" data-track="weekly_toc_click" data-section="allocation">Allocation Strategy</a></li>
+        <li><a href="#regime-outlook" data-track="weekly_toc_click" data-section="regime">Regime Outlook</a></li>
+        <li><a href="#investor-actions" data-track="weekly_toc_click" data-section="actions">What Investors Should Do</a></li>
+        <li><a href="#weekly-trend" data-track="weekly_toc_click" data-section="trend">Weekly Risk Trend</a></li>
+        <li><a href="#regime-prob" data-track="weekly_toc_click" data-section="prob">Regime Probability</a></li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h2 id="allocation-strategy">Allocation Strategy</h2>
       <p>Maintain allocation discipline based on the Market Risk Index (MRI). When regime risk is elevated, keep equity exposure in the lower bound of the suggested range and emphasize drawdown control.</p>
-      <h2>Regime Outlook</h2>
+      <h2 id="regime-outlook">Regime Outlook</h2>
       <p>Trend, stress, and regime components are reviewed weekly to determine whether market risk is improving, stabilizing, or deteriorating. This outlook informs weekly allocation adjustments and hedging posture.</p>
-      <h2>What Investors Should Do</h2>
+      <h2 id="investor-actions">What Investors Should Do</h2>
       <p>Use the weekly review as a high-level risk compass. Align position sizing with current MRI risk level and avoid chasing short-term noise.</p>
       <div class="ads" data-ad-slot="weekly-top" data-loaded="false">Ad Slot — After TOC</div>
-      <h2>Weekly Risk Trend (7 Days)</h2>
+      <h2 id="weekly-trend">Weekly Risk Trend (7 Days)</h2>
       <div style="height:160px; margin-top:6px;">
         <svg id="weeklyTrend" width="100%" height="160" viewBox="0 0 600 160" preserveAspectRatio="none"></svg>
       </div>
       <div class="ads" data-ad-slot="weekly-mid" data-loaded="false">Ad Slot — Mid Article</div>
-      <h2>Regime Probability</h2>
+      <h2 id="regime-prob">Regime Probability</h2>
       <p id="regimeProb">Calculating regime persistence...</p>
       <div class="ads" data-ad-slot="weekly-footer" data-loaded="false">Ad Slot — Footer</div>
+    </div>
+    <div class="panel">
+      <h2>Weekly Checklist</h2>
+      <label><input type="checkbox"> Confirm current regime</label><br>
+      <label><input type="checkbox"> Review allocation range</label><br>
+      <label><input type="checkbox"> Decide whether to rebalance</label>
     </div>
     <div class="panel" style="margin-top:18px;">
       <h2>Explore More</h2>
@@ -112,6 +128,14 @@
         document.getElementById('regimeProb').textContent = 'Regime probability unavailable.';
       }
     })();
+    function trackEvent(name, payload) {
+      if (window.track) window.track(name, payload || {});
+    }
+    document.querySelectorAll('[data-track]').forEach(el => {
+      el.addEventListener('click', () => {
+        trackEvent(el.dataset.track, { section: el.dataset.section || '' });
+      });
+    });
     const adSlots = document.querySelectorAll('.ads[data-ad-slot]');
     const adObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {

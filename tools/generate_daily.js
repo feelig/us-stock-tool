@@ -655,9 +655,13 @@ Full analysis → ${canonical}`;
     .ads[data-loaded="false"] { opacity: 0.6; }
     .footer-links { margin-top:16px; display:flex; gap:12px; flex-wrap:wrap; font-size:12px; }
     .alert-banner { margin-top:12px; padding:10px 14px; border-radius:12px; background:rgba(248,113,113,0.18); border:1px solid rgba(248,113,113,0.35); font-size:13px; }
+    .progress { position: fixed; top:0; left:0; height:3px; width:0%; background:#00E5FF; z-index:99; }
+    .cta-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .cta-btn { padding:8px 12px; border-radius:10px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); font-size:12px; }
   </style>
 </head>
 <body>
+  <div class="progress" id="readProgress"></div>
   <div class="container">
     <div class="nav">
       <a href="/">Daily Risk</a>
@@ -687,6 +691,13 @@ Full analysis → ${canonical}`;
     </div>
 
     <div class="ads" data-ad-slot="daily-top" data-loaded="false">Ad Slot — Top</div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 8px 0; font-size:18px;">Key Takeaways</h2>
+      <div class="meta">Risk level today: ${(riskIndex.level || '--').toUpperCase()}</div>
+      <div class="meta">Allocation guidance: Equity ${alloc.equity}</div>
+      <div class="meta">Regime context: ${regimeContext}</div>
+    </div>
 
     <div class="panel">
       <h2 style="margin:0 0 8px 0; font-size:18px;">Regime Context</h2>
@@ -737,10 +748,20 @@ Full analysis → ${canonical}`;
     <div class="panel">
       <h2 style="margin:0 0 8px 0; font-size:18px;">Continue Reading</h2>
       <div class="footer-links">
-        ${prevLink ? `<a href="${prevLink}">Previous Day</a>` : ''}
-        ${nextLink ? `<a href="${nextLink}">Next Day</a>` : ''}
-        <a href="/weekly/">Weekly Strategy</a>
-        <a href="/archive/">Risk History</a>
+        ${prevLink ? `<a href="${prevLink}" data-track="daily_next_prev_click" data-direction="prev">Previous Day</a>` : ''}
+        ${nextLink ? `<a href="${nextLink}" data-track="daily_next_prev_click" data-direction="next">Next Day</a>` : ''}
+        <a href="/weekly/" data-track="daily_next_steps_click" data-target="weekly">Weekly Strategy</a>
+        <a href="/archive/" data-track="daily_next_steps_click" data-target="archive">Risk History</a>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 8px 0; font-size:18px;">Next Steps</h2>
+      <div class="cta-row">
+        ${nextLink ? `<a class="cta-btn" href="${nextLink}" data-track="daily_next_steps_click" data-target="next">Next day</a>` : ''}
+        ${prevLink ? `<a class="cta-btn" href="${prevLink}" data-track="daily_next_steps_click" data-target="prev">Previous day</a>` : ''}
+        <a class="cta-btn" href="/weekly/" data-track="daily_next_steps_click" data-target="weekly">Weekly strategy</a>
+        <a class="cta-btn" href="/alerts/" data-track="daily_next_steps_click" data-target="alerts">Alerts history</a>
       </div>
     </div>
 
@@ -758,6 +779,17 @@ Full analysis → ${canonical}`;
 
   <script>
     (function() {
+      const bar = document.getElementById('readProgress');
+      const onScroll = () => {
+        const doc = document.documentElement;
+        const total = doc.scrollHeight - doc.clientHeight;
+        const pct = total > 0 ? (doc.scrollTop / total) * 100 : 0;
+        bar.style.width = pct + '%';
+      };
+      document.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+    (function() {
       var slots = document.querySelectorAll('.ads[data-ad-slot]');
       if (!('IntersectionObserver' in window)) {
         slots.forEach(function(s) { s.dataset.loaded = 'true'; });
@@ -773,6 +805,15 @@ Full analysis → ${canonical}`;
       }, { rootMargin: '200px' });
       slots.forEach(function(slot) { observer.observe(slot); });
     })();
+
+    function trackEvent(name, payload) {
+      if (window.track) window.track(name, payload || {});
+    }
+    document.querySelectorAll('[data-track]').forEach(function(el) {
+      el.addEventListener('click', function() {
+        trackEvent(el.dataset.track, { target: el.dataset.target || '', direction: el.dataset.direction || '' });
+      });
+    });
   </script>
 </body>
 </html>`;

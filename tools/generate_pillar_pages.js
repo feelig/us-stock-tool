@@ -233,13 +233,14 @@ function buildPage({ slug, title, description, links, recent }) {
   let faq = buildFaq();
   let deepModules = '';
   let faqSchema = '';
-  if (["market-risk-framework", "risk-regime-explained", "asset-allocation-method"].includes(slug)) {
+  const isDeep = ["market-risk-framework", "risk-regime-explained", "asset-allocation-method"].includes(slug);
+  if (isDeep) {
     deepModules = [
-      buildModelExplanation(title),
-      buildCaseStudy(),
-      buildAllocationTable(),
-      buildDeepChart(),
-      buildActionFramework()
+      `<div id="risk-model">${buildModelExplanation(title)}</div>`,
+      `<div id="case-study">${buildCaseStudy()}</div>`,
+      `<div id="allocation-table">${buildAllocationTable()}</div>`,
+      `<div id="risk-chart">${buildDeepChart()}</div>`,
+      `<div id="action-framework">${buildActionFramework()}</div>`
     ].join("\n");
     body = ensureMinWords(body + "\n" + deepModules, 2500);
     faq = buildFaq();
@@ -247,6 +248,45 @@ function buildPage({ slug, title, description, links, recent }) {
   }
   const linksHtml = links.map(l => `<li><a href="${l.url}">${escapeHtml(l.title)}</a></li>`).join("");
   const recentHtml = (recent || []).slice(0, 5).map(r => `<li><a href="/daily/${r.date}">${r.date} · MRI ${r.score ?? '--'}</a></li>`).join("");
+  const pillarList = [
+    "market-risk-framework",
+    "risk-regime-explained",
+    "asset-allocation-method",
+    "market-risk-history-study",
+    "regime-duration-analysis",
+    "how-to-use-mri",
+    "risk-signal-vs-timing",
+    "risk-for-etf-investors",
+    "portfolio-risk-management",
+    "risk-threshold-strategy"
+  ];
+  const relatedPillars = pillarList.filter(p => p !== slug).slice(0, 2);
+  const relatedPillarHtml = relatedPillars.map(p => `<div class="card"><a href="/pillar/${p}/" data-track="pillar_related_click" data-target="${p}">${p.replace(/-/g,' ')}</a></div>`).join("");
+  const relatedSeo = links.slice(0, 2).map(l => `<div class="card"><a href="${l.url}" data-track="pillar_related_click" data-target="seo">${escapeHtml(l.title)}</a></div>`).join("");
+  const coreLinks = `
+    <div class="card"><a href="/daily/${recent?.[0]?.date || ''}" data-track="pillar_related_click" data-target="daily">latest daily report</a></div>
+    <div class="card"><a href="/archive/" data-track="pillar_related_click" data-target="archive">risk archive</a></div>
+  `;
+  const toc = isDeep ? `
+    <div class="card">
+      <h2>In this guide</h2>
+      <ul>
+        <li><a href="#risk-model" data-track="pillar_toc_click" data-section="risk-model">Risk model explanation</a></li>
+        <li><a href="#case-study" data-track="pillar_toc_click" data-section="case-study">Historical case study</a></li>
+        <li><a href="#allocation-table" data-track="pillar_toc_click" data-section="allocation-table">Allocation decision table</a></li>
+        <li><a href="#risk-chart" data-track="pillar_toc_click" data-section="risk-chart">Risk vs market trend</a></li>
+        <li><a href="#action-framework" data-track="pillar_toc_click" data-section="action-framework">Action framework</a></li>
+        <li><a href="#faq" data-track="pillar_toc_click" data-section="faq">FAQ</a></li>
+      </ul>
+    </div>` : `
+    <div class="card">
+      <h2>In this guide</h2>
+      <ul>
+        <li><a href="#risk-chart" data-track="pillar_toc_click" data-section="risk-chart">Risk snapshot chart</a></li>
+        <li><a href="#related-guides" data-track="pillar_toc_click" data-section="related-guides">Related risk guides</a></li>
+        <li><a href="#latest-reports" data-track="pillar_toc_click" data-section="latest-reports">Latest risk reports</a></li>
+      </ul>
+    </div>`;
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -283,8 +323,10 @@ function buildPage({ slug, title, description, links, recent }) {
       <div class="muted">Part of the Market Risk Framework Series • <a href="/">Home</a></div>
     </div>
 
+    ${toc}
+
     <div class="card">
-      <h2>Risk Snapshot Chart</h2>
+      <h2 id="risk-chart">Risk Snapshot Chart</h2>
       <svg width="100%" height="160" viewBox="0 0 600 160" preserveAspectRatio="none">
         <polyline fill="none" stroke="#00E5FF" stroke-width="2" points="${chart}" />
       </svg>
@@ -292,15 +334,19 @@ function buildPage({ slug, title, description, links, recent }) {
 
     <div class="card">
       ${body}
-      ${faq}
+      <div id="faq">${faq}</div>
     </div>
 
-    <div class="card">
+    <div class="card" id="related-guides">
       <h2>Related Risk Guides</h2>
-      <ul style="margin:0;padding-left:18px">${linksHtml}</ul>
+      <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+        ${relatedPillarHtml}
+        ${relatedSeo}
+        ${coreLinks}
+      </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="latest-reports">
       <h2>Latest Risk Reports</h2>
       <ul style="margin:0;padding-left:18px">${recentHtml}</ul>
     </div>
@@ -314,6 +360,16 @@ function buildPage({ slug, title, description, links, recent }) {
       </ul>
     </div>
   </div>
+  <script>
+    function trackEvent(name, payload) {
+      if (window.track) window.track(name, payload || {});
+    }
+    document.querySelectorAll('[data-track]').forEach(el => {
+      el.addEventListener('click', () => {
+        trackEvent(el.dataset.track, { target: el.dataset.target || '', section: el.dataset.section || '' });
+      });
+    });
+  </script>
 </body>
 </html>`;
 }

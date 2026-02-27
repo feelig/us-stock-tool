@@ -34,8 +34,18 @@
       <div class="muted">Part of the Market Risk Framework Series • <a href="/">Home</a></div>
     </div>
 
+    
     <div class="card">
-      <h2>Risk Snapshot Chart</h2>
+      <h2>In this guide</h2>
+      <ul>
+        <li><a href="#risk-chart" data-track="pillar_toc_click" data-section="risk-chart">Risk snapshot chart</a></li>
+        <li><a href="#related-guides" data-track="pillar_toc_click" data-section="related-guides">Related risk guides</a></li>
+        <li><a href="#latest-reports" data-track="pillar_toc_click" data-section="latest-reports">Latest risk reports</a></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2 id="risk-chart">Risk Snapshot Chart</h2>
       <svg width="100%" height="160" viewBox="0 0 600 160" preserveAspectRatio="none">
         <polyline fill="none" stroke="#00E5FF" stroke-width="2" points="0,64.4 300,76.4 600,101.6" />
       </svg>
@@ -136,7 +146,7 @@
 <p>Risk-on regimes typically support higher equity exposure, while risk-off regimes call for capital preservation. The neutral regime is a balance between the two.</p>
 <p>Regime duration matters. A short-lived risk-off regime may not require aggressive de-risking, while a long regime suggests sustained caution.</p>
 <p>If you adjust allocation, do so with defined ranges. Use the same ranges consistently so you can measure whether the discipline helped over a full market cycle.</p>
-      
+      <div id="faq">
     <h2>FAQ</h2>
     <h3>Does MRI predict returns?</h3>
     <p>No. MRI summarizes market risk conditions to guide allocation decisions.</p>
@@ -144,15 +154,22 @@
     <p>Typically weekly or only when regimes change or thresholds are crossed.</p>
     <h3>What is the biggest mistake?</h3>
     <p>Overreacting to small daily changes. Use regime context and guardrails.</p>
-  
+  </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="related-guides">
       <h2>Related Risk Guides</h2>
-      <ul style="margin:0;padding-left:18px"><li><a href="/seo/2026-02-27/high-risk-allocation-for-crypto/">high risk allocation for crypto</a></li><li><a href="/seo/2026-02-27/high-risk-strategy-for-retirement-portfolio/">high risk strategy for retirement portfolio</a></li><li><a href="/seo/2026-02-27/low-risk-risk-level-for-bonds/">low risk risk level for bonds</a></li><li><a href="/seo/2026-02-27/low-risk-allocation-for-commodities/">low risk allocation for commodities</a></li><li><a href="/seo/2026-02-27/low-risk-strategy-for-etf-portfolio/">low risk strategy for etf portfolio</a></li><li><a href="/seo/2026-02-27/medium-risk-risk-level-for-equity/">medium risk risk level for equity</a></li><li><a href="/seo/2026-02-27/medium-risk-allocation-for-gold/">medium risk allocation for gold</a></li><li><a href="/seo/2026-02-27/medium-risk-strategy-for-crypto/">medium risk strategy for crypto</a></li><li><a href="/seo/2026-02-27/medium-risk-risk-level-for-retirement-portfolio/">medium risk risk level for retirement portfolio</a></li><li><a href="/seo/2026-02-27/risk-on-allocation-2024/">risk-on allocation 2024</a></li></ul>
+      <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+        <div class="card"><a href="/pillar/market-risk-framework/" data-track="pillar_related_click" data-target="market-risk-framework">market risk framework</a></div><div class="card"><a href="/pillar/risk-regime-explained/" data-track="pillar_related_click" data-target="risk-regime-explained">risk regime explained</a></div>
+        <div class="card"><a href="/seo/2026-02-27/high-risk-allocation-for-crypto/" data-track="pillar_related_click" data-target="seo">high risk allocation for crypto</a></div><div class="card"><a href="/seo/2026-02-27/high-risk-strategy-for-retirement-portfolio/" data-track="pillar_related_click" data-target="seo">high risk strategy for retirement portfolio</a></div>
+        
+    <div class="card"><a href="/daily/2026-02-27" data-track="pillar_related_click" data-target="daily">latest daily report</a></div>
+    <div class="card"><a href="/archive/" data-track="pillar_related_click" data-target="archive">risk archive</a></div>
+  
+      </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="latest-reports">
       <h2>Latest Risk Reports</h2>
       <ul style="margin:0;padding-left:18px"><li><a href="/daily/2026-02-27">2026-02-27 · MRI 32</a></li><li><a href="/daily/2026-02-26">2026-02-26 · MRI 53</a></li><li><a href="/daily/2026-02-25">2026-02-25 · MRI 63</a></li></ul>
     </div>
@@ -166,5 +183,15 @@
       </ul>
     </div>
   </div>
+  <script>
+    function trackEvent(name, payload) {
+      if (window.track) window.track(name, payload || {});
+    }
+    document.querySelectorAll('[data-track]').forEach(el => {
+      el.addEventListener('click', () => {
+        trackEvent(el.dataset.track, { target: el.dataset.target || '', section: el.dataset.section || '' });
+      });
+    });
+  </script>
 </body>
 </html>

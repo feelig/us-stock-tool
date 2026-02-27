@@ -122,6 +122,10 @@
     .ads[data-loaded="false"] { opacity: 0.6; }
 
     .footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+    .cta-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 12px; }
+    .cta-card { padding: 14px; border-radius: 14px; border:1px solid rgba(255,255,255,0.08); background: var(--panel); }
+    .cta-card a { display:inline-flex; gap:8px; align-items:center; font-weight:700; }
+    .cta-card p { margin:8px 0 0 0; color: var(--muted); font-size: 13px; }
 
     @keyframes pulse {
       0% { filter: drop-shadow(0 0 0 rgba(0,229,255,0.0)); }
@@ -203,6 +207,24 @@
     </section>
 
     <section class="section">
+      <h2>Today’s Actions</h2>
+      <div class="cta-grid">
+        <div class="cta-card">
+          <a href="/daily/" id="actionDaily" data-track="home_cta_click" data-target="daily">View today’s full report →</a>
+          <p>Open the latest daily risk report and allocation notes.</p>
+        </div>
+        <div class="cta-card">
+          <a href="/weekly/" data-track="home_cta_click" data-target="weekly">Read this week’s strategy →</a>
+          <p>Institutional-style weekly allocation guidance.</p>
+        </div>
+        <div class="cta-card">
+          <a href="/pillar/market-risk-framework/" data-track="home_cta_click" data-target="framework">Understand the framework →</a>
+          <p>Learn how MRI combines trend, stress, and regime.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
       <h2>Risk Framework Hub</h2>
       <div class="panel">
         <ul style="margin:0;padding-left:18px;line-height:1.8;">
@@ -232,6 +254,18 @@
     <section class="section">
       <h2>Market Risk Brief</h2>
       <div class="brief" id="riskBrief">Loading today’s brief...</div>
+    </section>
+
+    <section class="section">
+      <h2>Most visited</h2>
+      <div class="cta-grid">
+        <div class="cta-card"><a href="/archive/" data-track="home_most_visited_click" data-target="archive">Risk archive →</a><p>Historical daily reports and regime shifts.</p></div>
+        <div class="cta-card"><a href="/risk-levels/" data-track="home_most_visited_click" data-target="risk-levels">Risk levels explained →</a><p>Understand risk-on, neutral, risk-off.</p></div>
+        <div class="cta-card"><a href="/risk-regime/" data-track="home_most_visited_click" data-target="risk-regime">Risk regime guide →</a><p>How regimes change and persist.</p></div>
+        <div class="cta-card"><a href="/risk-history/" data-track="home_most_visited_click" data-target="risk-history">Risk history →</a><p>Historical MRI cycles and context.</p></div>
+        <div class="cta-card"><a href="/market-risk-today/" data-track="home_most_visited_click" data-target="risk-today">Market risk today →</a><p>Snapshot of today’s MRI signal.</p></div>
+        <div class="cta-card"><a href="/pillar/risk-regime-explained/" data-track="home_most_visited_click" data-target="pillar-regime">Risk regime explained →</a><p>Deep dive into regime mechanics.</p></div>
+      </div>
     </section>
 
     <div class="ads" data-ad-slot="home-footer" data-loaded="false">Ad Slot — Footer (reserved)</div>
@@ -392,6 +426,15 @@
     loadRisk();
     loadDeltaAndBrief();
     loadAlerts();
+
+    function trackEvent(name, payload) {
+      if (window.track) window.track(name, payload || {});
+    }
+    document.querySelectorAll('[data-track]').forEach(el => {
+      el.addEventListener('click', () => {
+        trackEvent(el.dataset.track, { target: el.dataset.target || '' });
+      });
+    });
 
     // Lazy-load ad slots (placeholder for actual ad code)
     const adSlots = document.querySelectorAll('.ads[data-ad-slot]');
