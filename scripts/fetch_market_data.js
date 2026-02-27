@@ -5,21 +5,33 @@ const API_KEY = process.env.ALPHA_VANTAGE_KEY;
 const symbols = ["SPY", "QQQ", "TLT", "GLD"];
 
 async function fetchDaily(symbol) {
-  if (!API_KEY) {
-    throw new Error("Missing ALPHA_VANTAGE_KEY");
-  }
+  if (!API_KEY) throw new Error("Missing ALPHA_VANTAGE_KEY");
+
   const { default: fetch } = await import("node-fetch");
-  const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${symbol}&apikey=${API_KEY}`;
+  const url =
+    `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED` +
+    `&symbol=${encodeURIComponent(symbol)}&outputsize=compact&apikey=${API_KEY}`;
+
   const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status} for ${symbol}`);
-  }
   const data = await res.json();
+
+  const err =
+    data["Error Message"] ||
+    data["Note"] ||
+    data["Information"] ||
+    null;
+
+  if (err) {
+    throw new Error(`Alpha response for ${symbol}: ${err}`);
+  }
+
   const series = data["Time Series (Daily)"];
   if (!series) {
-    const note = data["Note"] || data["Error Message"] || "No data";
-    throw new Error(`No data for ${symbol}: ${note}`);
+    throw new Error(
+      `No time series for ${symbol}. Response keys: ${Object.keys(data).join(", ")}`
+    );
   }
+
   const prices = Object.entries(series)
     .slice(0, 250)
     .map(([date, v]) => ({
@@ -27,11 +39,39 @@ async function fetchDaily(symbol) {
       close: Number(v["5. adjusted close"])
     }));
 
+  if (!prices.length) throw new Error(`No price rows for ${symbol}`);
+
   return prices;
 }
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
+}
+
+async function fetchDailyWithRetry(symbol, tries = 5) {
+  let wait = 15000;
+  for (let i = 1; i <= tries; i++) {
+    try {
+      return await fetchDaily(symbol);
+    } catch (e) {
+      const msg = String(e?.message || e);
+      const retryable =
+        msg.includes("Alpha response") &&
+        (msg.includes("frequency") ||
+          msg.includes("Thank you") ||
+          msg.includes("higher API call") ||
+          msg.includes("Note") ||
+          msg.includes("Information"));
+
+      if (!retryable || i === tries) throw e;
+
+      console.warn(`Retry ${i}/${tries} for ${symbol}: ${msg}`);
+      console.warn(`Sleeping ${Math.round(wait / 1000)}s...`);
+      await sleep(wait);
+      wait = Math.min(wait * 2, 120000);
+    }
+  }
+  throw new Error(`Failed after retries: ${symbol}`);
 }
 
 function movingAverage(data, n) {
@@ -55,7 +95,7 @@ async function main() {
   const market = {};
 
   for (const s of symbols) {
-    market[s] = await fetchDaily(s);
+    market[s] = await fetchDailyWithRetry(s);
     await sleep(15000);
   }
 
