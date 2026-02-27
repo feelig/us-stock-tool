@@ -56,9 +56,11 @@ jobs:
           echo "== public/data listing ==";
           ls -lah public/data || true;
           echo "== head public/data/latest.json ==";
-          head -n 60 public/data/latest.json || true;
+          head -n 80 public/data/latest.json || true;
           echo "== head public/latest.json ==";
-          head -n 60 public/latest.json || true;
+          head -n 80 public/latest.json || true;
+          echo "== head latest.json (repo root) ==";
+          head -n 80 latest.json || true;
 
       - name: Smoke check outputs
         run: |
