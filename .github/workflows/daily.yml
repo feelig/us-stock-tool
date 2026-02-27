@@ -85,6 +85,34 @@ jobs:
             process.exit(1);
           }
           console.log('latest.json schema check passed');
+
+          const counts = data?.debug?.counts || {};
+          const short = Object.entries(counts).filter(([, n]) => typeof n === 'number' && n < 200);
+          if (short.length) {
+            console.warn('MA200 data short:', short.map(([s, n]) => `${s}:${n}`).join(', '));
+          } else {
+            console.log('MA200 data sufficient for all symbols.');
+          }
+
+          const cachePath = 'tools/cache/ma200_fail.json';
+          let state = { consecutiveFails: 0, lastFail: null };
+          if (fs.existsSync(cachePath)) {
+            try { state = JSON.parse(fs.readFileSync(cachePath, 'utf-8')); } catch(e) {}
+          }
+          if (short.length) {
+            state.consecutiveFails = (state.consecutiveFails || 0) + 1;
+            state.lastFail = { at: new Date().toISOString(), short };
+          } else {
+            state.consecutiveFails = 0;
+            state.lastFail = null;
+          }
+          fs.mkdirSync('tools/cache', { recursive: true });
+          fs.writeFileSync(cachePath, JSON.stringify(state, null, 2));
+
+          if (state.consecutiveFails >= 3) {
+            console.error('MA200 insufficient for 3 consecutive runs. Failing workflow.');
+            process.exit(1);
+          }
           NODE
 
       - name: Smoke check outputs
@@ -129,7 +157,7 @@ jobs:
         run: |
           git config user.name "finlogichub-bot"
           git config user.email "bot@finlogichub5.com"
-          git add public sitemap.xml tools/cache/prices.json
+          git add public sitemap.xml tools/cache/prices.json tools/cache/ma200_fail.json
           if git diff --cached --quiet; then
             echo "No changes"
             exit 0

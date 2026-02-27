@@ -88,7 +88,7 @@ async function fetchDaily(symbol) {
   const { default: fetch } = await import("node-fetch");
   const url =
     `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY` +
-    `&symbol=${encodeURIComponent(symbol)}&outputsize=compact&apikey=${API_KEY}`;
+    `&symbol=${encodeURIComponent(symbol)}&outputsize=full&apikey=${API_KEY}`;
 
   const res = await fetch(url);
   const data = await res.json();
@@ -111,7 +111,7 @@ async function fetchDaily(symbol) {
   }
 
   const prices = Object.entries(series)
-    .slice(0, 250)
+    .slice(0, 260)
     .map(([date, v]) => ({
       date,
       close: Number(v["4. close"])
@@ -243,6 +243,10 @@ async function main() {
     const closes = (market[sym] || []).map(p => p.close);
     return toInputsRow(sym, closes);
   });
+  const counts = symbols.reduce((acc, sym) => {
+    acc[sym] = (market[sym] || []).length;
+    return acc;
+  }, {});
   const components = buildComponents(inputsTable);
   const outlook = buildOutlook(riskLevel);
   const responsePlan = buildResponsePlan(riskLevel);
@@ -258,7 +262,8 @@ async function main() {
     components,
     drivers: driversFromInputs(inputsTable, riskLevel),
     outlook,
-    responsePlan
+    responsePlan,
+    debug: { counts }
   };
 
   const outPathA = path.join(process.cwd(), "public", "latest.json");
