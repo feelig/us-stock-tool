@@ -36,12 +36,18 @@ function ensureDir(p) {
   fs.mkdirSync(p, { recursive: true });
 }
 
+function clearDir(p) {
+  if (fs.existsSync(p)) {
+    fs.rmSync(p, { recursive: true, force: true });
+  }
+}
+
 function writeFile(p, content) {
   ensureDir(path.dirname(p));
   fs.writeFileSync(p, content, "utf-8");
 }
 
-function htmlTemplate({ title, description, h1, bodyHtml, canonicalPath }) {
+function htmlTemplate({ title, description, h1, bodyHtml, canonicalPath, pillarLink }) {
   const site = "https://finlogichub5.com";
   const canonical = `${site}${canonicalPath}`;
   return `<!doctype html>
@@ -101,6 +107,7 @@ function htmlTemplate({ title, description, h1, bodyHtml, canonicalPath }) {
             <li><a href="/risk-history/">Risk history</a></li>
             <li><a href="/weekly/">Weekly strategy</a></li>
             <li><a href="/archive/">Risk archive</a></li>
+            <li><a href="${pillarLink}">Pillar: Market Risk Framework</a></li>
           </ul>
         </div>
       </div>
@@ -232,6 +239,24 @@ function buildTopics() {
   return [...bases, ...expanded, ...combos];
 }
 
+function pickPillarLink(slug) {
+  const pillars = [
+    "/pillar/market-risk-framework/",
+    "/pillar/risk-regime-explained/",
+    "/pillar/asset-allocation-method/",
+    "/pillar/market-risk-history-study/",
+    "/pillar/regime-duration-analysis/",
+    "/pillar/how-to-use-mri/",
+    "/pillar/risk-signal-vs-timing/",
+    "/pillar/risk-for-etf-investors/",
+    "/pillar/portfolio-risk-management/",
+    "/pillar/risk-threshold-strategy/"
+  ];
+  let hash = 0;
+  for (let i = 0; i < slug.length; i++) hash = (hash * 31 + slug.charCodeAt(i)) >>> 0;
+  return pillars[hash % pillars.length];
+}
+
 function buildPageContent(topic, context) {
   const { dateISO } = context;
   const h1 = topic.replace(/\b\w/g, (c) => c.toUpperCase());
@@ -303,15 +328,24 @@ function main() {
   }
 
   const outRoot = path.join(process.cwd(), "public", "seo", dateISO);
+  clearDir(outRoot);
   ensureDir(outRoot);
 
   const index = [];
+  const usedSlugs = new Set();
   for (const topic of selected) {
-    const slug = safeSlug(topic);
+    let slug = safeSlug(topic);
+    if (usedSlugs.has(slug)) {
+      let n = 2;
+      while (usedSlugs.has(`${slug}-${n}`)) n += 1;
+      slug = `${slug}-${n}`;
+    }
+    usedSlugs.add(slug);
     const canonicalPath = `/seo/${dateISO}/${slug}/`;
     const { title, description, h1, bodyHtml } = buildPageContent(topic, { dateISO });
+    const pillarLink = pickPillarLink(slug);
 
-    const html = htmlTemplate({ title, description, h1, bodyHtml, canonicalPath });
+    const html = htmlTemplate({ title, description, h1, bodyHtml, canonicalPath, pillarLink });
     const outFile = path.join(outRoot, slug, "index.html");
     writeFile(outFile, html);
 

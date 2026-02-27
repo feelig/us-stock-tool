@@ -1264,6 +1264,13 @@ function writeSitemap(archiveHtmlFiles) {
       });
     });
   }
+  const pillarRoot = path.resolve(__dirname, '..', 'public', 'pillar');
+  if (fs.existsSync(pillarRoot)) {
+    const pillars = fs.readdirSync(pillarRoot).filter(p => fs.existsSync(path.join(pillarRoot, p, 'index.html')));
+    pillars.forEach((p) => {
+      urls.push({ loc: `${SITE_ROOT}/pillar/${p}/`, changefreq: 'monthly', priority: '0.6', lastmod: today });
+    });
+  }
   for (const file of archiveHtmlFiles) {
     const date = file.slice(0, 10);
     urls.push({ loc: `${SITE_ROOT}/daily/${file}`, changefreq: 'daily', priority: '0.5', lastmod: date });

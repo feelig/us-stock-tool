@@ -31,6 +31,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p tools/cache
+          node tools/generate_seo_matrix.js --count 40
           node tools/generate_daily.js | tee tools/cache/daily_run.log
 
       - name: Smoke check outputs
