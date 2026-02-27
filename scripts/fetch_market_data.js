@@ -169,6 +169,65 @@ function calculateMRI(market) {
   return Math.max(0, Math.min(100, score));
 }
 
+function buildComponents(inputsTable) {
+  const spy = (inputsTable || []).find(x => x.asset === "SPY");
+  const qqq = (inputsTable || []).find(x => x.asset === "QQQ");
+  const tlt = (inputsTable || []).find(x => x.asset === "TLT");
+  const gld = (inputsTable || []).find(x => x.asset === "GLD");
+
+  const trend = (spy?.ma200Pos === "Above MA200" && qqq?.ma200Pos === "Above MA200") ? 25 : 75;
+  const stress = (tlt?.ma200Pos === "Below MA200") ? 75 : 25;
+  const regime = (gld?.ma200Pos === "Above MA200") ? 50 : 25;
+
+  return { trend, stress, regime };
+}
+
+function buildOutlook(riskLevel) {
+  const v = String(riskLevel || "").toLowerCase();
+  if (v === "high") {
+    return {
+      baseCase: "Defensive posture remains appropriate while risk stays elevated.",
+      upsideTrigger: "Risk regime improves with equities reclaiming MA200.",
+      downsideTrigger: "Risk intensifies if bonds remain under pressure.",
+    };
+  }
+  if (v === "low") {
+    return {
+      baseCase: "Risk environment supportive; maintain disciplined exposure.",
+      upsideTrigger: "Sustained trend strength in SPY/QQQ above MA200.",
+      downsideTrigger: "Bond stress returning or equity trend breaks MA200.",
+    };
+  }
+  return {
+    baseCase: "Balanced regime; keep allocations within neutral ranges.",
+    upsideTrigger: "Risk-on tilt if SPY/QQQ hold above MA200.",
+    downsideTrigger: "Defensive shift if bond stress persists or trend breaks.",
+  };
+}
+
+function buildResponsePlan(riskLevel) {
+  const v = String(riskLevel || "").toLowerCase();
+  if (v === "high") {
+    return [
+      "Reduce equity exposure toward the lower end of the range.",
+      "Increase diversification with higher-quality bonds/cash buffers.",
+      "Avoid aggressive risk-on trades; focus on capital preservation.",
+    ];
+  }
+  if (v === "low") {
+    return [
+      "Maintain equity exposure within the upper end of the range.",
+      "Keep rebalancing discipline; avoid leverage.",
+      "Monitor regime shifts weekly, not daily.",
+    ];
+  }
+  return [
+    "Stay within the neutral allocation band.",
+    "Rebalance only if regime changes, not on noise.",
+    "Track trend + bond stress for confirmation.",
+  ];
+}
+
 async function main() {
   const market = {};
 
@@ -184,6 +243,9 @@ async function main() {
     const closes = (market[sym] || []).map(p => p.close);
     return toInputsRow(sym, closes);
   });
+  const components = buildComponents(inputsTable);
+  const outlook = buildOutlook(riskLevel);
+  const responsePlan = buildResponsePlan(riskLevel);
 
   const output = {
     date: new Date().toISOString().slice(0, 10),
@@ -193,7 +255,10 @@ async function main() {
     bondsRange: alloc.bonds,
     cashRange: alloc.cash,
     inputsTable,
-    drivers: driversFromInputs(inputsTable, riskLevel)
+    components,
+    drivers: driversFromInputs(inputsTable, riskLevel),
+    outlook,
+    responsePlan
   };
 
   const outPathA = path.join(process.cwd(), "public", "latest.json");

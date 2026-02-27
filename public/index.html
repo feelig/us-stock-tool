@@ -3,300 +3,97 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>FinLogicHub5 — Global Market Risk Index</title>
-  <meta name="description" content="Daily market risk dashboard (MRI) with allocation ranges and transparent market inputs for disciplined investors." />
-  <link rel="stylesheet" href="/home.css" />
+  <title>FinLogicHub5 — Market Risk Dashboard</title>
+  <meta name="description" content="Four-quadrant market risk dashboard with MRI, raw inputs, transparent model breakdown, and actionable response plan." />
+  <link rel="canonical" href="https://finlogichub5.com/" />
+  <link rel="stylesheet" href="/quad.css" />
 </head>
 <body>
-  <div class="nav">
-    <div class="container nav-inner">
-      <div class="brand"><span class="dot"></span> FinLogicHub5</div>
-      <div class="nav-links">
-        <a href="/daily">Daily Risk</a>
-        <a href="/weekly">Weekly Strategy</a>
-        <a href="/risk-history">Risk History</a>
-        <a href="/methodology">Methodology</a>
-        <a href="/lab">Lab</a>
+  <main class="quad">
+    <!-- Top Left: Risk Index -->
+    <section class="panel">
+      <h2>Risk Index</h2>
+      <div class="mri" id="mriValue">--</div>
+      <div class="risk-badge risk-neutral" id="riskBadge">
+        <span class="dot"></span>
+        <span>Risk Level: <span id="riskLevelText">Neutral</span></span>
+        <span class="small" id="riskMeaning">Balanced</span>
       </div>
-      <div class="nav-cta">
-        <a class="btn primary" href="#alerts">Get Alerts</a>
+      <div class="kv">
+        <div>Updated: <b id="updatedDate">--</b></div>
+        <div>Suggested Equity Exposure: <b id="equityRange">--</b></div>
       </div>
-    </div>
-  </div>
-
-  <main class="container">
-    <!-- HERO -->
-    <section class="hero">
-      <div class="grid-hero">
-        <div class="card">
-          <div class="card-inner">
-            <div class="kicker">Global Market Risk Index</div>
-            <div class="h1">Institutional-style market risk monitoring</div>
-
-            <div class="snapshot">
-              <div>
-                <div class="mri" id="mriValue">--</div>
-                <div class="meta">
-                  <span class="badge neutral" id="riskBadge">
-                    <span class="pill"></span>
-                    <span>Risk: <span id="riskLevelText">Neutral</span></span>
-                    <span class="muted">·</span>
-                    <span class="muted" id="riskHint">Balanced</span>
-                  </span>
-                  <span>Trend: <b id="trendText">—</b></span>
-                  <span>Regime duration: <b id="durationText">—</b></span>
-                  <span>Updated: <b id="updatedDate">—</b></span>
-                </div>
-              </div>
-            </div>
-
-            <div class="smallline">Data: SPY · QQQ · TLT · GLD (daily). Exposure guidance, not trading instruction.</div>
-
-            <div class="cta-row">
-              <a class="btn primary" href="/daily">View Today’s Report →</a>
-              <a class="btn" href="/weekly">Read Weekly Strategy →</a>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-inner">
-            <div class="kicker">Suggested Exposure</div>
-            <div class="alloc-title">Allocation range (risk discipline)</div>
-
-            <div class="alloc">
-              <div class="alloc-card">
-                <div class="alloc-row"><div class="label">Equity</div><div class="value" id="equityRange">--</div></div>
-                <div class="alloc-note">Use as exposure guidance, not trade signals.</div>
-              </div>
-              <div class="alloc-card">
-                <div class="alloc-row"><div class="label">Bonds</div><div class="value" id="bondsRange">--</div></div>
-                <div class="alloc-note">Risk control via diversification.</div>
-              </div>
-              <div class="alloc-card">
-                <div class="alloc-row"><div class="label">Cash</div><div class="value" id="cashRange">--</div></div>
-                <div class="alloc-note">Reserve buffer for volatility spikes.</div>
-              </div>
-            </div>
-
-            <div class="cta-row" style="margin-top:12px">
-              <a class="btn" href="#inputs">See market inputs ↓</a>
-              <a class="btn" href="#commentary">Read brief ↓</a>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div class="small">Data source: Alpha Vantage · Updated daily after market close</div>
+      <div class="disclaimer">Informational only. Not investment advice.</div>
     </section>
 
-    <!-- MARKET INPUTS -->
-    <section class="section" id="inputs">
-      <div class="section-head">
-        <div>
-          <div class="h2">Market Inputs (Daily)</div>
-          <div class="sub">Transparent underlying data used to derive risk signals.</div>
-        </div>
-        <div class="sub">Source: Alpha Vantage</div>
-      </div>
-
-      <div class="card" id="inputsWrap">
-        <div class="card-inner" style="padding:0">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Asset</th>
-                <th>Price</th>
-                <th>20D Change</th>
-                <th>200D Trend</th>
-                <th>Risk Signal</th>
-              </tr>
-            </thead>
-            <tbody id="inputsTbody">
-              <tr><td colspan="5" class="muted">Loading…</td></tr>
-            </tbody>
-          </table>
-          <div class="note" style="padding:12px 14px;">
-            Tip: “200D Trend” refers to whether price is above/below MA200. “Risk Signal” summarizes the implication for risk posture.
-          </div>
-        </div>
-      </div>
+    <!-- Top Right: Raw Inputs -->
+    <section class="panel">
+      <h2>Raw Inputs</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Asset</th>
+            <th>Price</th>
+            <th>20D Change</th>
+            <th>MA200</th>
+            <th>Signal</th>
+          </tr>
+        </thead>
+        <tbody id="inputsTbody">
+          <tr><td colspan="5">inputsTable missing — backend not populated</td></tr>
+        </tbody>
+      </table>
+      <div class="disclaimer">Informational only. Not investment advice.</div>
     </section>
 
-    <!-- MODEL BREAKDOWN -->
-    <section class="section" id="breakdownWrap">
-      <div class="section-head">
-        <div>
-          <div class="h2">MRI Model Breakdown</div>
-          <div class="sub">How the index is composed today (transparent, not a black box).</div>
-        </div>
-      </div>
+    <!-- Bottom Left: How MRI is built -->
+    <section class="panel">
+      <h2>How MRI is built</h2>
+      <div class="small">MRI = weighted(Trend, Stress, Regime)</div>
 
-      <div class="card">
-        <div class="card-inner">
-          <div class="grid-3">
-            <div>
-              <div class="muted" style="font-weight:900; letter-spacing:0.08em; text-transform:uppercase; font-size:12px;">Trend</div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                <div class="muted">Score</div><div><b id="trendScore">--</b></div>
-              </div>
-              <div class="progress" style="margin-top:10px;"><div id="trendBar" style="width:0%"></div></div>
-            </div>
-
-            <div>
-              <div class="muted" style="font-weight:900; letter-spacing:0.08em; text-transform:uppercase; font-size:12px;">Stress</div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                <div class="muted">Score</div><div><b id="stressScore">--</b></div>
-              </div>
-              <div class="progress" style="margin-top:10px;"><div id="stressBar" style="width:0%"></div></div>
-            </div>
-
-            <div>
-              <div class="muted" style="font-weight:900; letter-spacing:0.08em; text-transform:uppercase; font-size:12px;">Regime</div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                <div class="muted">Score</div><div><b id="regimeScore">--</b></div>
-              </div>
-              <div class="progress" style="margin-top:10px;"><div id="regimeBar" style="width:0%"></div></div>
-            </div>
-          </div>
-
-          <div class="note">MRI is designed for risk monitoring and portfolio discipline, not return prediction.</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- TREND -->
-    <section class="section" id="trend">
-      <div class="section-head">
-        <div>
-          <div class="h2">90-Day Market Risk Evolution</div>
-          <div class="sub">Visualize how risk conditions have evolved (context for today’s reading).</div>
-        </div>
-        <div class="sub">If trend data is not yet available, it will appear after the first full week of updates.</div>
-      </div>
-
-      <div class="card">
-        <div class="card-inner">
-          <div class="muted">Trend chart placeholder (wire to your existing chart rendering if available).</div>
-          <div class="note">Recommendation: render risk zones (Low/Neutral/High) as background bands and mark the current point.</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- DRIVERS -->
-    <section class="section" id="drivers">
-      <div class="section-head">
-        <div>
-          <div class="h2">What changed today</div>
-          <div class="sub">Top drivers derived from model components (not news headlines).</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-inner">
-          <ul class="list" id="driversList"><li class="muted">Loading…</li></ul>
-        </div>
-      </div>
-    </section>
-
-    <!-- COMMENTARY -->
-    <section class="section" id="commentary">
-      <div class="section-head">
-        <div>
-          <div class="h2">Market risk brief</div>
-          <div class="sub">Short, actionable context (risk awareness only).</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-inner">
-          <div id="briefText" style="line-height:1.7; color: var(--text);">
-            Loading…
-          </div>
-          <div class="note">This is informational content and does not constitute investment advice.</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ACTIONS -->
-    <section class="section" id="actions">
-      <div class="section-head">
-        <div>
-          <div class="h2">What investors should do</div>
-          <div class="sub">Simple workflow to avoid emotional trading.</div>
-        </div>
-      </div>
-
-      <div class="grid-3">
-        <div class="card"><div class="card-inner">
-          <div class="h2" style="font-size:16px;">Monitor daily</div>
-          <div class="sub">Check the regime and risk level once per day.</div>
-        </div></div>
-
-        <div class="card"><div class="card-inner">
-          <div class="h2" style="font-size:16px;">Stay in range</div>
-          <div class="sub">Use allocation ranges as risk discipline guidance.</div>
-        </div></div>
-
-        <div class="card"><div class="card-inner">
-          <div class="h2" style="font-size:16px;">Rebalance rarely</div>
-          <div class="sub">Rebalance only when regime meaningfully changes.</div>
-        </div></div>
-      </div>
-    </section>
-
-    <!-- EXPLORE -->
-    <section class="section" id="explore">
-      <div class="section-head">
-        <div>
-          <div class="h2">Explore more</div>
-          <div class="sub">Deep dives for investors who want details.</div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="card"><div class="card-inner">
-          <div class="h2" style="font-size:16px;">Daily report</div>
-          <div class="sub">Full MRI explanation and allocation rationale.</div>
-          <div class="cta-row"><a class="btn primary" href="/daily">Open daily report →</a></div>
-        </div></div>
-        <div class="card"><div class="card-inner">
-          <div class="h2" style="font-size:16px;">Weekly strategy</div>
-          <div class="sub">Institutional-style weekly outlook and guardrails.</div>
-          <div class="cta-row"><a class="btn primary" href="/weekly">Open weekly strategy →</a></div>
-        </div></div>
-      </div>
-
-      <div class="cta-row" style="margin-top:12px">
-        <a class="btn" href="/methodology">Methodology →</a>
-        <a class="btn" href="/risk-history">Risk history →</a>
-      </div>
-    </section>
-
-    <!-- ALERTS -->
-    <section class="section" id="alerts">
-      <div class="section-head">
-        <div>
-          <div class="h2">Get risk alerts</div>
-          <div class="sub">Notify only on regime changes or high/low risk thresholds.</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-inner">
-          <div class="muted">Hook your existing email subscription form here (or keep as placeholder for launch).</div>
-        </div>
-      </div>
-    </section>
-
-    <footer class="footer">
       <div>
-        FinLogicHub5 provides market risk analysis for informational purposes only. It does not provide investment advice or trading recommendations.
+        <div class="kv"><span>Trend</span><b id="trendVal">--</b></div>
+        <div class="bar"><div id="trendBar" style="width:0%"></div></div>
       </div>
-      <div style="margin-top:10px;">
-        Data source: Alpha Vantage · <a href="/methodology">Model methodology</a> · <a href="/daily">Daily</a> · <a href="/weekly">Weekly</a>
+      <div>
+        <div class="kv"><span>Stress</span><b id="stressVal">--</b></div>
+        <div class="bar"><div id="stressBar" style="width:0%"></div></div>
       </div>
-    </footer>
+      <div>
+        <div class="kv"><span>Regime</span><b id="regimeVal">--</b></div>
+        <div class="bar"><div id="regimeBar" style="width:0%"></div></div>
+      </div>
+      <div class="small" id="componentsMissing"></div>
+
+      <div>
+        <h2 style="font-size:16px;margin-top:10px;">Today’s drivers</h2>
+        <ul class="list" id="driversList">
+          <li>drivers missing — backend not populated</li>
+        </ul>
+      </div>
+      <div class="disclaimer">Informational only. Not investment advice.</div>
+    </section>
+
+    <!-- Bottom Right: Outlook + Response -->
+    <section class="panel">
+      <h2>Outlook + Response</h2>
+      <div class="kv">
+        <div>Base case: <b id="baseCase">outlook.baseCase missing — backend not populated</b></div>
+        <div>Upside trigger: <b id="upside">outlook.upsideTrigger missing — backend not populated</b></div>
+        <div>Downside trigger: <b id="downside">outlook.downsideTrigger missing — backend not populated</b></div>
+      </div>
+
+      <div>
+        <h2 style="font-size:16px;margin-top:10px;">Response plan</h2>
+        <ul class="list" id="responseList">
+          <li>responsePlan missing — backend not populated</li>
+        </ul>
+      </div>
+      <div class="disclaimer">Informational only. Not investment advice.</div>
+    </section>
   </main>
 
-  <script src="/home.js"></script>
+  <script src="/quad.js"></script>
 </body>
 </html>
