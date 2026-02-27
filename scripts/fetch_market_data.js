@@ -36,7 +36,7 @@ function buildSignal(symbol, aboveMA200) {
 }
 
 function formatMa200Pos(pos) {
-  if (!pos) return "—";
+  if (!pos) return "Insufficient data";
   return pos.above ? "Above MA200" : "Below MA200";
 }
 

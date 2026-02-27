@@ -78,6 +78,12 @@ jobs:
             console.error('inputsTable missing assets:', missingAssets.join(', '));
             process.exit(1);
           }
+          const allowed = ['Above MA200','Below MA200','Insufficient data'];
+          const badMa200 = (data.inputsTable || []).filter(r => !allowed.includes(r.ma200Pos));
+          if (badMa200.length) {
+            console.error('Invalid ma200Pos values:', badMa200.map(r => `${r.asset}:${r.ma200Pos}`).join(', '));
+            process.exit(1);
+          }
           console.log('latest.json schema check passed');
           NODE
 
