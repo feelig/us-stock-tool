@@ -5,6 +5,7 @@
   "description": "FinLogicHub5",
   "license": "UNLICENSED",
   "dependencies": {
+    "node-fetch": "^3.3.2",
     "sharp": "^0.33.5"
   }
 }

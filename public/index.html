@@ -35,6 +35,7 @@
 查看完整指数 → https://finlogichub5.com">
 <meta name="twitter:image" content="https://finlogichub5.com/og/mri-latest.png">
 <!-- MRI_OG_END -->
+  <link rel="preload" as="fetch" href="/data/latest.json" crossorigin>
   <link rel="preload" as="fetch" href="/data/risk_index.json" crossorigin>
   <link rel="preload" as="fetch" href="/data/risk_index_history.json" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -395,9 +396,21 @@
 
     async function loadRisk() {
       try {
-        const res = await fetch('/data/risk_index.json', { cache: 'no-store' });
-        if (!res.ok) throw new Error('risk_index.json');
-        const data = await res.json();
+        let data = null;
+        let res = await fetch('/data/latest.json', { cache: 'no-store' });
+        if (res.ok) {
+          const latest = await res.json();
+          data = {
+            score: Number(latest.mri),
+            level: latest.riskLevel,
+            equityRange: latest.equityRange,
+            updatedAt: latest.date
+          };
+        } else {
+          res = await fetch('/data/risk_index.json', { cache: 'no-store' });
+          if (!res.ok) throw new Error('risk_index.json');
+          data = await res.json();
+        }
         animateScore(document.getElementById('heroScore'), data.score);
         document.getElementById('heroLevel').textContent = levelMap[data.level] || data.level || '--';
         document.getElementById('riskLabel').textContent = levelMap[data.level] || 'NEUTRAL';

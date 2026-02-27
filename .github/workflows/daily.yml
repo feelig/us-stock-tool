@@ -27,6 +27,11 @@ jobs:
       - name: Install deps
         run: npm install
 
+      - name: Fetch Alpha Vantage data
+        run: node scripts/fetch_market_data.js
+        env:
+          ALPHA_VANTAGE_KEY: ${{ secrets.ALPHA_VANTAGE_KEY }}
+
       - name: Generate daily data
         run: |
           set -euo pipefail
