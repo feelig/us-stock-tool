@@ -352,11 +352,13 @@ function buildMetaDescription(daily) {
   const level = lightLabel(risk.light);
   const topNames = topThemes.map(t => t.name).join('、');
   const bottomNames = bottomThemes.map(t => t.name).join('、');
-  const base = `${date}市场风险灯为${level}，风险分${risk.score}，仓位区间${risk.equityRange}。主题Top为${topNames}，Bottom为${bottomNames}，用于观察市场气候与风险偏好变化，仅作风险感知。`;
-  if (base.length >= 120 && base.length <= 160) return base;
+  const base = `Market Risk Index Today (MRI) ${date}: risk level ${risk.level || 'medium'}, score ${risk.score}, allocation ${risk.equityRange}. Daily update covers market risk index signals, stock market risk context, and strategy notes.`;
+  const target = 155;
+  if (base.length >= 150 && base.length <= 160) return base;
   if (base.length > 160) return base.slice(0, 160);
-  const pad = "不构成投资建议。";
-  return (base + pad).slice(0, 160);
+  const pad = " Updated daily for market risk index and stock market risk.";
+  const out = (base + pad);
+  return out.length > 160 ? out.slice(0, 160) : out;
 }
 
 function renderThemeRows(list) {
@@ -381,16 +383,25 @@ function buildSeoContent(daily) {
 
   return `
       <section class="seo-block" id="seo-content-block">
-        <h2>今日市场风险解读（market risk index / stock market risk / MRI）</h2>
+        <div class="toc" id="toc">
+          <strong>Contents</strong>
+          <ul>
+            <li><a href="#risk-interpretation">Market Risk Interpretation</a></li>
+            <li><a href="#strategy-suggestion">Strategy Suggestions</a></li>
+            <li><a href="#risk-trend">Risk Trend</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </div>
+        <h2 id="risk-interpretation">今日市场风险解读（market risk index / stock market risk / MRI）</h2>
         <p>本页用于记录 ${daily.date} 的市场风险状态（Market Risk Index, MRI）。当前风险分为 ${score}，风险等级偏${levelCN}，权益仓位区间参考 ${eq}。趋势风险组件为 ${trend}，压力风险组件为 ${stress}，风险偏好组件为 ${regime}，整体反映市场处于可观察的风险温度区间。今日要点包括：${reasonText}。主题热度方面，Top 主题为 ${topText}，Bottom 主题为 ${bottomText}。这些信号主要用于观察市场结构与风险偏好变化，不构成收益预测，也不构成投资建议。</p>
 
-        <h3>投资策略建议（参考框架）</h3>
+        <h3 id="strategy-suggestion">投资策略建议（参考框架）</h3>
         <p>在 MRI 为偏${levelCN} 的区间内，建议优先关注仓位纪律与回撤管理。若风险分维持在中低区间，可采用分批配置与核心仓位管理的方式；若风险分持续上行，则应适当降低高波动资产敞口，并将风险控制在可承受范围。仓位区间 ${eq} 仅为风险感知参考，具体配置需结合个人风险承受能力与交易周期。</p>
 
-        <h3>风险趋势解读</h3>
+        <h3 id="risk-trend">风险趋势解读</h3>
         <p>趋势风险反映价格相对长期均线的稳定性，压力风险反映波动与回撤强度，风险偏好反映风险资产与防御资产的相对强弱。今日趋势/压力/偏好三组件分布为 ${trend}/${stress}/${regime}，提示市场风险温度处于可控区间但仍需关注结构性变化。若连续多日出现风险分上升，则应关注仓位护栏与分散配置；若风险分下降且趋势稳定，则可逐步提高风险资产权重。</p>
 
-        <h3>FAQ</h3>
+        <h3 id="faq">FAQ</h3>
         <p><strong>Q1: MRI 是什么？</strong> A: MRI 是 Market Risk Index（市场风险指数），用于衡量市场风险状态与风险偏好变化。</p>
         <p><strong>Q2: MRI 能直接指导买卖吗？</strong> A: 不能。MRI 仅用于风险感知与历史观察，不构成投资建议。</p>
         <p><strong>Q3: stock market risk 如何使用？</strong> A: 将 MRI 作为风险温度参考，结合仓位区间与个人风险偏好制定交易计划。</p>
@@ -398,33 +409,156 @@ function buildSeoContent(daily) {
   `;
 }
 
+function allocationByLevel(level) {
+  if (level === 'low') return { equity: '60-80%', bond: '10-25%', cash: '5-15%' };
+  if (level === 'high') return { equity: '20-40%', bond: '30-50%', cash: '20-30%' };
+  return { equity: '40-60%', bond: '20-40%', cash: '10-20%' };
+}
+
+function renderDailyHub(recent30) {
+  const latest = recent30[0]?.date || '';
+  const breadcrumbJson = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": `${SITE_ROOT}/` },
+      { "@type": "ListItem", "position": 2, "name": "Daily Hub", "item": `${SITE_ROOT}/pages/daily-hub.html` }
+    ]
+  };
+  const articleJson = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Daily Market Risk Hub",
+    "datePublished": new Date().toISOString().slice(0, 10),
+    "dateModified": new Date().toISOString().slice(0, 10),
+    "mainEntityOfPage": `${SITE_ROOT}/pages/daily-hub.html`,
+    "description": "Daily hub for market risk index and stock market risk analysis."
+  };
+  const faqJson = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "What is the Daily Market Risk Hub?", "acceptedAnswer": { "@type": "Answer", "text": "A hub that aggregates the latest daily market risk index snapshots." } },
+      { "@type": "Question", "name": "How often is it updated?", "acceptedAnswer": { "@type": "Answer", "text": "Daily, based on the America/New_York report date." } },
+      { "@type": "Question", "name": "Can I use it for investment decisions?", "acceptedAnswer": { "@type": "Answer", "text": "No. It is for risk awareness and historical observation only." } }
+    ]
+  };
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="index,follow">
+  <meta name="theme-color" content="#0f172a">
+  <title>Daily Market Risk Hub | FinLogicHub5</title>
+  <meta name="description" content="Daily hub for market risk index, stock market risk, and recent MRI snapshots. Browse the last 30 daily analyses.">
+  <link rel="canonical" href="${SITE_ROOT}/pages/daily-hub.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Daily Market Risk Hub | FinLogicHub5">
+  <meta property="og:description" content="Daily hub for market risk index, stock market risk, and recent MRI snapshots.">
+  <meta property="og:url" content="${SITE_ROOT}/pages/daily-hub.html">
+  <meta property="og:image" content="${SITE_ROOT}/og/mri-latest.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Daily Market Risk Hub | FinLogicHub5">
+  <meta name="twitter:description" content="Daily hub for market risk index, stock market risk, and recent MRI snapshots.">
+  <meta name="twitter:image" content="${SITE_ROOT}/og/mri-latest.png">
+  <script type="application/ld+json">${JSON.stringify(articleJson)}</script>
+  <script type="application/ld+json">${JSON.stringify(faqJson)}</script>
+  <script type="application/ld+json">${JSON.stringify(breadcrumbJson)}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Noto+Sans+SC:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; padding: 24px; font-family: "Space Grotesk","Noto Sans SC",sans-serif; background: #0b1220; color: #f8fafc; }
+    .wrap { max-width: 980px; margin: 0 auto; background: #0f172a; border: 1px solid rgba(148,163,184,0.2); border-radius: 16px; padding: 24px; }
+    .nav a { color: #38bdf8; text-decoration: none; margin-right: 12px; font-size: 12px; }
+    .list { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: 10px; }
+    .list a { color: #93c5fd; text-decoration: none; padding: 10px 12px; border: 1px solid rgba(148,163,184,0.2); border-radius: 10px; background: rgba(15,23,42,0.6); }
+    .toc { margin: 10px 0; font-size: 12px; }
+    .toc a { color: #93c5fd; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav">
+      <a href="/">Daily Risk</a>
+      <a href="/weekly/">Weekly Strategy</a>
+      <a href="/archive/">Risk Archive</a>
+      <a href="/methodology/">Methodology</a>
+      <a href="/lab/">Lab</a>
+    </div>
+    <div class="toc">
+      <a href="#recent">Recent 30 Days</a> · <a href="#latest">Latest Daily</a>
+    </div>
+    <h1>Daily Market Risk Hub</h1>
+    <p>Latest daily pages for market risk index and stock market risk analysis.</p>
+    <h2 id="latest">Latest Daily</h2>
+    <p><a href="${latest ? `/daily/${latest}` : '/archive/'}">${latest || 'Daily Archive'}</a></p>
+    <h2 id="recent">Recent 30 Days</h2>
+    <div class="list">
+      ${recent30.map(item => `<a href="/daily/${item.date}">${item.date} · ${item.equityRange || ''}</a>`).join('')}
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
 function renderArchiveHtml(daily, ctx = {}) {
-  const { date, reasons, topThemes, bottomThemes } = daily;
+  const { date, reasons } = daily;
   const riskIndex = daily.riskIndex || daily.marketRisk || {};
-  const canonical = `${SITE_ROOT}/daily/${date}.html`;
-  const explanation = buildExplanation(daily);
+  const canonical = `${SITE_ROOT}/daily/${date}`;
   const metaDesc = buildMetaDescription(daily);
-  const lightText = lightLabel(riskIndex.light);
   const levelUpper = (riskIndex.level || 'medium').toUpperCase();
   const shareTitle = `Today Market Risk Index: ${riskIndex.score ?? '--'} (${levelUpper})`;
-  const shareText = `${shareTitle}\nFull analysis → ${canonical}`;
+  const shareText = `${shareTitle}
+Full analysis → ${canonical}`;
   const prevScore = Number.isFinite(ctx.prevScore) ? ctx.prevScore : null;
   const delta = prevScore === null ? 0 : Number((riskIndex.score - prevScore).toFixed(1));
   const deltaText = prevScore === null ? "—" : `${delta >= 0 ? "+" : ""}${delta}`;
-  const prevLink = ctx.prevDate ? `${SITE_ROOT}/daily/${ctx.prevDate}.html` : '';
-  const nextLink = ctx.nextDate ? `${SITE_ROOT}/daily/${ctx.nextDate}.html` : '';
+  const prevLink = ctx.prevDate ? `${SITE_ROOT}/daily/${ctx.prevDate}` : '';
+  const nextLink = ctx.nextDate ? `${SITE_ROOT}/daily/${ctx.nextDate}` : '';
+  const alloc = allocationByLevel(riskIndex.level);
+  const explanation = buildExplanation(daily);
+  const breadcrumbJson = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": `${SITE_ROOT}/` },
+      { "@type": "ListItem", "position": 2, "name": "Daily", "item": `${SITE_ROOT}/archive/` },
+      { "@type": "ListItem", "position": 3, "name": date, "item": canonical }
+    ]
+  };
+  const articleJson = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": `Market Risk Index Today (MRI) — ${date}`,
+    "datePublished": date,
+    "dateModified": date,
+    "mainEntityOfPage": canonical,
+    "description": metaDesc,
+    "author": { "@type": "Organization", "name": "FinLogicHub5" }
+  };
+  const faqJson = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "What is the market risk index?", "acceptedAnswer": { "@type": "Answer", "text": "A structured score that summarizes stock market risk using trend, stress, and regime signals." } },
+      { "@type": "Question", "name": "Does MRI predict returns?", "acceptedAnswer": { "@type": "Answer", "text": "No. It measures risk conditions and supports disciplined allocation decisions." } },
+      { "@type": "Question", "name": "How should I use stock market risk signals?", "acceptedAnswer": { "@type": "Answer", "text": "Use MRI as a risk lens for position sizing and drawdown control, not as a buy or sell signal." } }
+    ]
+  };
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="index,follow">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#0B0F1A">
   <meta name="description" content="${metaDesc}">
-  <title>${date} 市场风险状态 - FinLogicHub5</title>
+  <title>Market Risk Index Today (MRI) — ${date} | Risk Level & Allocation</title>
   <link rel="canonical" href="${canonical}">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="${date} 市场风险状态 - FinLogicHub5">
+  <meta property="og:title" content="Market Risk Index Today (MRI) — ${date} | Risk Level & Allocation">
   <meta property="og:description" content="${metaDesc}">
   <meta property="og:url" content="${canonical}">
   <meta property="og:image" content="${SITE_ROOT}/og/mri-latest.png">
@@ -447,161 +581,90 @@ function renderArchiveHtml(daily, ctx = {}) {
       "dateModified": "${date}"
     }
   </script>
+  <script type="application/ld+json">${JSON.stringify(articleJson)}</script>
+  <script type="application/ld+json">${JSON.stringify(faqJson)}</script>
+  <script type="application/ld+json">${JSON.stringify(breadcrumbJson)}</script>
   <style>
-    :root {
-      --primary: #38bdf8;
-      --bg: #0f172a;
-      --text: #f8fafc;
-      --text-dim: #94a3b8;
-      --green: #4ade80;
-      --yellow: #facc15;
-      --red: #f87171;
-    }
+    :root { --bg:#0B0F1A; --panel:rgba(12,19,32,0.7); --text:#E5EDFF; --muted:#8FA3C8; --green:#4ADE80; --yellow:#FACC15; --red:#F87171; --cyan:#00E5FF; --purple:#7B61FF; }
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      padding: 20px;
-      font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
-      background:
-        radial-gradient(1100px 600px at 8% -10%, rgba(56, 189, 248, 0.22), transparent 65%),
-        radial-gradient(900px 500px at 95% -6%, rgba(16, 185, 129, 0.18), transparent 62%),
-        linear-gradient(180deg, #040711 0%, #07101f 45%, #0a1426 100%);
-      color: var(--text);
-      min-height: 100vh;
-    }
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.78), rgba(15, 23, 42, 0.92));
-      border: 1px solid rgba(148, 163, 184, 0.22);
-      border-radius: 18px;
-      padding: 24px;
-      box-shadow: 0 28px 70px rgba(2, 6, 23, 0.65);
-    }
-    h1 { margin: 6px 0 12px 0; font-size: clamp(24px, 4vw, 36px); }
-    .sub { margin: 0 0 18px 0; color: #bfdbfe; font-size: 14px; line-height: 1.6; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-    .card { border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 12px; padding: 14px; background: rgba(2, 6, 23, 0.42); }
-    .risk-light { display: flex; align-items: center; gap: 12px; }
-    .lamp { font-size: 28px; }
-    .score { font-size: 28px; font-weight: 800; }
-    .note { color: var(--text-dim); font-size: 12px; }
-    .badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; margin-top: 6px; background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(148, 163, 184, 0.3); color: #e2e8f0; }
-    .list { margin: 8px 0 0 0; padding-left: 18px; color: #e2e8f0; font-size: 12px; line-height: 1.7; }
-    .theme-row { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; border-bottom: 1px dashed rgba(148, 163, 184, 0.2); padding: 6px 0; }
-    .theme-row:last-child { border-bottom: none; }
-    .risk-green { color: var(--green); }
-    .risk-yellow { color: var(--yellow); }
-    .risk-red { color: var(--red); }
-    .explain { margin-top: 16px; color: #e2e8f0; font-size: 13px; line-height: 1.75; }
-    .seo-block { margin-top: 18px; padding-top: 12px; border-top: 1px dashed rgba(148, 163, 184, 0.25); color: #e2e8f0; font-size: 13px; line-height: 1.8; }
-    .seo-block h2 { margin: 0 0 8px 0; font-size: 16px; color: #e2e8f0; }
-    .seo-block h3 { margin: 12px 0 6px 0; font-size: 14px; color: #c7d2fe; }
-    .seo-block p { margin: 0 0 8px 0; }
-    .footer-links { margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; }
-    .share-row { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
-    .share-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(148,163,184,0.4); background: rgba(15,23,42,0.5); color: #e2e8f0; font-size: 12px; text-decoration: none; cursor: pointer; }
-    .share-btn:hover { border-color: #38bdf8; color: #38bdf8; }
-    .footer-links a { color: #93c5fd; text-decoration: none; }
-    .ad-slot { margin: 14px 0; padding: 12px; border: 1px dashed rgba(148,163,184,0.35); border-radius: 12px; background: rgba(7,15,30,0.45); }
-    .ad-slot .ad-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
-    @media (max-width: 720px) { body { padding: 12px; } .container { padding: 16px; } }
+    body { margin:0; font-family:"Space Grotesk","Noto Sans SC",sans-serif; background:#0B0F1A; color:var(--text); }
+    .container { max-width: 980px; margin:0 auto; padding: 24px; }
+    .nav { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--muted); }
+    .nav a { padding:6px 10px; border-radius:999px; background:rgba(255,255,255,0.05); }
+    h1 { margin:16px 0 6px 0; font-size: clamp(28px, 5vw, 48px); }
+    .meta { color: var(--muted); font-size: 12px; }
+    .panel { margin-top:16px; padding:18px; border-radius:16px; background:var(--panel); border:1px solid rgba(255,255,255,0.08); }
+    .row { display:flex; gap:16px; flex-wrap:wrap; }
+    .score { font-size: 56px; font-weight: 700; }
+    .pill { padding:6px 10px; border-radius:999px; font-size:12px; background:rgba(255,255,255,0.05); }
+    .alloc { margin-top:12px; display:grid; gap:6px; font-size:14px; }
+    .chart { margin-top:16px; }
+    .ads { margin:16px 0; padding:14px; border:1px dashed rgba(255,255,255,0.15); border-radius:12px; color:var(--muted); font-size:12px; }
+    .footer-links { margin-top:16px; display:flex; gap:12px; flex-wrap:wrap; font-size:12px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="breadcrumb" style="font-size:12px;color:#94a3b8;margin-bottom:10px;">
-      <a href="${SITE_ROOT}/" style="color:#93c5fd;text-decoration:none;">首页</a> &gt;
-      <a href="${SITE_ROOT}/daily.html" style="color:#93c5fd;text-decoration:none;">Daily</a> &gt;
-      <span>${date}</span>
+    <div class="nav">
+      <a href="/">Daily Risk</a>
+      <a href="/weekly/">Weekly Strategy</a>
+      <a href="/archive/">Risk Archive</a>
+      <a href="/methodology/">Methodology</a>
+      <a href="/lab/">Lab</a>
     </div>
-    <h1>${date} 市场风险状态</h1>
-    <p class="sub">市场气候由趋势健康度、压力与风险偏好综合判断，仅作风险感知。</p>
-    <p class="note">Report date is based on America/New_York timezone.</p>
-    <div class="ad-slot">
-      <div class="ad-label">Ad Slot (Header)</div>
-      <div class="note">Reserved for future monetization</div>
-    </div>
-    <div class="grid">
-      <div class="card">
-        <div class="risk-light">
-          <div class="lamp ${riskIndex.light === 'green' ? 'risk-green' : riskIndex.light === 'red' ? 'risk-red' : 'risk-yellow'}">${riskIndex.light === 'green' ? '🟢' : riskIndex.light === 'red' ? '🔴' : '🟡'}</div>
-          <div>
-            <div class="note">风险分</div>
-            <div class="score ${riskIndex.light === 'green' ? 'risk-green' : riskIndex.light === 'red' ? 'risk-red' : 'risk-yellow'}">${riskIndex.score}</div>
-            <div class="note">仓位区间 ${riskIndex.equityRange}</div>
-            <div class="note">Δ 昨日 ${deltaText}</div>
-            <div class="note">组件：趋势 ${riskIndex.components?.trend ?? "--"} / 压力 ${riskIndex.components?.stress ?? "--"} / 风险偏好 ${riskIndex.components?.regime ?? "--"}</div>
-          </div>
+    <h1>Market Risk Index — ${date}</h1>
+    <div class="meta">Report date based on America/New_York timezone.</div>
+
+    <div class="panel">
+      <div class="row" style="align-items:center;">
+        <div class="score">${riskIndex.score ?? '--'}</div>
+        <div>
+          <div class="pill">Risk Level: ${(riskIndex.level || '--').toUpperCase()}</div>
+          <div class="meta" style="margin-top:8px;">Δ vs Yesterday: ${deltaText}</div>
         </div>
-        <div class="badge">风险灯 · ${lightText} · ${riskIndex.level || ''}</div>
-        <div class="note">Method ${riskIndex.methodVersion || 'MRI-1.0'}</div>
-        <details style="margin-top:6px;">
-          <summary style="cursor:pointer;color:#93c5fd;font-size:12px;list-style:none;">方法论</summary>
-          <div class="note">Inputs: ${(riskIndex.inputs || []).join(', ')} · ${riskIndex.explanation || ''}</div>
-        </details>
-        <details style="margin-top:6px;">
-          <summary style="cursor:pointer;color:#93c5fd;font-size:12px;list-style:none;">为何如此？</summary>
-          <div class="note">${(riskIndex.keyDrivers || []).join(' / ')}</div>
-          <div class="note">
-            Trend ${riskIndex.componentContrib?.trend ?? 0}
-            <div style="height:8px;background:rgba(148,163,184,0.2);border-radius:999px;overflow:hidden;margin:4px 0 8px 0;">
-              <div style="height:100%;background:linear-gradient(90deg,#38bdf8,#22d3ee);width:${Math.max(0, Math.min(100, riskIndex.componentContrib?.trend ?? 0))}%"></div>
-            </div>
-          </div>
-          <div class="note">
-            Stress ${riskIndex.componentContrib?.stress ?? 0}
-            <div style="height:8px;background:rgba(148,163,184,0.2);border-radius:999px;overflow:hidden;margin:4px 0 8px 0;">
-              <div style="height:100%;background:linear-gradient(90deg,#38bdf8,#22d3ee);width:${Math.max(0, Math.min(100, riskIndex.componentContrib?.stress ?? 0))}%"></div>
-            </div>
-          </div>
-          <div class="note">
-            Regime ${riskIndex.componentContrib?.regime ?? 0}
-            <div style="height:8px;background:rgba(148,163,184,0.2);border-radius:999px;overflow:hidden;margin:4px 0 8px 0;">
-              <div style="height:100%;background:linear-gradient(90deg,#38bdf8,#22d3ee);width:${Math.max(0, Math.min(100, riskIndex.componentContrib?.regime ?? 0))}%"></div>
-            </div>
-          </div>
-          <div class="note">Trend: ${riskIndex.componentNotes?.trend || '--'} / Stress: ${riskIndex.componentNotes?.stress || '--'} / Regime: ${riskIndex.componentNotes?.regime || '--'}</div>
-        </details>
       </div>
-      <div class="card">
-        <div style="font-weight:700; margin-bottom:6px;">主题热度榜 Top 3</div>
-        ${renderThemeRows(topThemes)}
+      <div class="alloc">
+        <div>Suggested Allocation — Equity ${alloc.equity}</div>
+        <div>Bond ${alloc.bond} · Cash ${alloc.cash}</div>
       </div>
-      <div class="card">
-        <div style="font-weight:700; margin-bottom:6px;">主题热度榜 Bottom 3</div>
-        ${renderThemeRows(bottomThemes)}
-      </div>
-      <div class="card">
-        <div style="font-weight:700; margin-bottom:6px;">今日要点</div>
-        <ul class="list">${reasons.map(r => `<li>${r}</li>`).join('')}</ul>
+      <div class="meta" style="margin-top:8px;">Components: Trend ${riskIndex.components?.trend ?? '--'} · Stress ${riskIndex.components?.stress ?? '--'} · Regime ${riskIndex.components?.regime ?? '--'}</div>
+      <div class="meta">Method ${riskIndex.methodVersion || 'MRI-1.0'} · ${riskIndex.explanation || ''}</div>
+    </div>
+
+    <div class="ads">Ad Slot — Top</div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 8px 0; font-size:18px;">Explanation</h2>
+      <p class="meta" style="line-height:1.7;">${explanation}</p>
+    </div>
+
+    <div class="panel chart">
+      <h2 style="margin:0 0 8px 0; font-size:18px;">Risk Trend</h2>
+      <div style="height:160px;">
+        <svg width="100%" height="160" viewBox="0 0 600 160" preserveAspectRatio="none">
+          <polyline fill="none" stroke="#00E5FF" stroke-width="2" points="${(ctx.trendSeries || []).map((v, i, arr) => {
+            const x = (i / Math.max(1, arr.length - 1)) * 600;
+            const y = 140 - (v / 100) * 120;
+            return `${x},${y}`;
+          }).join(' ')}" />
+        </svg>
       </div>
     </div>
-    <div class="explain">${explanation}</div>
-    <div class="ad-slot">
-      <div class="ad-label">Ad Slot (Mid)</div>
-      <div class="note">Reserved for future monetization</div>
+
+    <div class="ads">Ad Slot — Mid</div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 8px 0; font-size:18px;">What Changed</h2>
+      <p class="meta" style="line-height:1.7;">${(reasons || []).slice(0,3).join(' · ') || 'Risk components remained within expected ranges.'}</p>
     </div>
-    ${buildSeoContent(daily)}
-    <div class="share-row">
-      <a class="share-btn" href="https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(canonical)}" target="_blank" rel="noopener">Share to X</a>
-      <a class="share-btn" href="https://www.reddit.com/submit?title=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(canonical)}" target="_blank" rel="noopener">Share to Reddit</a>
-      <button class="share-btn" onclick="navigator.clipboard.writeText('${shareText.replace(/'/g, "\\'")}');">Copy link</button>
-    </div>
+
+    <div class="ads">Ad Slot — Footer</div>
+
     <div class="footer-links">
-      ${prevLink ? `<a href="${prevLink}">Yesterday (${ctx.prevDate})</a>` : `<a href="${SITE_ROOT}/daily.html">Yesterday (Archive)</a>`}
-      <a href="${SITE_ROOT}/daily.html">Archive</a>
-      <a href="${SITE_ROOT}/market-risk-index.html">MRI Index</a>
-    </div>
-    <div class="ad-slot">
-      <div class="ad-label">Ad Slot (Footer)</div>
-      <div class="note">Reserved for future monetization</div>
-    </div>
-    <div class="footer-links">
-      ${prevLink ? `<a href="${prevLink}">上一天</a>` : ''}
-      ${nextLink ? `<a href="${nextLink}">下一天</a>` : ''}
-      <a href="${SITE_ROOT}/daily.html">返回每日市场状态</a>
-      <a href="${SITE_ROOT}/">返回首页</a>
+      ${prevLink ? `<a href="${prevLink}">Yesterday (${ctx.prevDate})</a>` : ''}
+      ${nextLink ? `<a href="${nextLink}">Next (${ctx.nextDate})</a>` : ''}
+      <a href="/archive/">Risk Archive</a>
+      <a href="/weekly/">Weekly Strategy</a>
     </div>
   </div>
 </body>
@@ -667,7 +730,7 @@ function buildRecentList(limit = 7) {
       if (!date) continue;
       items.push({
         date,
-        urlHtml: `/daily/${date}.html`,
+        urlHtml: `/daily/${date}`,
         urlJson: `/daily/${date}.json`,
         light: data.marketRisk?.light,
         score: data.marketRisk?.score,
@@ -880,9 +943,16 @@ function writeSitemap(archiveHtmlFiles) {
   }
   const urls = [
     { loc: `${SITE_ROOT}/`, changefreq: 'daily', priority: '1.0', lastmod: today },
-    { loc: `${SITE_ROOT}/daily.html`, changefreq: 'daily', priority: '0.7', lastmod: today },
+    { loc: `${SITE_ROOT}/daily.html`, changefreq: 'daily', priority: '0.6', lastmod: today },
+    { loc: `${SITE_ROOT}/weekly/`, changefreq: 'weekly', priority: '0.6', lastmod: today },
+    { loc: `${SITE_ROOT}/archive/`, changefreq: 'daily', priority: '0.6', lastmod: today },
+    { loc: `${SITE_ROOT}/methodology/`, changefreq: 'monthly', priority: '0.5', lastmod: today },
+    { loc: `${SITE_ROOT}/lab/`, changefreq: 'monthly', priority: '0.4', lastmod: today },
+    { loc: `${SITE_ROOT}/lab/backtest/`, changefreq: 'monthly', priority: '0.3', lastmod: today },
+    { loc: `${SITE_ROOT}/lab/ai-analysis/`, changefreq: 'monthly', priority: '0.3', lastmod: today },
+    { loc: `${SITE_ROOT}/lab/research/`, changefreq: 'monthly', priority: '0.3', lastmod: today },
     { loc: `${SITE_ROOT}/market-risk-index.html`, changefreq: 'daily', priority: '0.7', lastmod: today },
-    { loc: `${SITE_ROOT}/pages/stock.html`, changefreq: 'daily', priority: '0.7', lastmod: today },
+    { loc: `${SITE_ROOT}/stock.html`, changefreq: 'daily', priority: '0.6', lastmod: today },
     { loc: `${SITE_ROOT}/privacy.html`, changefreq: 'monthly', priority: '0.3', lastmod: getMtimeDate(PRIVACY_PATH) },
     { loc: `${SITE_ROOT}/disclaimer.html`, changefreq: 'monthly', priority: '0.3', lastmod: getMtimeDate(DISCLAIMER_PATH) }
   ];
@@ -963,18 +1033,18 @@ async function main() {
   const { data, status } = await loadDataSource();
   const yesterday = getYesterdayRisk();
   const reportDate = getDateInTZ();
-  const reportHtmlPath = path.join(ARCHIVE_DIR, `${reportDate}.html`);
+  const reportHtmlPath = path.join(ARCHIVE_DIR, reportDate, 'index.html');
   const reportJsonPath = path.join(ARCHIVE_DIR, `${reportDate}.json`);
   let daily = null;
   let reuseExisting = false;
   if (fs.existsSync(reportHtmlPath)) {
     try {
       const html = fs.readFileSync(reportHtmlPath, 'utf-8');
-      const ok = html.includes(`${reportDate} 市场风险状态`)
-        && html.includes('Report date is based on America/New_York timezone.')
-        && html.includes('seo-content-block')
-        && html.includes('Share to Reddit')
-        && html.includes('Ad Slot (Footer)');
+      const ok = html.includes(`Market Risk Index — ${reportDate}`)
+        && html.includes('Report date based on America/New_York timezone.')
+        && html.includes('Risk Archive')
+        && html.includes('Risk Trend')
+        && html.includes('Ad Slot');
       if (ok && fs.existsSync(reportJsonPath)) {
         daily = JSON.parse(fs.readFileSync(reportJsonPath, 'utf-8'));
         daily.dataStatus = status;
@@ -1064,6 +1134,13 @@ async function main() {
   const monthly = buildMonthlyIndex();
   fs.writeFileSync(MONTHLY_PATH, JSON.stringify(monthly, null, 2));
   console.log('monthly.json updated:', MONTHLY_PATH);
+
+  const dailyHubPath = path.resolve(__dirname, '..', 'public', 'pages', 'daily-hub.html');
+  try {
+    const dailyHub = renderDailyHub(recent30);
+    fs.mkdirSync(path.dirname(dailyHubPath), { recursive: true });
+    fs.writeFileSync(dailyHubPath, dailyHub);
+  } catch (e) {}
 
   const riskHistory = buildRiskIndexHistory(30);
   fs.writeFileSync(RISK_INDEX_HISTORY_PATH, JSON.stringify(riskHistory, null, 2));
@@ -1173,13 +1250,18 @@ async function main() {
     }
     try {
       const data = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
-      const htmlPath = path.join(ARCHIVE_DIR, `${d}.html`);
-      fs.writeFileSync(htmlPath, renderArchiveHtml(data, { prevDate, nextDate, prevScore }));
+      const htmlDir = path.join(ARCHIVE_DIR, d);
+      const htmlPath = path.join(htmlDir, 'index.html');
+      fs.mkdirSync(htmlDir, { recursive: true });
+      const html = renderArchiveHtml(data, { prevDate, nextDate, prevScore, trendSeries: histScores.slice(-90) });
+      fs.writeFileSync(htmlPath, html);
+      // Legacy .html for backward compatibility
+      fs.writeFileSync(path.join(ARCHIVE_DIR, `${d}.html`), html);
       if (d === daily.date) console.log('daily html written:', htmlPath);
     } catch (e) {}
   }
 
-  const archiveHtmlFiles = recent30.map(item => `${item.date}.html`);
+  const archiveHtmlFiles = recent30.map(item => `${item.date}`);
   writeSitemap(archiveHtmlFiles);
   console.log('sitemap.xml updated:', SITEMAP_PATH);
 }

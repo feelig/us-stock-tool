@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="index,follow">
   <meta name="theme-color" content="#0f172a">
-  <title>市场风险指数 - FinLogicHub5</title>
-  <meta name="description" content="FinLogic 市场风险指数用于刻画市场风险状态与风险偏好变化，展示当前指数、仓位区间与30天趋势，辅助风险感知与仓位纪律管理，适合用于日常风险复盘与仓位跟踪。指数基于趋势、压力与风险偏好信号生成，仅作风险提示与历史观察，不预测收益，不构成投资建议。">
+  <title>Market Risk Index — FinLogicHub5</title>
+  <meta name="description" content="Market Risk Index (MRI) daily snapshot with risk level, allocation range, and trend history. Track stock market risk and apply risk-aware allocation discipline.">
   <link rel="canonical" href="https://finlogichub5.com/market-risk-index.html">
   <!-- MRI_OG_START -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="MRI 53 · MEDIUM · 2026-02-26">
-<meta property="og:description" content="📊 今日市场风险指数（MRI）：53 (0)
+<meta property="og:title" content="MRI 32 · MEDIUM · 2026-02-27">
+<meta property="og:description" content="📊 今日市场风险指数（MRI）：32 (-21)
 风险等级：中性
 建议股票仓位：40-60%
-趋势：风险稳定
+趋势：风险下降
 置信度：中等
 
 查看完整指数 → https://finlogichub5.com">
@@ -23,11 +23,11 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://finlogichub5.com/og/mri-latest.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="MRI 53 · MEDIUM · 2026-02-26">
-<meta name="twitter:description" content="📊 今日市场风险指数（MRI）：53 (0)
+<meta name="twitter:title" content="MRI 32 · MEDIUM · 2026-02-27">
+<meta name="twitter:description" content="📊 今日市场风险指数（MRI）：32 (-21)
 风险等级：中性
 建议股票仓位：40-60%
-趋势：风险稳定
+趋势：风险下降
 置信度：中等
 
 查看完整指数 → https://finlogichub5.com">
@@ -36,6 +36,27 @@
   <link rel="preload" as="fetch" href="/data/risk_index.json" crossorigin>
   <link rel="preload" as="fetch" href="/data/risk_index_history.json" crossorigin>
   <link rel="preload" as="fetch" href="/data/share_text.json" crossorigin>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "FinLogic Market Risk Index",
+      "url": "https://finlogichub5.com/market-risk-index.html",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "All",
+      "description": "Market Risk Index (MRI) daily snapshot with risk level, allocation range, and trend history."
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://finlogichub5.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Market Risk Index", "item": "https://finlogichub5.com/market-risk-index.html" }
+      ]
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
@@ -144,13 +165,25 @@
 <body>
   <div class="container">
     <div class="topbar">
-      <a href="/">返回首页</a>
-      <a href="/daily.html">返回每日市场状态</a>
+      <a href="/">Daily Risk</a>
+      <a href="/weekly/">Weekly Strategy</a>
+      <a href="/archive/">Risk Archive</a>
+      <a href="/methodology/">Methodology</a>
+      <a href="/lab/">Lab</a>
+    </div>
+    <div class="note" style="font-size:12px;color:#94a3b8;margin-bottom:10px;">
+      Home &gt; Market Risk Index
+    </div>
+    <div class="note" style="font-size:12px;color:#94a3b8;margin-bottom:10px;">
+      <a href="#current-index" style="color:#93c5fd;text-decoration:none;">Current Index</a> ·
+      <a href="#risk-history" style="color:#93c5fd;text-decoration:none;">Risk History</a> ·
+      <a href="#method-summary" style="color:#93c5fd;text-decoration:none;">Methodology</a> ·
+      <a href="#faq" style="color:#93c5fd;text-decoration:none;">FAQ</a>
     </div>
     <h1>FinLogic 市场风险指数（Market Risk Index）</h1>
     <p class="sub">用于呈现市场风险状态与风险偏好变化。</p>
 
-    <div class="card">
+    <div class="card" id="current-index">
       <div class="row">
         <div class="lamp" id="riskLamp">🟡</div>
         <div>
@@ -167,18 +200,18 @@
         <button class="ghost-btn" id="shareLinkedInBtn">Share on LinkedIn</button>
         <button class="ghost-btn" id="copyLinkBtn">Copy Link</button>
       </div>
-      <div class="chart-wrap">
+      <div class="chart-wrap" id="risk-history">
         <canvas id="riskChart"></canvas>
       </div>
     </div>
 
-    <div class="explain" id="methodSummary">
+    <div class="explain" id="method-summary">
       市场风险指数（MRI）以 SPY、QQQ、TLT、GLD 等代表资产为输入，使用趋势（trend）、压力（stress）与风险偏好（regime）三类信号，
       形成对市场风险温度的量化刻画。趋势反映价格相对长期均线的稳定性，压力衡量短期波动与回撤强度，风险偏好刻画风险资产与防御资产的相对强弱。
       指数输出风险灯与仓位区间，帮助建立仓位纪律与回撤管理框架。该指数仅用于风险感知与历史观察，不预测收益，不构成投资建议或收益承诺。
     </div>
 
-    <div class="explain">
+    <div class="explain" id="faq">
       <strong>FAQ</strong><br>
       1. 市场风险指数代表什么？用于衡量市场风险状态与风险偏好变化。<br>
       2. 如何使用指数？结合仓位区间与自身风险承受能力制定仓位纪律。<br>

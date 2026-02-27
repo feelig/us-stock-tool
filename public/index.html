@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="index,follow">
-  <meta name="theme-color" content="#0f172a">
-  <title>FinLogicHub5 - 市场风险指数与回测主页</title>
-  <meta name="description" content="FinLogicHub5 主页：展示今日 MRI 市场风险指数、风险等级与更新时间，并提供进入指数页、Daily 归档与股票工具入口。">
+  <meta name="theme-color" content="#0B0F1A">
+  <title>FinLogicHub5 — Daily Market Risk Signal</title>
+  <meta name="description" content="FinLogicHub5 delivers a Daily Market Risk Signal with allocation guidance, weekly strategy, and risk archive. Check today’s MRI in seconds.">
   <link rel="canonical" href="https://finlogichub5.com/">
   <!-- MRI_OG_START -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="MRI 53 · MEDIUM · 2026-02-26">
-<meta property="og:description" content="📊 今日市场风险指数（MRI）：53 (0)
+<meta property="og:title" content="MRI 32 · MEDIUM · 2026-02-27">
+<meta property="og:description" content="📊 今日市场风险指数（MRI）：32 (-21)
 风险等级：中性
 建议股票仓位：40-60%
-趋势：风险稳定
+趋势：风险下降
 置信度：中等
 
 查看完整指数 → https://finlogichub5.com">
@@ -23,184 +23,305 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://finlogichub5.com/og/mri-latest.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="MRI 53 · MEDIUM · 2026-02-26">
-<meta name="twitter:description" content="📊 今日市场风险指数（MRI）：53 (0)
+<meta name="twitter:title" content="MRI 32 · MEDIUM · 2026-02-27">
+<meta name="twitter:description" content="📊 今日市场风险指数（MRI）：32 (-21)
 风险等级：中性
 建议股票仓位：40-60%
-趋势：风险稳定
+趋势：风险下降
 置信度：中等
 
 查看完整指数 → https://finlogichub5.com">
 <meta name="twitter:image" content="https://finlogichub5.com/og/mri-latest.png">
 <!-- MRI_OG_END -->
   <link rel="preload" as="fetch" href="/data/risk_index.json" crossorigin>
-  <link rel="preload" as="fetch" href="/data/share_text.json" crossorigin>
+  <link rel="preload" as="fetch" href="/data/risk_index_history.json" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #38bdf8;
-      --bg: #0f172a;
-      --text: #f8fafc;
-      --text-dim: #94a3b8;
-      --green: #4ade80;
-      --yellow: #facc15;
-      --red: #f87171;
+      --bg: #0B0F1A;
+      --panel: rgba(12, 19, 32, 0.7);
+      --text: #E5EDFF;
+      --muted: #8FA3C8;
+      --cyan: #00E5FF;
+      --purple: #7B61FF;
+      --green: #4ADE80;
+      --yellow: #FACC15;
+      --red: #F87171;
+      --glass: rgba(15, 23, 42, 0.65);
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      padding: 20px;
-      font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
-      background:
-        radial-gradient(1100px 600px at 8% -10%, rgba(56, 189, 248, 0.22), transparent 65%),
-        radial-gradient(900px 500px at 95% -6%, rgba(16, 185, 129, 0.18), transparent 62%),
-        linear-gradient(180deg, #040711 0%, #07101f 45%, #0a1426 100%);
+      font-family: "Space Grotesk", sans-serif;
+      background: radial-gradient(1200px 700px at 12% -10%, rgba(0,229,255,0.18), transparent 60%),
+                  radial-gradient(900px 600px at 90% -20%, rgba(123,97,255,0.18), transparent 60%),
+                  #0B0F1A;
       color: var(--text);
-      min-height: 100vh;
     }
-    .container {
-      max-width: 980px;
-      margin: 0 auto;
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.78), rgba(15, 23, 42, 0.92));
-      border: 1px solid rgba(148, 163, 184, 0.22);
-      border-radius: 18px;
-      padding: 24px;
-      box-shadow: 0 28px 70px rgba(2, 6, 23, 0.65);
+    a { color: inherit; text-decoration: none; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    .nav {
+      display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
+      padding: 12px 0 24px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
     }
-    .brand {
-      font-size: 14px;
-      font-weight: 800;
-      color: #dbeafe;
-      letter-spacing: 0.4px;
+    .brand { font-weight: 700; letter-spacing: 0.6px; font-size: 14px; color: #E2F4FF; }
+    .nav-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+    .nav-links a { padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.04); }
+    .nav-links a:hover { color: #fff; border: 1px solid rgba(0,229,255,0.35); }
+
+    .hero { min-height: 78vh; display: grid; align-items: center; }
+    .hero-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+    .hero-title { font-size: clamp(32px, 6vw, 72px); margin: 0 0 6px 0; letter-spacing: -1px; }
+    .hero-score { font-size: clamp(48px, 9vw, 96px); font-weight: 700; }
+    .hero-level { font-size: 18px; color: var(--muted); }
+    .delta { margin-top: 8px; font-size: 14px; color: #CFE9FF; }
+    .alloc { margin-top: 16px; background: var(--glass); padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); }
+    .alloc h4 { margin: 0 0 8px 0; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; }
+    .alloc-line { display: flex; justify-content: space-between; font-size: 14px; padding: 6px 0; }
+    .cta { margin-top: 18px; display: inline-flex; gap: 10px; padding: 12px 18px; border-radius: 999px; background: linear-gradient(90deg, var(--cyan), var(--purple)); color: #0B0F1A; font-weight: 700; }
+
+    .badge-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; font-size: 12px; color: var(--muted); }
+    .badge { padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
+
+    .gauge-card { background: var(--panel); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); position: relative; overflow: hidden; }
+    .gauge {
+      width: 240px; height: 240px; border-radius: 50%;
+      background: conic-gradient(var(--green) 0deg 120deg, var(--yellow) 120deg 240deg, var(--red) 240deg 360deg);
+      display: grid; place-items: center; margin: 0 auto; position: relative; animation: pulse 8s ease-in-out infinite;
     }
-    h1 { margin: 10px 0 8px 0; font-size: clamp(24px, 4vw, 38px); }
-    .sub { margin: 0 0 16px 0; color: #bfdbfe; font-size: 14px; line-height: 1.6; }
-    .card {
-      border: 1px solid rgba(148, 163, 184, 0.25);
-      border-radius: 12px;
-      padding: 14px;
-      background: rgba(2, 6, 23, 0.42);
-      display: grid;
-      gap: 8px;
+    .gauge::after {
+      content: ""; width: 170px; height: 170px; border-radius: 50%; background: #0B0F1A; border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: inset 0 0 30px rgba(0,229,255,0.1);
     }
-    .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .lamp { font-size: 36px; line-height: 1; }
-    .score { font-size: 44px; font-weight: 800; }
-    .note { font-size: 12px; color: var(--text-dim); }
-    .actions { margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-    .btn {
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 14px;
-      border-radius: 10px;
-      border: 1px solid rgba(56, 189, 248, 0.5);
-      background: rgba(56, 189, 248, 0.12);
-      color: #e2e8f0;
-      font-weight: 700;
-      text-decoration: none;
-      font-size: 13px;
+    .needle {
+      position: absolute; width: 6px; height: 110px; background: #fff; border-radius: 999px; top: 25px; left: 50%;
+      transform-origin: bottom center; transform: translateX(-50%) rotate(0deg); transition: transform 1.4s ease;
+      box-shadow: 0 0 12px rgba(0,229,255,0.6);
     }
-    .btn:hover { border-color: var(--primary); color: var(--primary); }
-    .share-row { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
-    .ghost-btn {
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: 1px solid rgba(148, 163, 184, 0.45);
-      background: rgba(15, 23, 42, 0.45);
-      color: #e2e8f0;
-      font-size: 12px;
-      cursor: pointer;
+    .gauge-center { position: absolute; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 0 14px rgba(0,229,255,0.7); }
+
+    .section { padding: 48px 0; }
+    .section h2 { margin: 0 0 12px 0; font-size: 22px; }
+    .section p { margin: 0; color: var(--muted); line-height: 1.7; }
+
+    .brief { background: var(--panel); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); }
+
+    .chart-wrap { margin-top: 16px; background: var(--panel); padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); min-height: 220px; }
+
+    .ads { margin: 24px 0; padding: 18px; border: 1px dashed rgba(255,255,255,0.15); border-radius: 16px; color: var(--muted); font-size: 12px; }
+
+    .footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+
+    @keyframes pulse {
+      0% { filter: drop-shadow(0 0 0 rgba(0,229,255,0.0)); }
+      50% { filter: drop-shadow(0 0 20px rgba(0,229,255,0.35)); }
+      100% { filter: drop-shadow(0 0 0 rgba(0,229,255,0.0)); }
     }
-    .ghost-btn:hover { border-color: var(--primary); color: var(--primary); }
-    @media (max-width: 720px) { body { padding: 12px; } .container { padding: 16px; } }
+
+    @media (max-width: 720px) {
+      .hero { min-height: auto; }
+      .gauge { width: 200px; height: 200px; }
+      .needle { height: 90px; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="brand">FinLogicHub5</div>
-    <h1>主页（Home / Landing）</h1>
-    <p class="sub">今日 MRI 风险指数快照与入口。</p>
+    <div class="nav">
+      <div class="brand">FinLogicHub5</div>
+      <div class="nav-links">
+        <a href="/">Daily Risk</a>
+        <a href="/weekly/">Weekly Strategy</a>
+        <a href="/archive/">Risk Archive</a>
+        <a href="/methodology/">Methodology</a>
+        <a href="/lab/">Lab</a>
+      </div>
+    </div>
 
-    <div class="card" id="mriCard">
-      <div class="row">
-        <div class="lamp" id="mriLamp">🟡</div>
+    <section class="hero">
+      <div class="hero-grid">
         <div>
-          <div class="note">MRI</div>
-          <div class="score" id="mriScore">--</div>
+          <div class="badge-row">
+            <span class="badge" id="liveBadge">● LIVE — Updated --</span>
+            <span class="badge" id="engineBadge">Powered by MRI Engine</span>
+          </div>
+          <h1 class="hero-title">TODAY MARKET RISK</h1>
+          <div class="hero-score" id="heroScore">--</div>
+          <div class="hero-level" id="heroLevel">--</div>
+          <div class="delta" id="heroDelta">--</div>
+
+          <div class="alloc">
+            <h4>Suggested Allocation</h4>
+            <div class="alloc-line" id="allocEquity">Equity --</div>
+            <div class="alloc-line" id="allocBond">Bond --</div>
+            <div class="alloc-line" id="allocCash">Cash --</div>
+          </div>
+
+          <a class="cta" href="/weekly/">View Weekly Strategy</a>
+        </div>
+
+        <div class="gauge-card">
+          <div class="gauge">
+            <div class="needle" id="gaugeNeedle"></div>
+            <div class="gauge-center"></div>
+          </div>
+          <div class="badge-row" style="justify-content:center; margin-top: 16px;">
+            <span class="badge" id="riskLabel">Neutral</span>
+            <span class="badge" id="riskTemp">Risk Signal</span>
+          </div>
         </div>
       </div>
-      <div class="note" id="mriLevel">Risk Level: --</div>
-      <div class="note" id="mriUpdated">Updated: --</div>
-      <div class="note" id="mriEquity">Equity Range: --</div>
-      <div class="note" id="mriError"></div>
-    </div>
-    <div class="share-row">
-      <button class="ghost-btn" id="shareXBtn">Share on X</button>
-      <button class="ghost-btn" id="shareLinkedInBtn">Share on LinkedIn</button>
-      <button class="ghost-btn" id="copyShareBtn">Copy Link</button>
-    </div>
+    </section>
 
-    <div class="actions">
-      <a class="btn" href="/market-risk-index.html">进入 MRI 指数页</a>
-      <a class="btn" href="/daily.html">Daily 归档</a>
-      <a class="btn" href="/stock.html">Stock 工具</a>
+    <div class="ads">Ad Slot — Below Hero (reserved)</div>
+
+    <section class="section">
+      <h2>What Changed Today</h2>
+      <p id="changeSummary">Loading today’s shift...</p>
+    </section>
+
+    <section class="section">
+      <h2>Risk Trend (90 Days)</h2>
+      <div class="chart-wrap" id="chartWrap">
+        <canvas id="riskChart" width="980" height="220" aria-label="90-day risk trend" role="img"></canvas>
+      </div>
+    </section>
+
+    <div class="ads">Ad Slot — Below Risk Chart (reserved)</div>
+
+    <section class="section">
+      <h2>Market Risk Brief</h2>
+      <div class="brief" id="riskBrief">Loading today’s brief...</div>
+    </section>
+
+    <div class="ads">Ad Slot — Footer (reserved)</div>
+
+    <div class="footer-links">
+      <a href="/market-risk-index.html">Market Risk Index</a>
+      <a href="/pages/guides.html">Guides Hub</a>
+      <a href="/pages/daily-hub.html">Daily Hub</a>
     </div>
   </div>
 
   <script>
-    async function loadMRI() {
+    const levelMap = { low: 'LOW — RISK-ON', medium: 'NEUTRAL', high: 'HIGH — RISK-OFF' };
+    const lightMap = { green: 60, yellow: 180, red: 300 };
+
+    function formatDelta(delta) {
+      if (delta === null || delta === undefined) return '--';
+      const sign = delta > 0 ? '+' : '';
+      return `${sign}${delta} vs Yesterday`;
+    }
+
+    function allocationFor(level) {
+      if (level === 'low') return { equity: 'Equity 60–80%', bond: 'Bond 10–25%', cash: 'Cash 5–15%' };
+      if (level === 'high') return { equity: 'Equity 20–40%', bond: 'Bond 30–50%', cash: 'Cash 20–30%' };
+      return { equity: 'Equity 40–60%', bond: 'Bond 20–40%', cash: 'Cash 10–20%' };
+    }
+
+    function animateScore(el, value) {
+      const target = Number(value);
+      if (!Number.isFinite(target)) { el.textContent = '--'; return; }
+      let start = 0;
+      const step = () => {
+        start += Math.max(1, Math.round(target / 40));
+        if (start >= target) { el.textContent = target; return; }
+        el.textContent = start;
+        requestAnimationFrame(step);
+      };
+      step();
+    }
+
+    function drawChart(canvas, series) {
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width; const h = canvas.height;
+      ctx.clearRect(0,0,w,h);
+      ctx.strokeStyle = 'rgba(0,229,255,0.8)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const max = Math.max(...series, 100);
+      const min = Math.min(...series, 0);
+      series.forEach((v, i) => {
+        const x = (i / (series.length - 1)) * (w - 20) + 10;
+        const y = h - 20 - ((v - min) / (max - min || 1)) * (h - 40);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.beginPath();
+      ctx.moveTo(10, h - 20);
+      ctx.lineTo(w - 10, h - 20);
+      ctx.stroke();
+    }
+
+    async function loadRisk() {
       try {
         const res = await fetch('/data/risk_index.json', { cache: 'no-store' });
-        if (!res.ok) throw new Error(`risk_index.json ${res.status}`);
+        if (!res.ok) throw new Error('risk_index.json');
         const data = await res.json();
-        const score = data.score ?? data.value ?? data.index ?? data.mri ?? '--';
-        const level = data.level ?? data.riskLevel ?? '--';
-        const updated = data.updatedAt ?? data.date ?? '--';
-        const equity = data.equityRange ?? '--';
-        const lightMap = { green: '🟢', yellow: '🟡', red: '🔴' };
-        document.getElementById('mriLamp').textContent = lightMap[data.light] || '🟡';
-        document.getElementById('mriScore').textContent = score;
-        document.getElementById('mriLevel').textContent = `Risk Level: ${level}`;
-        document.getElementById('mriUpdated').textContent = `Updated: ${updated}`;
-        document.getElementById('mriEquity').textContent = `Equity Range: ${equity}`;
+        animateScore(document.getElementById('heroScore'), data.score);
+        document.getElementById('heroLevel').textContent = levelMap[data.level] || data.level || '--';
+        document.getElementById('riskLabel').textContent = levelMap[data.level] || 'NEUTRAL';
+        document.getElementById('riskTemp').textContent = `Risk Signal · ${data.equityRange || '--'}`;
+
+        const alloc = allocationFor(data.level);
+        document.getElementById('allocEquity').textContent = alloc.equity;
+        document.getElementById('allocBond').textContent = alloc.bond;
+        document.getElementById('allocCash').textContent = alloc.cash;
+
+        const updated = data.updatedAt ? new Date(data.updatedAt) : null;
+        if (updated) {
+          const diffH = Math.max(0, Math.round((Date.now() - updated.getTime()) / 3600000));
+          document.getElementById('liveBadge').textContent = `● LIVE — Updated ${diffH}h ago`;
+        }
+
+        const needle = document.getElementById('gaugeNeedle');
+        const angle = (data.light && lightMap[data.light]) || 180;
+        needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
       } catch (e) {
-        document.getElementById('mriScore').textContent = '--';
-        document.getElementById('mriLevel').textContent = 'Data unavailable';
-        document.getElementById('mriUpdated').textContent = 'Updated: -';
-        document.getElementById('mriError').textContent = 'Data unavailable. Please refresh.';
-        console.error('MRI load failed:', e);
+        document.getElementById('heroLevel').textContent = 'Data unavailable';
+        document.getElementById('changeSummary').textContent = 'Data unavailable.';
       }
     }
 
-    async function initShare() {
-      let shareText = 'FinLogic MRI';
+    async function loadDeltaAndBrief() {
       try {
-        const shareRes = await fetch('/data/share_text.json', { cache: 'no-store' });
-        const shareData = await shareRes.json();
-        if (shareData?.shareText) shareText = shareData.shareText;
-      } catch (e) {}
-      const shareUrl = `${location.origin}/market-risk-index.html`;
-      document.getElementById('shareXBtn').onclick = () => {
-        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
-        window.open(url, '_blank');
-      };
-      document.getElementById('shareLinkedInBtn').onclick = () => {
-        const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
-        window.open(url, '_blank');
-      };
-      document.getElementById('copyShareBtn').onclick = async () => {
-        try {
-          await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-          document.getElementById('copyShareBtn').textContent = 'Copied';
-        } catch (e) {}
-      };
+        const res = await fetch('/data/risk_index_history.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('risk_index_history.json');
+        const hist = await res.json();
+        const last = hist[hist.length - 1];
+        const prev = hist[hist.length - 2];
+        const delta = prev ? (last.score - prev.score) : null;
+        const arrow = delta === null ? '' : (delta > 0 ? '↑' : delta < 0 ? '↓' : '→');
+        document.getElementById('heroDelta').textContent = delta === null ? '--' : `${delta > 0 ? '+' : ''}${delta} vs Yesterday ${arrow}`;
+
+        const drivers = (last?.keyDrivers || ['Volatility expanded', 'Bond stress rising', 'Trend still positive']).slice(0,3);
+        document.getElementById('changeSummary').textContent = `Why risk moved today: ${drivers.join(' · ')}`;
+
+        const brief = `Today’s Market Risk Index (MRI) is ${last?.score ?? '--'} with a ${last?.level ?? 'neutral'} risk profile. The signal summarizes trend, stress, and regime conditions to provide a consistent view of stock market risk. Use the allocation range as a guardrail for position sizing and drawdown control, not as a return forecast. If risk is rising, prioritize capital preservation and rebalance incrementally. If risk is stable, maintain core exposure with discipline. This brief is for risk awareness only and does not constitute investment advice.`;
+        document.getElementById('riskBrief').textContent = brief;
+
+        const series = hist.slice(-90).map(item => item.score);
+        const canvas = document.getElementById('riskChart');
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              drawChart(canvas, series);
+              observer.disconnect();
+            }
+          });
+        });
+        observer.observe(canvas);
+      } catch (e) {
+        document.getElementById('changeSummary').textContent = 'Risk change summary unavailable.';
+        document.getElementById('riskBrief').textContent = 'Risk brief unavailable.';
+      }
     }
-    loadMRI();
-    initShare();
+
+    loadRisk();
+    loadDeltaAndBrief();
   </script>
 </body>
 </html>

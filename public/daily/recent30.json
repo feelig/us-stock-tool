@@ -1,7 +1,15 @@
 [
   {
+    "date": "2026-02-27",
+    "urlHtml": "/daily/2026-02-27",
+    "urlJson": "/daily/2026-02-27.json",
+    "light": "yellow",
+    "score": 32,
+    "equityRange": "40-60%"
+  },
+  {
     "date": "2026-02-26",
-    "urlHtml": "/daily/2026-02-26.html",
+    "urlHtml": "/daily/2026-02-26",
     "urlJson": "/daily/2026-02-26.json",
     "light": "yellow",
     "score": 53,
@@ -9,7 +17,7 @@
   },
   {
     "date": "2026-02-25",
-    "urlHtml": "/daily/2026-02-25.html",
+    "urlHtml": "/daily/2026-02-25",
     "urlJson": "/daily/2026-02-25.json",
     "light": "red",
     "score": 63,
