@@ -57,6 +57,7 @@
     .progress { position: fixed; top:0; left:0; height:3px; width:0%; background:#00E5FF; z-index:99; }
     .cta-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
     .cta-btn { padding:8px 12px; border-radius:10px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); font-size:12px; }
+    .scroll-prompt { position: fixed; bottom: 20px; right: 20px; background: rgba(0,229,255,0.15); border:1px solid rgba(0,229,255,0.35); padding:10px 12px; border-radius:12px; font-size:12px; display:none; }
   </style>
 </head>
 <body>
@@ -90,6 +91,13 @@
     </div>
 
     <div class="ads" data-ad-slot="daily-top" data-loaded="false">Ad Slot — Top</div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 8px 0; font-size:18px;">Key Takeaways</h2>
+      <div class="meta">Risk level today: MEDIUM</div>
+      <div class="meta">Allocation guidance: Equity 40-60%</div>
+      <div class="meta">Regime context: We are currently in a 1-day MEDIUM regime.</div>
+    </div>
 
     <div class="panel">
       <h2 style="margin:0 0 8px 0; font-size:18px;">Key Takeaways</h2>
@@ -171,6 +179,26 @@
       </div>
     </div>
 
+    <div class="panel">
+      <h2 style="margin:0 0 8px 0; font-size:18px;">You may also want to check</h2>
+      <div class="footer-links">
+        <a href="https://finlogichub5.com/daily/2026-02-27" data-track="daily_next_steps_click" data-target="next">Next day report</a>
+        <a href="/weekly/" data-track="daily_next_steps_click" data-target="weekly">Weekly strategy</a>
+        <a href="/pillar/market-risk-framework/" data-track="daily_next_steps_click" data-target="pillar">Risk framework</a>
+        <a href="/archive/" data-track="daily_next_steps_click" data-target="archive">Risk history</a>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 8px 0; font-size:18px;">Next Steps</h2>
+      <div class="cta-row">
+        <a class="cta-btn" href="https://finlogichub5.com/daily/2026-02-27" data-track="daily_next_steps_click" data-target="next">Next day</a>
+        <a class="cta-btn" href="https://finlogichub5.com/daily/2026-02-25" data-track="daily_next_steps_click" data-target="prev">Previous day</a>
+        <a class="cta-btn" href="/weekly/" data-track="daily_next_steps_click" data-target="weekly">Weekly strategy</a>
+        <a class="cta-btn" href="/alerts/" data-track="daily_next_steps_click" data-target="alerts">Alerts history</a>
+      </div>
+    </div>
+
     <div class="ads" data-ad-slot="daily-mid-2" data-loaded="false">Ad Slot — Mid 2</div>
 
     <div class="ads" data-ad-slot="daily-footer" data-loaded="false">Ad Slot — Footer</div>
@@ -210,6 +238,28 @@
         });
       }, { rootMargin: '200px' });
       slots.forEach(function(slot) { observer.observe(slot); });
+    })();
+
+    (function() {
+      const prompt = document.createElement('div');
+      prompt.className = 'scroll-prompt';
+      prompt.textContent = "Check tomorrow’s risk update →";
+      document.body.appendChild(prompt);
+      let shown = false;
+      const onScroll = () => {
+        if (shown) return;
+        const doc = document.documentElement;
+        const total = doc.scrollHeight - doc.clientHeight;
+        if (total <= 0) return;
+        const pct = doc.scrollTop / total;
+        if (pct >= 0.9) {
+          prompt.style.display = 'block';
+          shown = true;
+          if (window.track) window.track('daily_scroll_end', { pct: 0.9 });
+          setTimeout(() => { prompt.style.display = 'none'; }, 5000);
+        }
+      };
+      document.addEventListener('scroll', onScroll, { passive: true });
     })();
 
     function trackEvent(name, payload) {

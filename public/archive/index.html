@@ -28,6 +28,8 @@
     .card { padding: 14px; border-radius: 14px; background: var(--panel); border:1px solid rgba(255,255,255,0.08); }
     .card a { color: #CFE9FF; text-decoration: none; font-weight: 600; }
     .meta { color: var(--muted); font-size: 12px; margin-top: 6px; }
+    .badge { display:inline-flex; padding:4px 8px; border-radius:999px; font-size:10px; background:rgba(255,255,255,0.08); margin-top:6px; }
+    .cta { margin-top:8px; display:inline-block; padding:6px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); font-size:12px; }
   </style>
 </head>
 <body>
@@ -52,12 +54,27 @@
         const list = document.getElementById('archiveList');
         list.innerHTML = data.map(item => {
           const url = item.urlHtml || `/daily/${item.date}`;
-          return `<div class="card"><a href="${url}">${item.date}</a><div class="meta">Equity ${item.equityRange || '--'} · Risk ${item.score ?? '--'}</div></div>`;
+          const level = item.light === 'green' ? 'LOW' : item.light === 'red' ? 'HIGH' : 'NEUTRAL';
+          return `<div class="card">
+            <a href="${url}" data-track="archive_item_click" data-target="${item.date}">${item.date}</a>
+            <div class="badge">${level}</div>
+            <div class="meta">Equity ${item.equityRange || '--'} · Risk ${item.score ?? '--'}</div>
+            <div class="meta">Daily MRI report and allocation notes.</div>
+            <a class="cta" href="${url}" data-track="archive_item_click" data-target="${item.date}">Open report →</a>
+          </div>`;
         }).join('');
       } catch (e) {
         document.getElementById('archiveList').innerHTML = '<div class="card">Archive unavailable.</div>';
       }
     })();
+    function trackEvent(name, payload) {
+      if (window.track) window.track(name, payload || {});
+    }
+    document.querySelectorAll('[data-track="archive_item_click"]').forEach(el => {
+      el.addEventListener('click', () => {
+        trackEvent('archive_item_click', { target: el.dataset.target || '' });
+      });
+    });
   </script>
 </body>
 </html>

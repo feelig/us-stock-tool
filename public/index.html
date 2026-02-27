@@ -298,6 +298,11 @@
     </section>
 
     <section class="section">
+      <h2>Recommended Next</h2>
+      <div class="cta-grid" id="recommendedNext"></div>
+    </section>
+
+    <section class="section">
       <h2>Most visited</h2>
       <div class="cta-grid">
         <div class="cta-card"><a href="/archive/" data-track="home_most_visited_click" data-target="archive">Risk archive →</a><p>Historical daily reports and regime shifts.</p></div>
@@ -500,6 +505,34 @@
         trackEvent(el.dataset.track, { target: el.dataset.target || '' });
       });
     });
+
+    async function loadRecommended() {
+      const wrap = document.getElementById('recommendedNext');
+      try {
+        const dailyRes = await fetch('/data/daily.json', { cache: 'no-store' });
+        const daily = dailyRes.ok ? await dailyRes.json() : null;
+        const dailyDate = daily?.date;
+        const dailyUrl = dailyDate ? `/daily/${dailyDate}` : '/daily/';
+        const cards = [
+          { title: "Latest Daily Report", desc: "Full daily MRI report and allocation notes.", href: dailyUrl, target: "daily" },
+          { title: "This Week’s Strategy", desc: "Weekly allocation posture and risk summary.", href: "/weekly/", target: "weekly" },
+          { title: "Risk Framework Pillar", desc: "Understand MRI model and regime signals.", href: "/pillar/market-risk-framework/", target: "pillar" },
+          { title: "Risk History", desc: "Explore historical risk cycles.", href: "/risk-history/", target: "risk-history" }
+        ];
+        wrap.innerHTML = cards.map(c => `
+          <div class="cta-card">
+            <a href="${c.href}" data-track="home_recommend_click" data-target="${c.target}">${c.title} →</a>
+            <p>${c.desc}</p>
+          </div>
+        `).join('');
+        document.querySelectorAll('[data-track="home_recommend_click"]').forEach(el => {
+          el.addEventListener('click', () => trackEvent('home_recommend_click', { target: el.dataset.target || '' }));
+        });
+      } catch (e) {
+        wrap.innerHTML = '<div class="cta-card"><a href="/daily/">Latest Daily Report →</a><p>Open the latest daily MRI report.</p></div>';
+      }
+    }
+    loadRecommended();
 
     // Lazy-load ad slots (placeholder for actual ad code)
     const adSlots = document.querySelectorAll('.ads[data-ad-slot]');
