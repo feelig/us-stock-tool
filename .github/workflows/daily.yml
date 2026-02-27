@@ -48,6 +48,18 @@ jobs:
           node tools/generate_seo_matrix.js --count 40
           node tools/generate_daily.js | tee tools/cache/daily_run.log
 
+      - name: Inspect latest.json outputs
+        run: |
+          set -euo pipefail
+          echo "== public listing ==";
+          ls -lah public || true;
+          echo "== public/data listing ==";
+          ls -lah public/data || true;
+          echo "== head public/data/latest.json ==";
+          head -n 60 public/data/latest.json || true;
+          echo "== head public/latest.json ==";
+          head -n 60 public/latest.json || true;
+
       - name: Smoke check outputs
         run: |
           set -euo pipefail
