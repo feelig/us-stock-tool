@@ -5,6 +5,7 @@ const SITE = "https://finlogichub5.com";
 const OUT_DIR = path.resolve(__dirname, "..", "public", "pillar");
 const SEO_ROOT = path.resolve(__dirname, "..", "public", "seo");
 const RISK_HISTORY = path.resolve(__dirname, "..", "public", "data", "risk_index_history.json");
+const RECENT_PATH = path.resolve(__dirname, "..", "public", "daily", "recent.json");
 
 function ensureDir(p) {
   fs.mkdirSync(p, { recursive: true });
@@ -99,12 +100,21 @@ function buildJsonLd(title, description, url) {
   });
 }
 
-function buildPage({ slug, title, description, links }) {
+function buildPage({ slug, title, description, links, recent }) {
   const canonical = `${SITE}/pillar/${slug}/`;
+  const breadcrumbJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": `${SITE}/` },
+      { "@type": "ListItem", "position": 2, "name": title, "item": canonical }
+    ]
+  });
   const chart = getChartPoints();
   const body = buildBody(title);
   const faq = buildFaq();
   const linksHtml = links.map(l => `<li><a href="${l.url}">${escapeHtml(l.title)}</a></li>`).join("");
+  const recentHtml = (recent || []).slice(0, 5).map(r => `<li><a href="/daily/${r.date}">${r.date} · MRI ${r.score ?? '--'}</a></li>`).join("");
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -118,6 +128,7 @@ function buildPage({ slug, title, description, links }) {
   <meta property="og:url" content="${canonical}" />
   <meta property="og:image" content="${SITE}/og/mri-latest.png" />
   <script type="application/ld+json">${buildJsonLd(title, description, canonical)}</script>
+  <script type="application/ld+json">${breadcrumbJson}</script>
   <style>
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.7;background:#0B0F1A;color:#e8eefc}
     a{color:#00E5FF;text-decoration:none}
@@ -136,6 +147,10 @@ function buildPage({ slug, title, description, links }) {
     </div>
 
     <div class="card">
+      <div class="muted">Part of the Market Risk Framework Series • <a href="/">Home</a></div>
+    </div>
+
+    <div class="card">
       <h2>Risk Snapshot Chart</h2>
       <svg width="100%" height="160" viewBox="0 0 600 160" preserveAspectRatio="none">
         <polyline fill="none" stroke="#00E5FF" stroke-width="2" points="${chart}" />
@@ -148,8 +163,13 @@ function buildPage({ slug, title, description, links }) {
     </div>
 
     <div class="card">
-      <h2>Explore related SEO pages</h2>
+      <h2>Related Risk Guides</h2>
       <ul style="margin:0;padding-left:18px">${linksHtml}</ul>
+    </div>
+
+    <div class="card">
+      <h2>Latest Risk Reports</h2>
+      <ul style="margin:0;padding-left:18px">${recentHtml}</ul>
     </div>
 
     <div class="card">
@@ -169,6 +189,12 @@ function main() {
   const index = latestSeoIndex();
   const pages = index?.pages || [];
   const defaultLinks = pages.slice(0, 10).map(p => ({ url: p.url, title: p.topic }));
+  let recent = [];
+  if (fs.existsSync(RECENT_PATH)) {
+    try {
+      recent = JSON.parse(fs.readFileSync(RECENT_PATH, "utf-8"));
+    } catch {}
+  }
 
   const pillars = [
     { slug: "market-risk-framework", title: "Market Risk Framework", description: "A comprehensive framework for interpreting market risk signals and allocation decisions." },
@@ -187,7 +213,7 @@ function main() {
   pillars.forEach((pillar, i) => {
     const links = pages.slice(i * 10, i * 10 + 10).map(p => ({ url: p.url, title: p.topic }));
     const useLinks = links.length ? links : defaultLinks;
-    const html = buildPage({ ...pillar, links: useLinks });
+    const html = buildPage({ ...pillar, links: useLinks, recent });
     const outFile = path.join(OUT_DIR, pillar.slug, "index.html");
     ensureDir(path.dirname(outFile));
     fs.writeFileSync(outFile, html, "utf-8");

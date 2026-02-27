@@ -47,9 +47,18 @@ function writeFile(p, content) {
   fs.writeFileSync(p, content, "utf-8");
 }
 
-function htmlTemplate({ title, description, h1, bodyHtml, canonicalPath, pillarLink }) {
+function htmlTemplate({ title, description, h1, bodyHtml, canonicalPath, pillarLink, pillarTitle }) {
   const site = "https://finlogichub5.com";
   const canonical = `${site}${canonicalPath}`;
+  const breadcrumbJson = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": `${site}/` },
+      { "@type": "ListItem", "position": 2, "name": pillarTitle, "item": `${site}${pillarLink}` },
+      { "@type": "ListItem", "position": 3, "name": title, "item": canonical }
+    ]
+  };
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -70,6 +79,7 @@ function htmlTemplate({ title, description, h1, bodyHtml, canonicalPath, pillarL
     url: canonical,
     publisher: { "@type": "Organization", name: "FinLogicHub5" },
   })}</script>
+  <script type="application/ld+json">${JSON.stringify(breadcrumbJson)}</script>
   <style>
     /* keep ultra-light to protect performance */
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.6;background:#0B0F1A;color:#e8eefc}
@@ -99,16 +109,8 @@ function htmlTemplate({ title, description, h1, bodyHtml, canonicalPath, pillarL
         </div>
 
         <div class="card">
-          <h2 style="margin:0 0 8px">Explore more</h2>
-          <ul style="margin:0;padding-left:18px">
-            <li><a href="/market-risk-today/">Market risk today</a></li>
-            <li><a href="/risk-levels/">Risk levels explained</a></li>
-            <li><a href="/risk-regime/">Risk regime guide</a></li>
-            <li><a href="/risk-history/">Risk history</a></li>
-            <li><a href="/weekly/">Weekly strategy</a></li>
-            <li><a href="/archive/">Risk archive</a></li>
-            <li><a href="${pillarLink}">Pillar: Market Risk Framework</a></li>
-          </ul>
+          <h2 style="margin:0 0 8px">Framework</h2>
+          <p><a href="${pillarLink}">${escapeHtml(pillarTitle)}</a></p>
         </div>
       </div>
 
@@ -120,9 +122,9 @@ function htmlTemplate({ title, description, h1, bodyHtml, canonicalPath, pillarL
         </div>
 
         <div class="card">
-          <h3 style="margin:0 0 8px">Alerts</h3>
-          <div class="muted">See latest risk alerts and regime changes.</div>
-          <div style="margin-top:12px"><a href="/alerts/">Open Alerts →</a></div>
+          <h3 style="margin:0 0 8px">Archive</h3>
+          <div class="muted">Browse historical risk reports and regime shifts.</div>
+          <div style="margin-top:12px"><a href="/archive/">Open Archive →</a></div>
         </div>
 
         <div class="card">
@@ -241,16 +243,16 @@ function buildTopics() {
 
 function pickPillarLink(slug) {
   const pillars = [
-    "/pillar/market-risk-framework/",
-    "/pillar/risk-regime-explained/",
-    "/pillar/asset-allocation-method/",
-    "/pillar/market-risk-history-study/",
-    "/pillar/regime-duration-analysis/",
-    "/pillar/how-to-use-mri/",
-    "/pillar/risk-signal-vs-timing/",
-    "/pillar/risk-for-etf-investors/",
-    "/pillar/portfolio-risk-management/",
-    "/pillar/risk-threshold-strategy/"
+    { href: "/pillar/market-risk-framework/", title: "market risk framework" },
+    { href: "/pillar/risk-regime-explained/", title: "risk regime explained" },
+    { href: "/pillar/asset-allocation-method/", title: "asset allocation strategy" },
+    { href: "/pillar/market-risk-history-study/", title: "market risk index model" },
+    { href: "/pillar/regime-duration-analysis/", title: "regime duration analysis" },
+    { href: "/pillar/how-to-use-mri/", title: "market risk index model" },
+    { href: "/pillar/risk-signal-vs-timing/", title: "market risk framework" },
+    { href: "/pillar/risk-for-etf-investors/", title: "asset allocation strategy" },
+    { href: "/pillar/portfolio-risk-management/", title: "market risk framework" },
+    { href: "/pillar/risk-threshold-strategy/", title: "risk regime explained" }
   ];
   let hash = 0;
   for (let i = 0; i < slug.length; i++) hash = (hash * 31 + slug.charCodeAt(i)) >>> 0;
@@ -343,9 +345,9 @@ function main() {
     usedSlugs.add(slug);
     const canonicalPath = `/seo/${dateISO}/${slug}/`;
     const { title, description, h1, bodyHtml } = buildPageContent(topic, { dateISO });
-    const pillarLink = pickPillarLink(slug);
+    const pillar = pickPillarLink(slug);
 
-    const html = htmlTemplate({ title, description, h1, bodyHtml, canonicalPath, pillarLink });
+    const html = htmlTemplate({ title, description, h1, bodyHtml, canonicalPath, pillarLink: pillar.href, pillarTitle: pillar.title });
     const outFile = path.join(outRoot, slug, "index.html");
     writeFile(outFile, html);
 
