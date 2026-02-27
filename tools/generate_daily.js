@@ -1253,6 +1253,17 @@ function writeSitemap(archiveHtmlFiles) {
       });
     });
   }
+  const seoRoot = path.resolve(__dirname, '..', 'public', 'seo');
+  if (fs.existsSync(seoRoot)) {
+    const dates = fs.readdirSync(seoRoot).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d));
+    dates.forEach((d) => {
+      const dateDir = path.join(seoRoot, d);
+      const slugs = fs.readdirSync(dateDir).filter(s => fs.existsSync(path.join(dateDir, s, 'index.html')));
+      slugs.forEach((s) => {
+        urls.push({ loc: `${SITE_ROOT}/seo/${d}/${s}/`, changefreq: 'daily', priority: '0.3', lastmod: d });
+      });
+    });
+  }
   for (const file of archiveHtmlFiles) {
     const date = file.slice(0, 10);
     urls.push({ loc: `${SITE_ROOT}/daily/${file}`, changefreq: 'daily', priority: '0.5', lastmod: date });
