@@ -98,6 +98,23 @@ jobs:
             console.error('drivers contains generic text');
             process.exit(1);
           }
+          const summary = data.summaryLine;
+          if (!summary || typeof summary !== 'string' || summary.trim().length === 0) {
+            console.error('summaryLine missing');
+            process.exit(1);
+          }
+          if (!/[\u4e00-\u9fff]/.test(summary)) {
+            console.error('summaryLine must contain Chinese characters');
+            process.exit(1);
+          }
+          if (summary.length > 60) {
+            console.error('summaryLine too long');
+            process.exit(1);
+          }
+          if (!summary.includes('区间') || !summary.includes('（') || !summary.includes('）')) {
+            console.error('summaryLine missing required band format');
+            process.exit(1);
+          }
           console.log('latest.json schema check passed');
 
           const countsFromAlpha = data?.debug?.countsFromAlpha || {};

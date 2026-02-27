@@ -235,6 +235,25 @@ function buildResponsePlan(riskLevel) {
   ];
 }
 
+function summaryFromInputs({ mri, inputsTable }) {
+  const spy = (inputsTable || []).find(x => x.asset === "SPY");
+  const qqq = (inputsTable || []).find(x => x.asset === "QQQ");
+  const tlt = (inputsTable || []).find(x => x.asset === "TLT");
+  const gld = (inputsTable || []).find(x => x.asset === "GLD");
+
+  const band = mri < 30 ? "低风险区间（0–30）" : mri > 60 ? "高风险区间（60–100）" : "中性区间（30–60）";
+  const spyText = spy?.ma100Pos === "Above MA100" ? "SPY偏强" : "SPY偏弱";
+  const qqqText = qqq?.ma100Pos === "Above MA100" ? "QQQ偏强" : "QQQ偏弱";
+
+  const tltSig = String(tlt?.signal || "");
+  const tltText = tltSig === "Relief" ? "TLT缓和" : tltSig === "Stress" ? "TLT承压" : "TLT中性";
+
+  const gldSig = String(gld?.signal || "");
+  const gldText = gldSig === "Hedge" ? "GLD对冲" : gldSig === "Neutral" ? "GLD中性" : "GLD偏弱";
+
+  return `${band}：${spyText}，${qqqText}，${tltText}，${gldText}。`;
+}
+
 async function main() {
   const market = {};
 
@@ -287,6 +306,7 @@ async function main() {
   const components = buildComponents(inputsTable);
   const outlook = buildOutlook(riskLevel);
   const responsePlan = buildResponsePlan(riskLevel);
+  const summaryLine = summaryFromInputs({ mri, inputsTable });
 
   const output = {
     date: new Date().toISOString().slice(0, 10),
@@ -298,6 +318,7 @@ async function main() {
     inputsTable,
     components,
     drivers: driversFromInputs(inputsTable),
+    summaryLine,
     outlook,
     responsePlan,
     debug: { countsFromAlpha, countsFromHistory }

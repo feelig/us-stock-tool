@@ -117,6 +117,7 @@ function renderResponse(plan){
 
   safeText("mriValue", Number.isFinite(Number(data.mri)) ? String(Math.round(Number(data.mri))) : "--");
   setRiskBadge(data.riskLevel);
+  safeText("summaryLine", data.summaryLine || "");
   safeText("updatedDate", data.date || "--");
   safeText("equityRange", data.equityRange || "--");
 
