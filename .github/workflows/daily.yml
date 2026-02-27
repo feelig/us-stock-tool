@@ -27,6 +27,15 @@ jobs:
       - name: Install deps
         run: npm install
 
+      - name: Check API key
+        run: |
+          if [ -z "${ALPHA_VANTAGE_KEY}" ]; then
+            echo "ALPHA_VANTAGE_KEY missing"
+            exit 1
+          fi
+        env:
+          ALPHA_VANTAGE_KEY: ${{ secrets.ALPHA_VANTAGE_KEY }}
+
       - name: Fetch Alpha Vantage data
         run: node scripts/fetch_market_data.js
         env:
