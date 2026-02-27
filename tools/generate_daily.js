@@ -1011,6 +1011,75 @@ function renderAlertsPage(alertHistory = []) {
 </html>`;
 }
 
+function renderSeoStatus() {
+  const seoRoot = path.resolve(__dirname, '..', 'public', 'seo');
+  const pillarRoot = path.resolve(__dirname, '..', 'public', 'pillar');
+  let total = 0;
+  let todayCount = 0;
+  let todayDate = '';
+  if (fs.existsSync(seoRoot)) {
+    const dates = fs.readdirSync(seoRoot).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+    dates.forEach((d) => {
+      const dir = path.join(seoRoot, d);
+      const slugs = fs.readdirSync(dir).filter(s => fs.existsSync(path.join(dir, s, 'index.html')));
+      total += slugs.length;
+    });
+    if (dates.length) {
+      todayDate = dates[dates.length - 1];
+      const idxPath = path.join(seoRoot, todayDate, 'index.json');
+      if (fs.existsSync(idxPath)) {
+        try {
+          const data = JSON.parse(fs.readFileSync(idxPath, 'utf-8'));
+          todayCount = data.count || 0;
+        } catch (e) {}
+      } else {
+        const slugs = fs.readdirSync(path.join(seoRoot, todayDate)).filter(s => fs.existsSync(path.join(seoRoot, todayDate, s, 'index.html')));
+        todayCount = slugs.length;
+      }
+    }
+  }
+  let pillarCount = 0;
+  if (fs.existsSync(pillarRoot)) {
+    pillarCount = fs.readdirSync(pillarRoot).filter(p => fs.existsSync(path.join(pillarRoot, p, 'index.html'))).length;
+  }
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="index,follow">
+  <meta name="theme-color" content="#0B0F1A">
+  <title>SEO Status — FinLogicHub5</title>
+  <meta name="description" content="SEO status dashboard for FinLogicHub5: total pages, today’s new pages, and pillar count.">
+  <link rel="canonical" href="${SITE_ROOT}/seo-status/">
+  <style>
+    body { margin:0; font-family:"Space Grotesk", sans-serif; background:#0B0F1A; color:#E5EDFF; }
+    .container { max-width: 820px; margin:0 auto; padding: 32px 24px; }
+    .card { margin-top:16px; padding:18px; border-radius:16px; background:rgba(12,19,32,0.7); border:1px solid rgba(255,255,255,0.08); }
+    .metric { font-size: 28px; font-weight: 700; }
+    .muted { color:#8FA3C8; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>SEO Status</h1>
+    <div class="card">
+      <div class="muted">Total SEO pages</div>
+      <div class="metric">${total}</div>
+    </div>
+    <div class="card">
+      <div class="muted">Today new pages (${todayDate || '—'})</div>
+      <div class="metric">${todayCount}</div>
+    </div>
+    <div class="card">
+      <div class="muted">Pillar pages</div>
+      <div class="metric">${pillarCount}</div>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
 function buildComponentNotes(ctx, steps) {
   const trendNote = `趋势风险${steps.trend}：${ctx.close >= ctx.ma200 ? "价格在MA200上方" : "价格在MA200下方"}（rule: close_vs_ma200）`;
   const stressNote = `压力风险${steps.stress}：vol20 ${ctx.vol20.toFixed(1)}%（rule: vol20_threshold）`;
@@ -1223,6 +1292,7 @@ function writeSitemap(archiveHtmlFiles) {
     { loc: `${SITE_ROOT}/thanks/`, changefreq: 'monthly', priority: '0.3', lastmod: today },
     { loc: `${SITE_ROOT}/privacy/`, changefreq: 'monthly', priority: '0.3', lastmod: today },
     { loc: `${SITE_ROOT}/unsubscribe/`, changefreq: 'monthly', priority: '0.3', lastmod: today },
+    { loc: `${SITE_ROOT}/seo-status/`, changefreq: 'daily', priority: '0.4', lastmod: today },
     { loc: `${SITE_ROOT}/stock.html`, changefreq: 'daily', priority: '0.6', lastmod: today },
     { loc: `${SITE_ROOT}/privacy.html`, changefreq: 'monthly', priority: '0.3', lastmod: getMtimeDate(PRIVACY_PATH) },
     { loc: `${SITE_ROOT}/disclaimer.html`, changefreq: 'monthly', priority: '0.3', lastmod: getMtimeDate(DISCLAIMER_PATH) }
@@ -1500,6 +1570,10 @@ async function main() {
     alertsUrl: `${SITE_ROOT}/alerts/`
   };
   fs.writeFileSync(path.join(ALERTS_TODAY_DIR, 'index.json'), JSON.stringify(alertsTodayPayload, null, 2));
+
+  const seoStatusDir = path.resolve(__dirname, '..', 'public', 'seo-status');
+  fs.mkdirSync(seoStatusDir, { recursive: true });
+  fs.writeFileSync(path.join(seoStatusDir, 'index.html'), renderSeoStatus());
 
   fs.mkdirSync(OG_DIR, { recursive: true });
   const svg = buildShareSvg(daily);

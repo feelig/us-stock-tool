@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://finlogichub5.com/sitemap.xml
