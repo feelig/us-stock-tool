@@ -9,7 +9,7 @@ async function fetchDaily(symbol) {
 
   const { default: fetch } = await import("node-fetch");
   const url =
-    `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED` +
+    `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY` +
     `&symbol=${encodeURIComponent(symbol)}&outputsize=compact&apikey=${API_KEY}`;
 
   const res = await fetch(url);
@@ -36,7 +36,7 @@ async function fetchDaily(symbol) {
     .slice(0, 250)
     .map(([date, v]) => ({
       date,
-      close: Number(v["5. adjusted close"])
+      close: Number(v["4. close"])
     }));
 
   if (!prices.length) throw new Error(`No price rows for ${symbol}`);
