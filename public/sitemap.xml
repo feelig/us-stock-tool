@@ -103,6 +103,12 @@
     <priority>0.4</priority>
   </url>
   <url>
+    <loc>https://finlogichub5.com/press/</loc>
+    <lastmod>2026-02-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
     <loc>https://finlogichub5.com/stock.html</loc>
     <lastmod>2026-02-27</lastmod>
     <changefreq>daily</changefreq>

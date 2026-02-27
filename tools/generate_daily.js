@@ -1495,6 +1495,7 @@ function writeSitemap(archiveHtmlFiles) {
     { loc: `${SITE_ROOT}/seo-status/`, changefreq: 'daily', priority: '0.4', lastmod: today },
     { loc: `${SITE_ROOT}/about/`, changefreq: 'monthly', priority: '0.4', lastmod: today },
     { loc: `${SITE_ROOT}/growth/`, changefreq: 'daily', priority: '0.4', lastmod: today },
+    { loc: `${SITE_ROOT}/press/`, changefreq: 'monthly', priority: '0.4', lastmod: today },
     { loc: `${SITE_ROOT}/stock.html`, changefreq: 'daily', priority: '0.6', lastmod: today },
     { loc: `${SITE_ROOT}/privacy.html`, changefreq: 'monthly', priority: '0.3', lastmod: getMtimeDate(PRIVACY_PATH) },
     { loc: `${SITE_ROOT}/disclaimer.html`, changefreq: 'monthly', priority: '0.3', lastmod: getMtimeDate(DISCLAIMER_PATH) }
