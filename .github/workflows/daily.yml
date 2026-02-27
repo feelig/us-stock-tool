@@ -84,6 +84,20 @@ jobs:
             console.error('Invalid ma100Pos values:', badMa100.map(r => `${r.asset}:${r.ma100Pos}`).join(', '));
             process.exit(1);
           }
+          const drivers = Array.isArray(data.drivers) ? data.drivers : [];
+          if (drivers.length !== 3) {
+            console.error('drivers must be length 3');
+            process.exit(1);
+          }
+          const hasChinese = drivers.every(d => /[\u4e00-\u9fff]/.test(d));
+          if (!hasChinese) {
+            console.error('drivers must contain Chinese characters');
+            process.exit(1);
+          }
+          if (drivers.some(d => /risk regime is balanced/i.test(d))) {
+            console.error('drivers contains generic text');
+            process.exit(1);
+          }
           console.log('latest.json schema check passed');
 
           const countsFromAlpha = data?.debug?.countsFromAlpha || {};

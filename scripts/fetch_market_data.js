@@ -62,24 +62,31 @@ function allocationFromRiskLevel(riskLevel) {
   return { equity: "40-60%", bonds: "20-40%", cash: "10-20%" };
 }
 
-function driversFromInputs(inputsTable, riskLevel) {
-  const tlt = (inputsTable || []).find(x => x.asset === "TLT");
+function driversFromInputs(inputsTable) {
   const spy = (inputsTable || []).find(x => x.asset === "SPY");
   const qqq = (inputsTable || []).find(x => x.asset === "QQQ");
+  const tlt = (inputsTable || []).find(x => x.asset === "TLT");
+  const gld = (inputsTable || []).find(x => x.asset === "GLD");
 
-  const out = [];
-  if (spy?.ma100Pos === "Above MA100" && qqq?.ma100Pos === "Above MA100") {
-    out.push("Medium-term trend remains constructive (SPY/QQQ above MA100).");
-  }
-  if (tlt?.ma100Pos === "Below MA100") {
-    out.push("Bond market pressure persists (TLT below MA100).");
-  }
-  const lvl = String(riskLevel || "").toLowerCase();
-  if (lvl === "neutral" || lvl === "medium") {
-    out.push("Risk regime is balanced: neither strong risk-on nor risk-off dominance.");
-  }
-  if (out.length === 0) out.push("No dominant driver detected; conditions appear mixed.");
-  return out.slice(0, 3);
+  const spyLine = spy?.ma100Pos === "Above MA100"
+    ? "SPY 在 MA100 之上：大盘趋势仍偏强（Risk-on）"
+    : "SPY 在 MA100 之下：大盘趋势转弱（Risk-off）";
+
+  const qqqLine = qqq?.ma100Pos === "Above MA100"
+    ? "QQQ 在 MA100 之上：科技板块强于大盘（Risk-on）"
+    : "QQQ 在 MA100 之下：科技相对弱于大盘（Risk-off）";
+
+  const rateText = tlt?.ma100Pos === "Above MA100"
+    ? "利率压力缓和（Relief）"
+    : "利率压力上升（Stress）";
+
+  const hedgeText = gld?.ma100Pos === "Above MA100"
+    ? "黄金提供对冲支撑（Hedge）"
+    : "黄金对冲需求较弱";
+
+  const macroLine = `宏观信号：${rateText}，${hedgeText}`;
+
+  return [spyLine, qqqLine, macroLine];
 }
 
 async function fetchDaily(symbol) {
@@ -290,7 +297,7 @@ async function main() {
     cashRange: alloc.cash,
     inputsTable,
     components,
-    drivers: driversFromInputs(inputsTable, riskLevel),
+    drivers: driversFromInputs(inputsTable),
     outlook,
     responsePlan,
     debug: { countsFromAlpha, countsFromHistory }
