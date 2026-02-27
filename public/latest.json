@@ -38,14 +38,16 @@
   "components": {
     "trend": 75,
     "stress": 25,
-    "regime": 25
+    "regime": 50
   },
   "drivers": [
-    "Risk regime is balanced: neither strong risk-on nor risk-off dominance."
+    "SPY 在 MA100 之上：大盘趋势仍偏强（Risk-on）",
+    "QQQ 在 MA100 之下：科技相对弱于大盘（Risk-off）",
+    "宏观信号：利率压力缓和（Relief），黄金提供对冲支撑（Hedge）"
   ],
   "outlook": {
     "baseCase": "Balanced regime; keep allocations within neutral ranges.",
-    "upsideTrigger": "Risk-on tilt if SPY/QQQ hold above MA200.",
+    "upsideTrigger": "Risk-on tilt if SPY/QQQ hold above MA100.",
     "downsideTrigger": "Defensive shift if bond stress persists or trend breaks."
   },
   "responsePlan": [
