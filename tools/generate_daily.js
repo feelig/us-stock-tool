@@ -27,6 +27,15 @@ const MONTHLY_PATH = path.resolve(ARCHIVE_DIR, 'monthly.json');
 const SITEMAP_PATH = path.resolve(__dirname, '..', 'public', 'sitemap.xml');
 const SITE_ROOT = 'https://finlogichub5.com';
 const SUBSCRIBE_URL = 'https://formspree.io/f/FORM_ID';
+const GA_ID = 'G-PQ1DWNMT9K';
+const GA_SNIPPET = `<!-- Google Analytics GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '${GA_ID}');
+</script>`;
 const REPORT_TZ = 'America/New_York';
 const PRIVACY_PATH = path.resolve(__dirname, '..', 'privacy.html');
 const DISCLAIMER_PATH = path.resolve(__dirname, '..', 'disclaimer.html');
@@ -1171,6 +1180,106 @@ function renderSeoStatus() {
 </html>`;
 }
 
+function renderGrowthStatus() {
+  const seoRoot = path.resolve(__dirname, '..', 'public', 'seo');
+  const pillarRoot = path.resolve(__dirname, '..', 'public', 'pillar');
+  const dailyRoot = path.resolve(__dirname, '..', 'public', 'daily');
+  const sitemapPath = path.resolve(__dirname, '..', 'public', 'sitemap.xml');
+  let totalSeo = 0;
+  let todaySeo = 0;
+  let latestSeoDate = '';
+  if (fs.existsSync(seoRoot)) {
+    const dates = fs.readdirSync(seoRoot).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+    dates.forEach((d) => {
+      const dir = path.join(seoRoot, d);
+      const slugs = fs.readdirSync(dir).filter(s => fs.existsSync(path.join(dir, s, 'index.html')));
+      totalSeo += slugs.length;
+    });
+    if (dates.length) {
+      latestSeoDate = dates[dates.length - 1];
+      const idxPath = path.join(seoRoot, latestSeoDate, 'index.json');
+      if (fs.existsSync(idxPath)) {
+        try {
+          const data = JSON.parse(fs.readFileSync(idxPath, 'utf-8'));
+          todaySeo = data.count || 0;
+        } catch (e) {}
+      }
+    }
+  }
+  let pillarCount = 0;
+  if (fs.existsSync(pillarRoot)) {
+    pillarCount = fs.readdirSync(pillarRoot).filter(p => fs.existsSync(path.join(pillarRoot, p, 'index.html'))).length;
+  }
+  let dailyCount = 0;
+  if (fs.existsSync(dailyRoot)) {
+    dailyCount = fs.readdirSync(dailyRoot).filter(f => /^\d{4}-\d{2}-\d{2}\.json$/.test(f)).length;
+  }
+  let sitemapCount = 0;
+  if (fs.existsSync(sitemapPath)) {
+    try {
+      const xml = fs.readFileSync(sitemapPath, 'utf-8');
+      sitemapCount = (xml.match(/<url>/g) || []).length;
+    } catch (e) {}
+  }
+  let latestDaily = '';
+  try {
+    const daily = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'public', 'data', 'daily.json'), 'utf-8'));
+    latestDaily = daily.date || '';
+  } catch (e) {}
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="index,follow">
+  <meta name="theme-color" content="#0B0F1A">
+  <title>Growth Dashboard — FinLogicHub5</title>
+  <meta name="description" content="Growth monitoring for FinLogicHub5: page counts, sitemap size, latest daily, SEO matrix stats.">
+  <link rel="canonical" href="${SITE_ROOT}/growth/">
+  <style>
+    body { margin:0; font-family:"Space Grotesk", sans-serif; background:#0B0F1A; color:#E5EDFF; }
+    .container { max-width: 820px; margin:0 auto; padding: 32px 24px; }
+    .card { margin-top:16px; padding:18px; border-radius:16px; background:rgba(12,19,32,0.7); border:1px solid rgba(255,255,255,0.08); }
+    .metric { font-size: 28px; font-weight: 700; }
+    .muted { color:#8FA3C8; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Growth Dashboard</h1>
+    <div class="card"><div class="muted">Sitemap URL count</div><div class="metric">${sitemapCount}</div></div>
+    <div class="card"><div class="muted">Total SEO pages</div><div class="metric">${totalSeo}</div></div>
+    <div class="card"><div class="muted">Latest SEO Matrix (${latestSeoDate || '—'})</div><div class="metric">${todaySeo}</div></div>
+    <div class="card"><div class="muted">Pillar pages</div><div class="metric">${pillarCount}</div></div>
+    <div class="card"><div class="muted">Daily pages</div><div class="metric">${dailyCount}</div></div>
+    <div class="card"><div class="muted">Latest Daily</div><div class="metric">${latestDaily || '—'}</div></div>
+  </div>
+</body>
+</html>`;
+}
+
+function injectGa4ToHtml() {
+  const root = path.resolve(__dirname, '..', 'public');
+  const inject = (file) => {
+    if (!file.endsWith('.html')) return;
+    let html = '';
+    try { html = fs.readFileSync(file, 'utf-8'); } catch { return; }
+    if (html.includes(`gtag/js?id=${GA_ID}`)) return;
+    if (!html.includes('</head>')) return;
+    const updated = html.replace('</head>', `${GA_SNIPPET}\n</head>`);
+    fs.writeFileSync(file, updated);
+  };
+  const walk = (dir) => {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    entries.forEach((e) => {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) walk(full);
+      else inject(full);
+    });
+  };
+  walk(root);
+}
+
 function buildComponentNotes(ctx, steps) {
   const trendNote = `趋势风险${steps.trend}：${ctx.close >= ctx.ma200 ? "价格在MA200上方" : "价格在MA200下方"}（rule: close_vs_ma200）`;
   const stressNote = `压力风险${steps.stress}：vol20 ${ctx.vol20.toFixed(1)}%（rule: vol20_threshold）`;
@@ -1385,6 +1494,7 @@ function writeSitemap(archiveHtmlFiles) {
     { loc: `${SITE_ROOT}/unsubscribe/`, changefreq: 'monthly', priority: '0.3', lastmod: today },
     { loc: `${SITE_ROOT}/seo-status/`, changefreq: 'daily', priority: '0.4', lastmod: today },
     { loc: `${SITE_ROOT}/about/`, changefreq: 'monthly', priority: '0.4', lastmod: today },
+    { loc: `${SITE_ROOT}/growth/`, changefreq: 'daily', priority: '0.4', lastmod: today },
     { loc: `${SITE_ROOT}/stock.html`, changefreq: 'daily', priority: '0.6', lastmod: today },
     { loc: `${SITE_ROOT}/privacy.html`, changefreq: 'monthly', priority: '0.3', lastmod: getMtimeDate(PRIVACY_PATH) },
     { loc: `${SITE_ROOT}/disclaimer.html`, changefreq: 'monthly', priority: '0.3', lastmod: getMtimeDate(DISCLAIMER_PATH) }
@@ -1666,6 +1776,12 @@ async function main() {
   const seoStatusDir = path.resolve(__dirname, '..', 'public', 'seo-status');
   fs.mkdirSync(seoStatusDir, { recursive: true });
   fs.writeFileSync(path.join(seoStatusDir, 'index.html'), renderSeoStatus());
+
+  const growthDir = path.resolve(__dirname, '..', 'public', 'growth');
+  fs.mkdirSync(growthDir, { recursive: true });
+  fs.writeFileSync(path.join(growthDir, 'index.html'), renderGrowthStatus());
+
+  injectGa4ToHtml();
 
   fs.mkdirSync(OG_DIR, { recursive: true });
   const svg = buildShareSvg(daily);
