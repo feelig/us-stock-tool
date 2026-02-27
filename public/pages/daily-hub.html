@@ -38,6 +38,8 @@
     <div class="nav">
       <a href="/">Daily Risk</a>
       <a href="/weekly/">Weekly Strategy</a>
+        <a href="/risk-levels/">Risk Levels</a>
+        <a href="/market-risk-explained/">Market Risk Explained</a>
       <a href="/archive/">Risk Archive</a>
       <a href="/methodology/">Methodology</a>
       <a href="/lab/">Lab</a>
@@ -54,5 +56,24 @@
       <a href="/daily/2026-02-27">2026-02-27 · 40-60%</a><a href="/daily/2026-02-26">2026-02-26 · 40-60%</a><a href="/daily/2026-02-25">2026-02-25 · 20-40%</a>
     </div>
   </div>
+
+  <script>
+    (function() {
+      var slots = document.querySelectorAll('.ads[data-ad-slot]');
+      if (!('IntersectionObserver' in window)) {
+        slots.forEach(function(s) { s.dataset.loaded = 'true'; });
+        return;
+      }
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.dataset.loaded = 'true';
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: '200px' });
+      slots.forEach(function(slot) { observer.observe(slot); });
+    })();
+  </script>
 </body>
 </html>

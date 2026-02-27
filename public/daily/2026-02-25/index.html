@@ -50,7 +50,8 @@
     .pill { padding:6px 10px; border-radius:999px; font-size:12px; background:rgba(255,255,255,0.05); }
     .alloc { margin-top:12px; display:grid; gap:6px; font-size:14px; }
     .chart { margin-top:16px; }
-    .ads { margin:16px 0; padding:14px; border:1px dashed rgba(255,255,255,0.15); border-radius:12px; color:var(--muted); font-size:12px; }
+    .ads { margin:16px 0; padding:14px; border:1px dashed rgba(255,255,255,0.15); border-radius:12px; color:var(--muted); font-size:12px; min-height:120px; display:flex; align-items:center; justify-content:center; }
+    .ads[data-loaded="false"] { opacity: 0.6; }
     .footer-links { margin-top:16px; display:flex; gap:12px; flex-wrap:wrap; font-size:12px; }
   </style>
 </head>
@@ -82,7 +83,7 @@
       <div class="meta">Method MRI-1.0 · 本指数衡量市场风险状态，不预测收益</div>
     </div>
 
-    <div class="ads">Ad Slot — Top</div>
+    <div class="ads" data-ad-slot="daily-top" data-loaded="false">Ad Slot — Top</div>
 
     <div class="panel">
       <h2 style="margin:0 0 8px 0; font-size:18px;">Regime Context</h2>
@@ -103,7 +104,7 @@
       </div>
     </div>
 
-    <div class="ads">Ad Slot — Mid</div>
+    <div class="ads" data-ad-slot="daily-mid" data-loaded="false">Ad Slot — Mid</div>
 
     <div class="panel">
       <h2 style="margin:0 0 8px 0; font-size:18px;">What Changed</h2>
@@ -121,7 +122,7 @@
 
     
     <div class="panel">
-      <h2 style="margin:0 0 8px 0; font-size:18px;">Related Links</h2>
+      <h2 style="margin:0 0 8px 0; font-size:18px;">Explore More</h2>
       <div class="footer-links">
         <a href="/risk-levels/">Risk Levels</a>
         <a href="/risk-regime/">Risk Regime</a>
@@ -132,7 +133,24 @@
     </div>
   
 
-    <div class="ads">Ad Slot — Footer</div>
+    <div class="panel">
+      <h2 style="margin:0 0 8px 0; font-size:18px;">Similar Risk Periods</h2>
+      <div class="footer-links"><a href="/daily/2026-02-26">2026-02-26 · MRI 53</a><a href="/daily/2026-02-27">2026-02-27 · MRI 32</a></div>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 8px 0; font-size:18px;">Continue Reading</h2>
+      <div class="footer-links">
+        
+        <a href="https://finlogichub5.com/daily/2026-02-26">Next Day</a>
+        <a href="/weekly/">Weekly Strategy</a>
+        <a href="/archive/">Risk History</a>
+      </div>
+    </div>
+
+    <div class="ads" data-ad-slot="daily-mid-2" data-loaded="false">Ad Slot — Mid 2</div>
+
+    <div class="ads" data-ad-slot="daily-footer" data-loaded="false">Ad Slot — Footer</div>
 
     <div class="footer-links">
       
@@ -141,5 +159,24 @@
       <a href="/weekly/">Weekly Strategy</a>
     </div>
   </div>
+
+  <script>
+    (function() {
+      var slots = document.querySelectorAll('.ads[data-ad-slot]');
+      if (!('IntersectionObserver' in window)) {
+        slots.forEach(function(s) { s.dataset.loaded = 'true'; });
+        return;
+      }
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.dataset.loaded = 'true';
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: '200px' });
+      slots.forEach(function(slot) { observer.observe(slot); });
+    })();
+  </script>
 </body>
 </html>

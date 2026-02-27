@@ -447,6 +447,13 @@ function renderGrowthPage(page) {
     </div>
     <div>${content}</div>
     ${faqBlock}
+    <h2>Explore More</h2>
+    <div class="links">
+      <a href="/daily/">Latest Daily</a>
+      <a href="/weekly/">Weekly Strategy</a>
+      <a href="/risk-levels/">Risk Levels</a>
+      <a href="/market-risk-explained/">Market Risk Explained</a>
+    </div>
     <div class="links">
       <a href="/daily/">Daily</a>
       <a href="/weekly/">Weekly</a>
@@ -647,6 +654,13 @@ function main() {
     <div class="links" style="margin:10px 0;">
       <a href="/market-risk-index.html">Market Risk Index</a>
       <a href="/archive/">Risk Archive</a>
+    </div>
+    <h2>Explore More</h2>
+    <div class="links">
+      <a href="/daily/">Latest Daily</a>
+      <a href="/weekly/">Weekly Strategy</a>
+      <a href="/risk-levels/">Risk Levels</a>
+      <a href="/market-risk-explained/">Market Risk Explained</a>
     </div>
     <div class="links">
       ${SLUGS.map(s => `<a href="/pages/${s}.html">${titleFromSlug(s)}</a>`).join('')}

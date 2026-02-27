@@ -483,6 +483,8 @@ function renderDailyHub(recent30) {
     <div class="nav">
       <a href="/">Daily Risk</a>
       <a href="/weekly/">Weekly Strategy</a>
+        <a href="/risk-levels/">Risk Levels</a>
+        <a href="/market-risk-explained/">Market Risk Explained</a>
       <a href="/archive/">Risk Archive</a>
       <a href="/methodology/">Methodology</a>
       <a href="/lab/">Lab</a>
@@ -499,6 +501,25 @@ function renderDailyHub(recent30) {
       ${recent30.map(item => `<a href="/daily/${item.date}">${item.date} · ${item.equityRange || ''}</a>`).join('')}
     </div>
   </div>
+
+  <script>
+    (function() {
+      var slots = document.querySelectorAll('.ads[data-ad-slot]');
+      if (!('IntersectionObserver' in window)) {
+        slots.forEach(function(s) { s.dataset.loaded = 'true'; });
+        return;
+      }
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.dataset.loaded = 'true';
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: '200px' });
+      slots.forEach(function(slot) { observer.observe(slot); });
+    })();
+  </script>
 </body>
 </html>`;
 }
@@ -525,9 +546,10 @@ Full analysis → ${canonical}`;
   const actionHint = (riskIndex.score ?? 0) > 65
     ? "Allocation adjustment likely if risk > 65."
     : "No allocation change suggested today.";
+  const similar = (ctx.similar || []).map(item => `<a href="/daily/${item.date}">${item.date} · MRI ${item.score}</a>`).join("") || "<span>No similar periods found.</span>";
   const relatedLinks = `
     <div class="panel">
-      <h2 style="margin:0 0 8px 0; font-size:18px;">Related Links</h2>
+      <h2 style="margin:0 0 8px 0; font-size:18px;">Explore More</h2>
       <div class="footer-links">
         <a href="/risk-levels/">Risk Levels</a>
         <a href="/risk-regime/">Risk Regime</a>
@@ -622,7 +644,8 @@ Full analysis → ${canonical}`;
     .pill { padding:6px 10px; border-radius:999px; font-size:12px; background:rgba(255,255,255,0.05); }
     .alloc { margin-top:12px; display:grid; gap:6px; font-size:14px; }
     .chart { margin-top:16px; }
-    .ads { margin:16px 0; padding:14px; border:1px dashed rgba(255,255,255,0.15); border-radius:12px; color:var(--muted); font-size:12px; }
+    .ads { margin:16px 0; padding:14px; border:1px dashed rgba(255,255,255,0.15); border-radius:12px; color:var(--muted); font-size:12px; min-height:120px; display:flex; align-items:center; justify-content:center; }
+    .ads[data-loaded="false"] { opacity: 0.6; }
     .footer-links { margin-top:16px; display:flex; gap:12px; flex-wrap:wrap; font-size:12px; }
   </style>
 </head>
@@ -654,7 +677,7 @@ Full analysis → ${canonical}`;
       <div class="meta">Method ${riskIndex.methodVersion || 'MRI-1.0'} · ${riskIndex.explanation || ''}</div>
     </div>
 
-    <div class="ads">Ad Slot — Top</div>
+    <div class="ads" data-ad-slot="daily-top" data-loaded="false">Ad Slot — Top</div>
 
     <div class="panel">
       <h2 style="margin:0 0 8px 0; font-size:18px;">Regime Context</h2>
@@ -679,7 +702,7 @@ Full analysis → ${canonical}`;
       </div>
     </div>
 
-    <div class="ads">Ad Slot — Mid</div>
+    <div class="ads" data-ad-slot="daily-mid" data-loaded="false">Ad Slot — Mid</div>
 
     <div class="panel">
       <h2 style="margin:0 0 8px 0; font-size:18px;">What Changed</h2>
@@ -697,7 +720,24 @@ Full analysis → ${canonical}`;
 
     ${relatedLinks}
 
-    <div class="ads">Ad Slot — Footer</div>
+    <div class="panel">
+      <h2 style="margin:0 0 8px 0; font-size:18px;">Similar Risk Periods</h2>
+      <div class="footer-links">${similar}</div>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 8px 0; font-size:18px;">Continue Reading</h2>
+      <div class="footer-links">
+        ${prevLink ? `<a href="${prevLink}">Previous Day</a>` : ''}
+        ${nextLink ? `<a href="${nextLink}">Next Day</a>` : ''}
+        <a href="/weekly/">Weekly Strategy</a>
+        <a href="/archive/">Risk History</a>
+      </div>
+    </div>
+
+    <div class="ads" data-ad-slot="daily-mid-2" data-loaded="false">Ad Slot — Mid 2</div>
+
+    <div class="ads" data-ad-slot="daily-footer" data-loaded="false">Ad Slot — Footer</div>
 
     <div class="footer-links">
       ${prevLink ? `<a href="${prevLink}">Yesterday (${ctx.prevDate})</a>` : ''}
@@ -706,6 +746,25 @@ Full analysis → ${canonical}`;
       <a href="/weekly/">Weekly Strategy</a>
     </div>
   </div>
+
+  <script>
+    (function() {
+      var slots = document.querySelectorAll('.ads[data-ad-slot]');
+      if (!('IntersectionObserver' in window)) {
+        slots.forEach(function(s) { s.dataset.loaded = 'true'; });
+        return;
+      }
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.dataset.loaded = 'true';
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: '200px' });
+      slots.forEach(function(slot) { observer.observe(slot); });
+    })();
+  </script>
 </body>
 </html>`;
 }
@@ -944,6 +1003,15 @@ function buildRiskIndexHistory(limit = 30) {
     else if (delta < 0) { trendDirection = "down"; arrow = "↓"; }
     return { ...row, trendDirection, delta, arrow };
   });
+}
+
+function findSimilarRiskDates(history, targetScore, currentDate, limit = 5) {
+  if (!Array.isArray(history) || !Number.isFinite(targetScore)) return [];
+  return history
+    .filter(r => r.date !== currentDate && Number.isFinite(r.score))
+    .map(r => ({ date: r.date, score: r.score, diff: Math.abs(r.score - targetScore) }))
+    .sort((a, b) => a.diff - b.diff)
+    .slice(0, limit);
 }
 
 function calcMomentum(history) {
@@ -1364,6 +1432,7 @@ async function main() {
         equityRange: row.equityRange
       }));
       const html = renderArchiveHtml(data, {
+        similar: findSimilarRiskDates(riskHistory, data.riskIndex?.score ?? data.marketRisk?.score ?? 0, data.date, 5),
         prevDate,
         nextDate,
         prevScore,

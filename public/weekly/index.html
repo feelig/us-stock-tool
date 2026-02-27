@@ -25,6 +25,7 @@
     .nav a { padding:6px 10px; border-radius:999px; background:rgba(255,255,255,0.05); }
     h1 { margin:16px 0 6px 0; font-size: clamp(28px, 5vw, 48px); }
     .panel { margin-top:16px; padding:18px; border-radius:16px; background:var(--panel); border:1px solid rgba(255,255,255,0.08); }
+    .ads { margin: 16px 0; padding: 14px; border:1px dashed rgba(255,255,255,0.15); border-radius: 12px; color: var(--muted); font-size: 12px; min-height: 120px; display:flex; align-items:center; justify-content:center; }
     h2 { margin:18px 0 8px 0; font-size:18px; }
     p { color: var(--muted); line-height:1.7; margin:0 0 10px 0; }
   </style>
@@ -47,12 +48,19 @@
       <p>Trend, stress, and regime components are reviewed weekly to determine whether market risk is improving, stabilizing, or deteriorating. This outlook informs weekly allocation adjustments and hedging posture.</p>
       <h2>What Investors Should Do</h2>
       <p>Use the weekly review as a high-level risk compass. Align position sizing with current MRI risk level and avoid chasing short-term noise.</p>
+      <div class="ads" data-ad-slot="weekly-top" data-loaded="false">Ad Slot — After TOC</div>
       <h2>Weekly Risk Trend (7 Days)</h2>
       <div style="height:160px; margin-top:6px;">
         <svg id="weeklyTrend" width="100%" height="160" viewBox="0 0 600 160" preserveAspectRatio="none"></svg>
       </div>
+      <div class="ads" data-ad-slot="weekly-mid" data-loaded="false">Ad Slot — Mid Article</div>
       <h2>Regime Probability</h2>
       <p id="regimeProb">Calculating regime persistence...</p>
+      <div class="ads" data-ad-slot="weekly-footer" data-loaded="false">Ad Slot — Footer</div>
+    </div>
+    <div class="panel" style="margin-top:18px;">
+      <h2>Explore More</h2>
+      <p><a href="/daily/">Latest Daily</a> · <a href="/weekly/">Weekly Strategy</a> · <a href="/risk-levels/">Risk Levels</a> · <a href="/market-risk-explained/">Market Risk Explained</a></p>
     </div>
   </div>
   <script>
@@ -99,6 +107,16 @@
         document.getElementById('regimeProb').textContent = 'Regime probability unavailable.';
       }
     })();
+    const adSlots = document.querySelectorAll('.ads[data-ad-slot]');
+    const adObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.dataset.loaded = 'true';
+          adObserver.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '200px' });
+    adSlots.forEach(slot => adObserver.observe(slot));
   </script>
 </body>
 </html>

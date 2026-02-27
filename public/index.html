@@ -110,7 +110,8 @@
 
     .chart-wrap { margin-top: 16px; background: var(--panel); padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); min-height: 220px; }
 
-    .ads { margin: 24px 0; padding: 18px; border: 1px dashed rgba(255,255,255,0.15); border-radius: 16px; color: var(--muted); font-size: 12px; }
+    .ads { margin: 24px 0; padding: 18px; border: 1px dashed rgba(255,255,255,0.15); border-radius: 16px; color: var(--muted); font-size: 12px; min-height: 120px; display:flex; align-items:center; justify-content:center; }
+    .ads[data-loaded="false"] { opacity: 0.6; }
 
     .footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
 
@@ -177,7 +178,7 @@
       </div>
     </section>
 
-    <div class="ads">Ad Slot — Below Hero (reserved)</div>
+    <div class="ads" data-ad-slot="home-hero" data-loaded="false">Ad Slot — Below Hero (reserved)</div>
 
     <section class="section">
       <h2>What Changed Today</h2>
@@ -191,15 +192,19 @@
       </div>
     </section>
 
-    <div class="ads">Ad Slot — Below Risk Chart (reserved)</div>
+    <div class="ads" data-ad-slot="home-trend" data-loaded="false">Ad Slot — Below Risk Chart (reserved)</div>
 
     <section class="section">
       <h2>Market Risk Brief</h2>
       <div class="brief" id="riskBrief">Loading today’s brief...</div>
     </section>
 
-    <div class="ads">Ad Slot — Footer (reserved)</div>
+    <div class="ads" data-ad-slot="home-footer" data-loaded="false">Ad Slot — Footer (reserved)</div>
 
+    <div class="panel" style="margin-top:18px;">
+      <h2>Explore More</h2>
+      <p><a href="/daily/">Latest Daily</a> · <a href="/weekly/">Weekly Strategy</a> · <a href="/risk-levels/">Risk Levels</a> · <a href="/market-risk-explained/">Market Risk Explained</a></p>
+    </div>
     <div class="footer-links">
       <a href="/market-risk-index.html">Market Risk Index</a>
       <a href="/pages/guides.html">Guides Hub</a>
@@ -328,6 +333,18 @@
 
     loadRisk();
     loadDeltaAndBrief();
+
+    // Lazy-load ad slots (placeholder for actual ad code)
+    const adSlots = document.querySelectorAll('.ads[data-ad-slot]');
+    const adObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.dataset.loaded = 'true';
+          adObserver.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '200px' });
+    adSlots.forEach(slot => adObserver.observe(slot));
   </script>
 </body>
 </html>
