@@ -10,28 +10,28 @@
       "asset": "SPY",
       "price": 689.3,
       "change20d": -0.0088004371458974,
-      "ma200Pos": "—",
+      "ma200Pos": "Insufficient data",
       "signal": "Risk-off"
     },
     {
       "asset": "QQQ",
       "price": 609.24,
       "change20d": -0.03786993461987942,
-      "ma200Pos": "—",
+      "ma200Pos": "Insufficient data",
       "signal": "Risk-off"
     },
     {
       "asset": "TLT",
       "price": 90.27,
       "change20d": 0.03047945205479463,
-      "ma200Pos": "—",
+      "ma200Pos": "Insufficient data",
       "signal": "Stress"
     },
     {
       "asset": "GLD",
       "price": 477.48,
       "change20d": -0.03453574894856026,
-      "ma200Pos": "—",
+      "ma200Pos": "Insufficient data",
       "signal": "Neutral"
     }
   ],
