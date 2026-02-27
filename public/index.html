@@ -1,448 +1,302 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="index,follow">
-  <meta name="theme-color" content="#0B0F1A">
-  <title>FinLogicHub5 — Daily Market Risk Signal</title>
-  <meta name="description" content="FinLogicHub5 delivers a Daily Market Risk Signal with allocation guidance, weekly strategy, and risk archive. Check today’s MRI in seconds.">
-  <link rel="canonical" href="https://finlogichub5.com/">
-  <link rel="prefetch" href="/weekly/" />
-  <link rel="prefetch" href="/archive/" />
-  <!-- MRI_OG_START -->
-<meta property="og:type" content="website">
-<meta property="og:title" content="MRI 32 · MEDIUM · 2026-02-27">
-<meta property="og:description" content="📊 今日市场风险指数（MRI）：32 (0)
-风险等级：中性
-建议股票仓位：40-60%
-趋势：风险稳定
-置信度：低
-
-查看完整指数 → https://finlogichub5.com">
-<meta property="og:url" content="https://finlogichub5.com/">
-<meta property="og:site_name" content="FinLogicHub5">
-<meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://finlogichub5.com/og/mri-latest.png">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="MRI 32 · MEDIUM · 2026-02-27">
-<meta name="twitter:description" content="📊 今日市场风险指数（MRI）：32 (0)
-风险等级：中性
-建议股票仓位：40-60%
-趋势：风险稳定
-置信度：低
-
-查看完整指数 → https://finlogichub5.com">
-<meta name="twitter:image" content="https://finlogichub5.com/og/mri-latest.png">
-<!-- MRI_OG_END -->
-  <link rel="preload" as="fetch" href="/latest.json" crossorigin>
-  <link rel="preload" as="fetch" href="/data/latest.json" crossorigin>
-  <link rel="preload" as="fetch" href="/risk_index.json" crossorigin>
-  <link rel="preload" as="fetch" href="/data/risk_index_history.json" crossorigin>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #0B0F1A;
-      --panel: rgba(12, 19, 32, 0.7);
-      --text: #E5EDFF;
-      --muted: #8FA3C8;
-      --cyan: #00E5FF;
-      --purple: #7B61FF;
-      --green: #4ADE80;
-      --yellow: #FACC15;
-      --red: #F87171;
-      --glass: rgba(15, 23, 42, 0.65);
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: "Space Grotesk", sans-serif;
-      background: radial-gradient(1200px 700px at 12% -10%, rgba(0,229,255,0.18), transparent 60%),
-                  radial-gradient(900px 600px at 90% -20%, rgba(123,97,255,0.18), transparent 60%),
-                  #0B0F1A;
-      color: var(--text);
-    }
-    a { color: inherit; text-decoration: none; }
-    .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
-    .nav {
-      display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
-      padding: 12px 0 24px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
-    .brand { font-weight: 700; letter-spacing: 0.6px; font-size: 14px; color: #E2F4FF; }
-    .nav-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
-    .nav-links a { padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.04); }
-    .nav-links a:hover { color: #fff; border: 1px solid rgba(0,229,255,0.35); }
-
-    .hero { min-height: 78vh; display: grid; align-items: center; position: relative; overflow: hidden; }
-    .hero::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-      background-size: 32px 32px;
-      opacity: 0.35;
-      pointer-events: none;
-    }
-    .hero::after {
-      content: "";
-      position: absolute;
-      width: 520px;
-      height: 520px;
-      right: -120px;
-      top: -160px;
-      background: radial-gradient(circle, rgba(0,229,255,0.25), transparent 70%);
-      filter: blur(0px);
-      pointer-events: none;
-    }
-    .hero-grid { display: grid; grid-template-columns: 7fr 3fr; gap: 24px; position: relative; z-index: 1; }
-    .hero-left .title { font-size: clamp(22px, 3vw, 28px); letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
-    .hero-left .mri { font-size: clamp(64px, 12vw, 120px); font-weight: 700; line-height: 1; }
-    .hero-left .meta { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 12px 20px; font-size: 14px; color: #CFE9FF; }
-    .hero-left .source { margin-top: 10px; color: var(--muted); font-size: 12px; }
-    .hero-right { background: var(--glass); border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 18px; }
-    .box-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
-    .ranges { margin: 12px 0; display: grid; gap: 10px; }
-    .range-card { display:flex; justify-content:space-between; padding: 10px 12px; border-radius: 12px; border:1px solid rgba(255,255,255,0.12); background: rgba(12,19,32,0.7); font-size: 14px; }
-    .cta { display: grid; gap: 10px; margin-top: 12px; }
-    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); color: var(--text); }
-    .btn.primary { background: linear-gradient(90deg, var(--cyan), var(--purple)); color: #0B0F1A; font-weight: 700; border: none; }
-    .note { margin-top: 10px; color: var(--muted); font-size: 12px; }
-    .risk-low { color: var(--green); }
-    .risk-neutral { color: var(--yellow); }
-    .risk-high { color: var(--red); }
-    .subscribe { margin-top: 16px; padding: 14px; border-radius: 14px; background: var(--glass); border: 1px solid rgba(255,255,255,0.08); }
-    .subscribe form { display: flex; gap: 8px; flex-wrap: wrap; }
-    .subscribe input { flex: 1 1 180px; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.2); color: var(--text); }
-    .subscribe button { padding: 10px 14px; border-radius: 8px; border: none; background: var(--cyan); color: #0B0F1A; font-weight: 700; cursor: pointer; }
-    .subscribe small { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }
-
-    .badge-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; font-size: 12px; color: var(--muted); }
-    .badge { padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
-
-    .section { padding: 48px 0; }
-    .section h2 { margin: 0 0 12px 0; font-size: 22px; }
-    .section p { margin: 0; color: var(--muted); line-height: 1.7; }
-
-    .brief { background: var(--panel); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); }
-
-    .chart-wrap { margin-top: 16px; background: var(--panel); padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); min-height: 220px; }
-
-    .ads { margin: 24px 0; padding: 18px; border: 1px dashed rgba(255,255,255,0.15); border-radius: 16px; color: var(--muted); font-size: 12px; min-height: 120px; display:flex; align-items:center; justify-content:center; }
-    .ads[data-loaded="false"] { opacity: 0.6; }
-
-    .footer-links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
-    .cta-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 14px; }
-    .cta-card { padding: 16px; border-radius: 16px; border:1px solid rgba(0,229,255,0.18); background: rgba(12,19,32,0.75); transition: transform 0.2s ease, box-shadow 0.2s ease; }
-    .cta-card:hover { transform: scale(1.02); box-shadow: 0 0 24px rgba(0,229,255,0.2); }
-    .cta-card a { display:inline-flex; gap:10px; align-items:center; font-weight:700; }
-    .cta-card p { margin:8px 0 0 0; color: var(--muted); font-size: 13px; }
-
-    @keyframes pulse {
-      0% { filter: drop-shadow(0 0 0 rgba(0,229,255,0.0)); }
-      50% { filter: drop-shadow(0 0 20px rgba(0,229,255,0.35)); }
-      100% { filter: drop-shadow(0 0 0 rgba(0,229,255,0.0)); }
-    }
-
-    @media (max-width: 900px) {
-      .hero-grid { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 720px) {
-      .hero { min-height: auto; }
-      .gauge { width: 200px; height: 200px; }
-      .needle { height: 90px; }
-    }
-  </style>
-<!-- Google Analytics GA4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-PQ1DWNMT9K"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-PQ1DWNMT9K');
-</script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FinLogicHub5 — Global Market Risk Index</title>
+  <meta name="description" content="Daily market risk dashboard (MRI) with allocation ranges and transparent market inputs for disciplined investors." />
+  <link rel="stylesheet" href="/home.css" />
 </head>
 <body>
-  <div class="container">
-    <div class="nav">
-      <div class="brand">FinLogicHub5</div>
+  <div class="nav">
+    <div class="container nav-inner">
+      <div class="brand"><span class="dot"></span> FinLogicHub5</div>
       <div class="nav-links">
-        <a href="/">Daily Risk</a>
-        <a href="/weekly/">Weekly Strategy</a>
-        <a href="/archive/">Risk Archive</a>
-        <a href="/methodology/">Methodology</a>
-        <a href="/lab/">Lab</a>
+        <a href="/daily">Daily Risk</a>
+        <a href="/weekly">Weekly Strategy</a>
+        <a href="/risk-history">Risk History</a>
+        <a href="/methodology">Methodology</a>
+        <a href="/lab">Lab</a>
       </div>
-    </div>
-
-    <section class="hero">
-      <div class="hero-grid">
-        <div class="hero-left">
-          <div class="title">Global Market Risk Index</div>
-          <div class="mri" id="mriValue">--</div>
-          <div class="meta">
-            <span>Risk Level: <b id="riskLevel">--</b></span>
-            <span id="deltaWrap" style="display:none; gap:8px;">
-              Δ vs yesterday: <b id="deltaValue">--</b>
-            </span>
-            <span>Trend: <b id="trendLabel">--</b></span>
-            <span>Regime duration: <b id="regimeDuration">--</b></span>
-            <span>Updated: <b id="updatedDate">--</b></span>
-          </div>
-          <div class="source">Data source: Alpha Vantage · Updated daily after market close</div>
-        </div>
-
-        <div class="hero-right">
-          <div class="box-title">Suggested Allocation Range</div>
-          <div class="ranges">
-            <div class="range-card"><span>Equity</span><b id="equityRange">--</b></div>
-            <div class="range-card"><span>Bonds</span><b id="bondsRange">--</b></div>
-            <div class="range-card"><span>Cash</span><b id="cashRange">--</b></div>
-          </div>
-          <div class="cta">
-            <a class="btn primary" href="/daily">View Today’s Full Report →</a>
-            <a class="btn" href="/weekly">Read Weekly Strategy →</a>
-          </div>
-          <div class="note">Use as exposure guidance, not trading instruction. Not investment advice.</div>
-          <div class="note">Get notified when market risk changes.</div>
-        </div>
+      <div class="nav-cta">
+        <a class="btn primary" href="#alerts">Get Alerts</a>
       </div>
-    </section>
-
-    <div class="ads" data-ad-slot="home-hero" data-loaded="false">Ad Slot — Below Hero (reserved)</div>
-
-    <section class="section">
-      <h2>What changed today</h2>
-      <ul id="driversList"></ul>
-    </section>
-
-    <section class="section">
-      <h2>Next actions</h2>
-      <div class="cta-grid">
-        <div class="cta-card">
-          <a href="/daily/" id="actionDaily" data-track="home_cta_click" data-target="daily">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2"><path d="M3 12h18M12 3l9 9-9 9"/></svg>
-            View today’s full report →
-          </a>
-          <p>Open the latest daily risk report and allocation notes.</p>
-        </div>
-        <div class="cta-card">
-          <a href="/weekly/" data-track="home_cta_click" data-target="weekly">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-            Read this week’s strategy →
-          </a>
-          <p>Institutional-style weekly allocation guidance.</p>
-        </div>
-        <div class="cta-card">
-          <a href="/pillar/market-risk-framework/" data-track="home_cta_click" data-target="framework">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
-            Understand the framework →
-          </a>
-          <p>Learn how MRI combines trend, stress, and regime.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <h2>Risk Trend (90 Days)</h2>
-      <div class="chart-wrap" id="chartWrap">
-        <canvas id="riskChart" width="980" height="220" aria-label="90-day risk trend" role="img"></canvas>
-      </div>
-    </section>
-
-    <div class="ads" data-ad-slot="home-trend" data-loaded="false">Ad Slot — Below Risk Chart (reserved)</div>
-
-    <section class="section">
-      <h2>Market Risk Brief</h2>
-      <div class="brief" id="riskBrief">Loading today’s brief...</div>
-    </section>
-
-    <div class="ads" data-ad-slot="home-footer" data-loaded="false">Ad Slot — Footer (reserved)</div>
-
-    <div class="footer-links">
-      <a href="/market-risk-index.html">Market Risk Index</a>
-      <a href="/weekly/">Weekly Strategy</a>
-      <a href="/archive/">Risk Archive</a>
     </div>
   </div>
 
-  <script>
-    function drawChart(canvas, series) {
-      const ctx = canvas.getContext('2d');
-      const w = canvas.width; const h = canvas.height;
-      ctx.clearRect(0,0,w,h);
-      ctx.strokeStyle = 'rgba(0,229,255,0.8)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      const max = Math.max(...series, 100);
-      const min = Math.min(...series, 0);
-      series.forEach((v, i) => {
-        const x = (i / (series.length - 1)) * (w - 20) + 10;
-        const y = h - 20 - ((v - min) / (max - min || 1)) * (h - 40);
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-      });
-      ctx.stroke();
-      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-      ctx.beginPath();
-      ctx.moveTo(10, h - 20);
-      ctx.lineTo(w - 10, h - 20);
-      ctx.stroke();
-    }
+  <main class="container">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="grid-hero">
+        <div class="card">
+          <div class="card-inner">
+            <div class="kicker">Global Market Risk Index</div>
+            <div class="h1">Institutional-style market risk monitoring</div>
 
-    async function loadDeltaAndBrief() {
-      try {
-        const res = await fetch('/data/risk_index_history.json', { cache: 'no-store' });
-        if (!res.ok) throw new Error('risk_index_history.json');
-        const hist = await res.json();
-        const last = hist[hist.length - 1];
-        const brief = `Today’s Market Risk Index (MRI) is ${last?.score ?? '--'} with a ${last?.level ?? 'neutral'} risk profile. The signal summarizes trend, stress, and regime conditions to provide a consistent view of stock market risk. Use the allocation range as a guardrail for position sizing and drawdown control, not as a return forecast. If risk is rising, prioritize capital preservation and rebalance incrementally. If risk is stable, maintain core exposure with discipline. This brief is for risk awareness only and does not constitute investment advice.`;
-        const briefEl = document.getElementById('riskBrief');
-        if (briefEl) briefEl.textContent = brief;
+            <div class="snapshot">
+              <div>
+                <div class="mri" id="mriValue">--</div>
+                <div class="meta">
+                  <span class="badge neutral" id="riskBadge">
+                    <span class="pill"></span>
+                    <span>Risk: <span id="riskLevelText">Neutral</span></span>
+                    <span class="muted">·</span>
+                    <span class="muted" id="riskHint">Balanced</span>
+                  </span>
+                  <span>Trend: <b id="trendText">—</b></span>
+                  <span>Regime duration: <b id="durationText">—</b></span>
+                  <span>Updated: <b id="updatedDate">—</b></span>
+                </div>
+              </div>
+            </div>
 
-        const series = hist.slice(-90).map(item => item.score);
-        const canvas = document.getElementById('riskChart');
-        if (canvas) {
-          const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-              if (entry.isIntersecting) {
-                drawChart(canvas, series);
-                observer.disconnect();
-              }
-            });
-          });
-          observer.observe(canvas);
-        }
-      } catch (e) {
-        const briefEl = document.getElementById('riskBrief');
-        if (briefEl) briefEl.textContent = 'Risk brief unavailable.';
-      }
-    }
+            <div class="smallline">Data: SPY · QQQ · TLT · GLD (daily). Exposure guidance, not trading instruction.</div>
 
-    loadDeltaAndBrief();
+            <div class="cta-row">
+              <a class="btn primary" href="/daily">View Today’s Report →</a>
+              <a class="btn" href="/weekly">Read Weekly Strategy →</a>
+            </div>
+          </div>
+        </div>
 
-    function updateSession() {
-      const sessionEl = document.getElementById('sessionStatus');
-      const nextEl = document.getElementById('nextUpdate');
-      if (!sessionEl || !nextEl) return;
-      const now = new Date();
-      const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-      const ny = new Date(utc - 5 * 3600000);
-      const day = ny.getDay();
-      const hour = ny.getHours();
-      const open = day > 0 && day < 6 && hour >= 9 && hour < 16;
-      sessionEl.textContent = `Session: US Market ${open ? 'Open' : 'Closed'}`;
-      const next = new Date(ny);
-      if (open) {
-        next.setHours(16, 0, 0, 0);
-      } else {
-        const addDays = day >= 5 ? (8 - day) : (1 - day);
-        next.setDate(ny.getDate() + addDays);
-        next.setHours(9, 30, 0, 0);
-      }
-      const diff = Math.max(0, next - ny);
-      const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
-      const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
-      nextEl.textContent = `Next update in: ${h}:${m}`;
-    }
-    setInterval(updateSession, 60000);
-    updateSession();
+        <div class="card">
+          <div class="card-inner">
+            <div class="kicker">Suggested Exposure</div>
+            <div class="alloc-title">Allocation range (risk discipline)</div>
 
-    function trackEvent(name, payload) {
-      if (window.track) window.track(name, payload || {});
-    }
-    document.querySelectorAll('[data-track]').forEach(el => {
-      el.addEventListener('click', () => {
-        trackEvent(el.dataset.track, { target: el.dataset.target || '' });
-      });
-    });
+            <div class="alloc">
+              <div class="alloc-card">
+                <div class="alloc-row"><div class="label">Equity</div><div class="value" id="equityRange">--</div></div>
+                <div class="alloc-note">Use as exposure guidance, not trade signals.</div>
+              </div>
+              <div class="alloc-card">
+                <div class="alloc-row"><div class="label">Bonds</div><div class="value" id="bondsRange">--</div></div>
+                <div class="alloc-note">Risk control via diversification.</div>
+              </div>
+              <div class="alloc-card">
+                <div class="alloc-row"><div class="label">Cash</div><div class="value" id="cashRange">--</div></div>
+                <div class="alloc-note">Reserve buffer for volatility spikes.</div>
+              </div>
+            </div>
 
-    // Lazy-load ad slots (placeholder for actual ad code)
-    const adSlots = document.querySelectorAll('.ads[data-ad-slot]');
-    const adObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.dataset.loaded = 'true';
-          adObserver.unobserve(entry.target);
-        }
-      });
-    }, { rootMargin: '200px' });
-    adSlots.forEach(slot => adObserver.observe(slot));
-  </script>
-  <script>
-(async function () {
-  const sources = ["/latest.json", "/data/latest.json", "/risk_index.json"];
-  let data = null;
+            <div class="cta-row" style="margin-top:12px">
+              <a class="btn" href="#inputs">See market inputs ↓</a>
+              <a class="btn" href="#commentary">Read brief ↓</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  for (const url of sources) {
-    try {
-      const r = await fetch(url, { cache: "no-store" });
-      if (!r.ok) continue;
-      data = await r.json();
-      break;
-    } catch (e) {}
-  }
+    <!-- MARKET INPUTS -->
+    <section class="section" id="inputs">
+      <div class="section-head">
+        <div>
+          <div class="h2">Market Inputs (Daily)</div>
+          <div class="sub">Transparent underlying data used to derive risk signals.</div>
+        </div>
+        <div class="sub">Source: Alpha Vantage</div>
+      </div>
 
-  if (!data) return;
+      <div class="card" id="inputsWrap">
+        <div class="card-inner" style="padding:0">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Asset</th>
+                <th>Price</th>
+                <th>20D Change</th>
+                <th>200D Trend</th>
+                <th>Risk Signal</th>
+              </tr>
+            </thead>
+            <tbody id="inputsTbody">
+              <tr><td colspan="5" class="muted">Loading…</td></tr>
+            </tbody>
+          </table>
+          <div class="note" style="padding:12px 14px;">
+            Tip: “200D Trend” refers to whether price is above/below MA200. “Risk Signal” summarizes the implication for risk posture.
+          </div>
+        </div>
+      </div>
+    </section>
 
-  const mri = data.mri ?? data.score ?? "--";
-  const riskLevel = data.riskLevel ?? data.level ?? "unknown";
-  const equityRange = data.equityRange ?? data.allocation?.equity ?? data.equity ?? "--";
-  const bondsRange = data.bondsRange ?? data.allocation?.bonds ?? "--";
-  const cashRange = data.cashRange ?? data.allocation?.cash ?? "--";
-  const delta = data.delta ?? data.change ?? null;
-  const date = data.date ?? (data.updatedAt ? data.updatedAt.slice(0, 10) : "");
+    <!-- MODEL BREAKDOWN -->
+    <section class="section" id="breakdownWrap">
+      <div class="section-head">
+        <div>
+          <div class="h2">MRI Model Breakdown</div>
+          <div class="sub">How the index is composed today (transparent, not a black box).</div>
+        </div>
+      </div>
 
-  const drivers = Array.isArray(data.drivers) ? data.drivers.slice(0, 3) : [];
+      <div class="card">
+        <div class="card-inner">
+          <div class="grid-3">
+            <div>
+              <div class="muted" style="font-weight:900; letter-spacing:0.08em; text-transform:uppercase; font-size:12px;">Trend</div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                <div class="muted">Score</div><div><b id="trendScore">--</b></div>
+              </div>
+              <div class="progress" style="margin-top:10px;"><div id="trendBar" style="width:0%"></div></div>
+            </div>
 
-  const setText = (id, v) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = v;
-  };
+            <div>
+              <div class="muted" style="font-weight:900; letter-spacing:0.08em; text-transform:uppercase; font-size:12px;">Stress</div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                <div class="muted">Score</div><div><b id="stressScore">--</b></div>
+              </div>
+              <div class="progress" style="margin-top:10px;"><div id="stressBar" style="width:0%"></div></div>
+            </div>
 
-  setText("mriValue", String(mri));
-  setText("riskLevel", String(riskLevel));
-  setText("equityRange", String(equityRange));
-  setText("bondsRange", String(bondsRange));
-  setText("cashRange", String(cashRange));
-  setText("updatedDate", date);
+            <div>
+              <div class="muted" style="font-weight:900; letter-spacing:0.08em; text-transform:uppercase; font-size:12px;">Regime</div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                <div class="muted">Score</div><div><b id="regimeScore">--</b></div>
+              </div>
+              <div class="progress" style="margin-top:10px;"><div id="regimeBar" style="width:0%"></div></div>
+            </div>
+          </div>
 
-  if (delta !== null && document.getElementById("deltaValue")) {
-    const wrap = document.getElementById("deltaWrap");
-    if (wrap) wrap.style.display = "flex";
-    setText("deltaValue", String(delta));
-  }
+          <div class="note">MRI is designed for risk monitoring and portfolio discipline, not return prediction.</div>
+        </div>
+      </div>
+    </section>
 
-  const trend = data.trend ?? data.trendDirection ?? data.momentum ?? "--";
-  const regimeDuration = data.regimeDuration ?? data.duration ?? "--";
-  setText("trendLabel", String(trend));
-  setText("regimeDuration", `${regimeDuration}${regimeDuration === "--" ? "" : " days"}`);
+    <!-- TREND -->
+    <section class="section" id="trend">
+      <div class="section-head">
+        <div>
+          <div class="h2">90-Day Market Risk Evolution</div>
+          <div class="sub">Visualize how risk conditions have evolved (context for today’s reading).</div>
+        </div>
+        <div class="sub">If trend data is not yet available, it will appear after the first full week of updates.</div>
+      </div>
 
-  const riskEl = document.getElementById("riskLevel");
-  if (riskEl) {
-    riskEl.classList.remove("risk-low", "risk-neutral", "risk-high");
-    const lv = String(riskLevel).toLowerCase();
-    if (lv.includes("low")) riskEl.classList.add("risk-low");
-    else if (lv.includes("high")) riskEl.classList.add("risk-high");
-    else riskEl.classList.add("risk-neutral");
-  }
+      <div class="card">
+        <div class="card-inner">
+          <div class="muted">Trend chart placeholder (wire to your existing chart rendering if available).</div>
+          <div class="note">Recommendation: render risk zones (Low/Neutral/High) as background bands and mark the current point.</div>
+        </div>
+      </div>
+    </section>
 
-  const drvWrap = document.getElementById("driversList");
-  if (drvWrap) {
-    drvWrap.innerHTML = "";
-    if (drivers.length === 0) {
-      drvWrap.innerHTML = "<li>No major change drivers today.</li>";
-    } else {
-      for (const d of drivers) {
-        const li = document.createElement("li");
-        li.textContent = d;
-        drvWrap.appendChild(li);
-      }
-    }
-  }
-})();
-  </script>
+    <!-- DRIVERS -->
+    <section class="section" id="drivers">
+      <div class="section-head">
+        <div>
+          <div class="h2">What changed today</div>
+          <div class="sub">Top drivers derived from model components (not news headlines).</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-inner">
+          <ul class="list" id="driversList"><li class="muted">Loading…</li></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMMENTARY -->
+    <section class="section" id="commentary">
+      <div class="section-head">
+        <div>
+          <div class="h2">Market risk brief</div>
+          <div class="sub">Short, actionable context (risk awareness only).</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-inner">
+          <div id="briefText" style="line-height:1.7; color: var(--text);">
+            Loading…
+          </div>
+          <div class="note">This is informational content and does not constitute investment advice.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACTIONS -->
+    <section class="section" id="actions">
+      <div class="section-head">
+        <div>
+          <div class="h2">What investors should do</div>
+          <div class="sub">Simple workflow to avoid emotional trading.</div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card"><div class="card-inner">
+          <div class="h2" style="font-size:16px;">Monitor daily</div>
+          <div class="sub">Check the regime and risk level once per day.</div>
+        </div></div>
+
+        <div class="card"><div class="card-inner">
+          <div class="h2" style="font-size:16px;">Stay in range</div>
+          <div class="sub">Use allocation ranges as risk discipline guidance.</div>
+        </div></div>
+
+        <div class="card"><div class="card-inner">
+          <div class="h2" style="font-size:16px;">Rebalance rarely</div>
+          <div class="sub">Rebalance only when regime meaningfully changes.</div>
+        </div></div>
+      </div>
+    </section>
+
+    <!-- EXPLORE -->
+    <section class="section" id="explore">
+      <div class="section-head">
+        <div>
+          <div class="h2">Explore more</div>
+          <div class="sub">Deep dives for investors who want details.</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card"><div class="card-inner">
+          <div class="h2" style="font-size:16px;">Daily report</div>
+          <div class="sub">Full MRI explanation and allocation rationale.</div>
+          <div class="cta-row"><a class="btn primary" href="/daily">Open daily report →</a></div>
+        </div></div>
+        <div class="card"><div class="card-inner">
+          <div class="h2" style="font-size:16px;">Weekly strategy</div>
+          <div class="sub">Institutional-style weekly outlook and guardrails.</div>
+          <div class="cta-row"><a class="btn primary" href="/weekly">Open weekly strategy →</a></div>
+        </div></div>
+      </div>
+
+      <div class="cta-row" style="margin-top:12px">
+        <a class="btn" href="/methodology">Methodology →</a>
+        <a class="btn" href="/risk-history">Risk history →</a>
+      </div>
+    </section>
+
+    <!-- ALERTS -->
+    <section class="section" id="alerts">
+      <div class="section-head">
+        <div>
+          <div class="h2">Get risk alerts</div>
+          <div class="sub">Notify only on regime changes or high/low risk thresholds.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-inner">
+          <div class="muted">Hook your existing email subscription form here (or keep as placeholder for launch).</div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div>
+        FinLogicHub5 provides market risk analysis for informational purposes only. It does not provide investment advice or trading recommendations.
+      </div>
+      <div style="margin-top:10px;">
+        Data source: Alpha Vantage · <a href="/methodology">Model methodology</a> · <a href="/daily">Daily</a> · <a href="/weekly">Weekly</a>
+      </div>
+    </footer>
+  </main>
+
+  <script src="/home.js"></script>
 </body>
 </html>
