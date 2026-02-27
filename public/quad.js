@@ -46,7 +46,7 @@ function renderInputs(inputs){
       <td><b>${row.asset || "--"}</b></td>
       <td>${fmt(row.price)}</td>
       <td>${pct(row.change20d)}</td>
-      <td>${row.ma200Pos || "--"}</td>
+      <td>${row.ma100Pos || row.ma200Pos || "--"}</td>
       <td><span class="sig ${cls}"><span class="dot"></span>${row.signal || "--"}</span></td>
     `;
     tbody.appendChild(tr);

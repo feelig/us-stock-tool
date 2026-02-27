@@ -19,12 +19,12 @@ function calc20dChange(closes) {
   return today / d20 - 1;
 }
 
-function ma200Position(closes) {
-  if (!Array.isArray(closes) || closes.length < 200) return null;
+function ma100Position(closes) {
+  if (!Array.isArray(closes) || closes.length < 100) return null;
   const today = closes[0];
-  const ma200 = sma(closes.slice(0, 200), 200);
-  if (!Number.isFinite(today) || !Number.isFinite(ma200)) return null;
-  return { ma200, above: today >= ma200 };
+  const ma100 = sma(closes.slice(0, 100), 100);
+  if (!Number.isFinite(today) || !Number.isFinite(ma100)) return null;
+  return { ma100, above: today >= ma100 };
 }
 
 function buildSignal(symbol, aboveMA200) {
@@ -35,22 +35,22 @@ function buildSignal(symbol, aboveMA200) {
   return aboveMA200 ? "Supportive" : "Defensive";
 }
 
-function formatMa200Pos(pos) {
+function formatMa100Pos(pos) {
   if (!pos) return "Insufficient data";
-  return pos.above ? "Above MA200" : "Below MA200";
+  return pos.above ? "Above MA100" : "Below MA100";
 }
 
 function toInputsRow(symbol, closes) {
   const price = closes?.[0] ?? null;
   const chg20 = calc20dChange(closes);
-  const pos = ma200Position(closes);
+  const pos = ma100Position(closes);
   const signal = buildSignal(symbol, pos ? pos.above : false);
 
   return {
     asset: symbol,
     price: Number.isFinite(price) ? Number(price) : null,
     change20d: Number.isFinite(chg20) ? Number(chg20) : null,
-    ma200Pos: formatMa200Pos(pos),
+    ma100Pos: formatMa100Pos(pos),
     signal
   };
 }
@@ -68,11 +68,11 @@ function driversFromInputs(inputsTable, riskLevel) {
   const qqq = (inputsTable || []).find(x => x.asset === "QQQ");
 
   const out = [];
-  if (spy?.ma200Pos === "Above MA200" && qqq?.ma200Pos === "Above MA200") {
-    out.push("Long-term trend remains constructive (SPY/QQQ above MA200).");
+  if (spy?.ma100Pos === "Above MA100" && qqq?.ma100Pos === "Above MA100") {
+    out.push("Medium-term trend remains constructive (SPY/QQQ above MA100).");
   }
-  if (tlt?.ma200Pos === "Below MA200") {
-    out.push("Bond market pressure persists (TLT below MA200).");
+  if (tlt?.ma100Pos === "Below MA100") {
+    out.push("Bond market pressure persists (TLT below MA100).");
   }
   const lvl = String(riskLevel || "").toLowerCase();
   if (lvl === "neutral" || lvl === "medium") {
