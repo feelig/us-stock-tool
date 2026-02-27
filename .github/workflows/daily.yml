@@ -89,8 +89,10 @@ jobs:
           const countsFromAlpha = data?.debug?.countsFromAlpha || {};
           const countsFromHistory = data?.debug?.countsFromHistory || {};
           const shortHistory = Object.entries(countsFromHistory).filter(([, n]) => typeof n === 'number' && n < 200);
+          console.log('History rows (countsFromAlpha):', JSON.stringify(countsFromAlpha));
+          console.log('History rows (countsFromHistory):', JSON.stringify(countsFromHistory));
           if (shortHistory.length) {
-            console.warn('MA100 history short:', shortHistory.map(([s, n]) => `${s}:${n}`).join(', '));
+            console.warn('MA100 data window short:', shortHistory.map(([s, n]) => `${s}:${n}`).join(', '));
           } else {
             console.log('MA100 data sufficient for all symbols.');
           }
