@@ -5,6 +5,10 @@ on:
     - cron: "0 14 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   monitor:
     runs-on: ubuntu-latest
@@ -24,6 +28,68 @@ jobs:
       - name: Run source monitor
         working-directory: us-compliance-tools
         run: npm run source:check
+
+      - name: Create GitHub Issue on changes
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const reportPath = path.join(process.env.GITHUB_WORKSPACE, 'us-compliance-tools', 'reports', 'source-monitor.json');
+
+            let report;
+            try {
+              report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+            } catch (e) {
+              core.warning('Could not read report JSON, creating generic issue.');
+              report = { meta: { runAt: new Date().toISOString(), total: 0 }, changes: [] };
+            }
+
+            const runAt = report?.meta?.runAt || new Date().toISOString();
+            const changes = report?.changes || [];
+            const count = changes.length;
+
+            const yyyyMmDd = runAt.slice(0, 10);
+            const title = `Source monitor detected changes (${count}) - ${yyyyMmDd}`;
+
+            const { data: existing } = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${context.repo.owner}/${context.repo.repo} is:issue is:open in:title "${title}"`
+            });
+
+            if (existing.total_count > 0) {
+              core.info(`Issue already exists: ${title}`);
+              return;
+            }
+
+            const lines = [];
+            lines.push(`Run time: ${runAt}`);
+            lines.push(`Total sources checked: ${report?.meta?.total ?? 'unknown'}`);
+            lines.push(`Changes detected: ${count}`);
+            lines.push('');
+            lines.push('## Changes');
+            for (const c of changes.slice(0, 50)) {
+              lines.push(`- **${c.type}**: ${c.url}`);
+            }
+            if (changes.length > 50) lines.push(`...and ${changes.length - 50} more`);
+            lines.push('');
+            lines.push('## Next steps');
+            lines.push('1) Open the official URL(s) above');
+            lines.push('2) Confirm if filing rules/fees/deadlines changed');
+            lines.push('3) If yes: update the corresponding state JSON, bump version, update updated_at/source_last_checked');
+            lines.push('');
+            lines.push(`Workflow run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`);
+
+            const body = lines.join('\n').slice(0, 60000);
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['source-monitor']
+            });
 
       - name: Upload report artifact
         if: always()
