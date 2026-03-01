@@ -3,14 +3,35 @@
   "updated_at": "2026-03",
   "business": {
     "annual_report_required": true,
-    "annual_report_deadline": "Due within 90 days of initial registration and every two years thereafter.",
+    "annual_report_deadline": "Within 90 days of initial registration, then every two years thereafter.",
     "llc_annual_fee": 800
   },
   "penalties": {
-    "late_filing_fee": null
+    "late_filing_fee": null,
+    "lateFiling": null
   },
   "sources": [
     "https://www.sos.ca.gov/business-programs/cannabizfile/cannabis-forms-and-fees/limited-liability-companies-llc-california",
     "https://www.ftb.ca.gov/file/business/types/limited-liability-company/index.html"
-  ]
+  ],
+  "stateName": "California",
+  "stateSlug": "california",
+  "entity": "LLC",
+  "annualReport": {
+    "ruleType": "anniversary_month",
+    "ruleText": "Initial filing due within 90 days of registration, then every two years thereafter.",
+    "officialName": "Statement of Information",
+    "initialDue": "within 90 days of formation",
+    "recurring": "every 2 years",
+    "feeUSD": 20,
+    "notes": "Verify with official sources."
+  },
+  "fees": {
+    "annualFee": {
+      "amount": 800,
+      "currency": "USD",
+      "notes": "Verify with official sources."
+    }
+  },
+  "lastVerified": "2026-03-01"
 }
