@@ -39,20 +39,20 @@ jobs:
 
             const reportPath = path.join(process.env.GITHUB_WORKSPACE, 'us-compliance-tools', 'reports', 'source-monitor.json');
 
-            let report;
+            let report = null;
             try {
               report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+              core.info(`Loaded report: ${reportPath}`);
             } catch (e) {
-              core.warning('Could not read report JSON, creating generic issue.');
-              report = { meta: { runAt: new Date().toISOString(), total: 0 }, changes: [] };
+              core.warning(`Could not read report JSON at ${reportPath}: ${e.message}`);
             }
 
             const runAt = report?.meta?.runAt || new Date().toISOString();
-            const changes = report?.changes || [];
-            const count = changes.length;
+            const changes = Array.isArray(report?.changes) ? report.changes : null;
+            const count = changes ? changes.length : null;
 
             const yyyyMmDd = runAt.slice(0, 10);
-            const title = `Source monitor detected changes (${count}) - ${yyyyMmDd}`;
+            const title = `Source monitor detected changes (${count ?? 'unknown'}) - ${yyyyMmDd}`;
 
             const { data: existing } = await github.rest.search.issuesAndPullRequests({
               q: `repo:${context.repo.owner}/${context.repo.repo} is:issue is:open in:title "${title}"`
@@ -66,14 +66,22 @@ jobs:
             const lines = [];
             lines.push(`Run time: ${runAt}`);
             lines.push(`Total sources checked: ${report?.meta?.total ?? 'unknown'}`);
-            lines.push(`Changes detected: ${count}`);
+            lines.push(`Changes detected: ${count ?? 'unknown (report missing)'}`);
             lines.push('');
-            lines.push('## Changes');
-            for (const c of changes.slice(0, 50)) {
-              lines.push(`- **${c.type}**: ${c.url}`);
+
+            if (changes && changes.length > 0) {
+              lines.push('## Changes');
+              for (const c of changes.slice(0, 50)) {
+                lines.push(`- **${c.type}**: ${c.url}`);
+              }
+              if (changes.length > 50) lines.push(`...and ${changes.length - 50} more`);
+              lines.push('');
+            } else {
+              lines.push('## Changes');
+              lines.push('- Report JSON was not available on runner. Check workflow artifacts (source-monitor-report).');
+              lines.push('');
             }
-            if (changes.length > 50) lines.push(`...and ${changes.length - 50} more`);
-            lines.push('');
+
             lines.push('## Next steps');
             lines.push('1) Open the official URL(s) above');
             lines.push('2) Confirm if filing rules/fees/deadlines changed');
@@ -83,13 +91,18 @@ jobs:
 
             const body = lines.join('\n').slice(0, 60000);
 
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title,
-              body,
-              labels: ['source-monitor']
-            });
+            try {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['source-monitor']
+              });
+              core.info(`Created issue: ${created.data.html_url}`);
+            } catch (e) {
+              core.setFailed(`Failed to create issue: ${e.message}`);
+            }
 
       - name: Upload report artifact
         if: always()
