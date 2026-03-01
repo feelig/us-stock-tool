@@ -15,6 +15,7 @@ import { loadTools } from "../../../../lib/loadTools";
 import { getStateData } from "../../../../core/stateLoader";
 import { STATES, isValidState } from "../../../../core/stateConfig";
 import { tools as toolRegistry } from "../../../../core/toolRegistry";
+import { buildFaqJsonLd, getInternalLinks, getToolSeo } from "../../../../core/seo";
 
 type Params = { state: string; tool: string };
 
@@ -113,11 +114,18 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Params }) {
   const { state, tool } = params;
-
-  return {
-    title: `${state} ${tool} | US Compliance Tool`,
-    description: `Check ${state} ${tool} requirements and fees.`,
-  };
+  try {
+    const seo = getToolSeo(state, tool);
+    return {
+      title: seo.title,
+      description: seo.description,
+    };
+  } catch {
+    return {
+      title: "Tool Not Found | US Compliance Tool",
+      description: "The requested compliance tool could not be found.",
+    };
+  }
 }
 
 export default async function ToolPage({ params }: { params: Params }) {
@@ -134,40 +142,13 @@ export default async function ToolPage({ params }: { params: Params }) {
   })();
   const tools = await loadTools().catch(() => [] as ToolConfig[]);
   const toolConfig = tools.find((tool) => tool.toolSlug === toolSlug);
+  const seo = getToolSeo(state, toolSlug);
+  const faqs = seo.faqs;
+  const faqJsonLd = buildFaqJsonLd(faqs);
+  const { moreToolsForState, otherStatesForTool } = getInternalLinks(state, toolSlug);
 
-  if (!stateData) {
-    return (
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-        <h1 className="text-2xl font-semibold text-ink-950">State Not Found</h1>
-        <p className="text-sm text-ink-600">
-          We could not find compliance data for that state.
-        </p>
-        <Link
-          href="/tools"
-          className="text-sm font-semibold text-accent-600"
-        >
-          Back to tools hub
-        </Link>
-      </div>
-    );
-  }
-
-  if (!toolConfig) {
-    return (
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-        <h1 className="text-2xl font-semibold text-ink-950">Tool Not Found</h1>
-        <p className="text-sm text-ink-600">
-          We could not find the requested compliance tool.
-        </p>
-        <Link
-          href="/tools"
-          className="text-sm font-semibold text-accent-600"
-        >
-          Back to tools hub
-        </Link>
-      </div>
-    );
-  }
+  if (!stateData) notFound();
+  if (!toolConfig) notFound();
 
   const title = applyTemplate(toolConfig.titleTemplate, stateData.stateName);
   const description = applyTemplate(
@@ -291,6 +272,12 @@ export default async function ToolPage({ params }: { params: Params }) {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
+      {faqs.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
       <RecordToolView
         title={title}
         url={`/tools/${stateData.stateSlug}/${toolConfig.toolSlug}`}
@@ -307,9 +294,7 @@ export default async function ToolPage({ params }: { params: Params }) {
         </Link>
         <h1 className="text-3xl font-semibold text-ink-950">{title}</h1>
         <p className="text-sm text-ink-600">{description}</p>
-        <p className="text-xs text-ink-500">
-          Last updated: {stateData.updated_at ?? "unknown"}
-        </p>
+        <p className="text-xs text-ink-500">Last updated: {stateData.updated_at}</p>
       </header>
 
       <section>
@@ -434,11 +419,12 @@ export default async function ToolPage({ params }: { params: Params }) {
       <section className="rounded-2xl border border-stone-200 bg-white/80 p-5 shadow-card">
         <h2 className="text-lg font-semibold text-ink-950">FAQ</h2>
         <div className="mt-2 text-sm text-ink-600">
-          {toolConfig.faq.length > 0 ? (
+          {faqs.length > 0 ? (
             <ul className="list-disc space-y-2 pl-4">
-              {toolConfig.faq.map((item, index) => (
-                <li key={`${toolConfig.toolSlug}-faq-${index}`}>
-                  {JSON.stringify(item)}
+              {faqs.map((item, index) => (
+                <li key={`${toolSlug}-faq-${index}`}>
+                  <p className="font-medium text-ink-800">{item.q}</p>
+                  <p className="text-ink-600">{item.a}</p>
                 </li>
               ))}
             </ul>
@@ -449,7 +435,7 @@ export default async function ToolPage({ params }: { params: Params }) {
       </section>
 
       <section className="rounded-2xl border border-stone-200 bg-white/70 p-5">
-        <h2 className="text-lg font-semibold text-ink-950">Sources & Last Verified</h2>
+        <h2 className="text-lg font-semibold text-ink-950">Sources</h2>
         <div className="mt-2 flex flex-col gap-2 text-sm text-ink-600">
           {stateData.sources.length > 0 ? (
             <ul className="list-disc space-y-2 pl-4">
@@ -477,7 +463,48 @@ export default async function ToolPage({ params }: { params: Params }) {
           ) : (
             <p>Sources will be added soon.</p>
           )}
-          <p>Last verified: {stateData.lastVerified}</p>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-stone-200 bg-white/70 p-5">
+        <h2 className="text-lg font-semibold text-ink-950">
+          More tools for {formatStateLabelFromSlug(state)}
+        </h2>
+        <div className="mt-2 text-sm text-ink-600">
+          {moreToolsForState.length > 0 ? (
+            <ul className="list-disc space-y-2 pl-4">
+              {moreToolsForState.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-accent-600">
+                    {formatToolLabel(link.tool)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No additional tools for this state yet.</p>
+          )}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-stone-200 bg-white/70 p-5">
+        <h2 className="text-lg font-semibold text-ink-950">
+          Other states for this tool
+        </h2>
+        <div className="mt-2 text-sm text-ink-600">
+          {otherStatesForTool.length > 0 ? (
+            <ul className="list-disc space-y-2 pl-4">
+              {otherStatesForTool.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-accent-600">
+                    {formatStateLabelFromSlug(link.state)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No other states available yet.</p>
+          )}
         </div>
       </section>
 
