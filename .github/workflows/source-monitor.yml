@@ -1,0 +1,33 @@
+name: Source Monitor
+
+on:
+  schedule:
+    - cron: "0 14 * * *"
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install
+        working-directory: us-compliance-tools
+        run: npm ci
+
+      - name: Run source monitor
+        working-directory: us-compliance-tools
+        run: npm run source:check
+
+      - name: Upload report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-monitor-report
+          path: us-compliance-tools/reports/

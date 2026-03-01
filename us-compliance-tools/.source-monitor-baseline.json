@@ -1,0 +1,65 @@
+{
+  "https://www.sos.ca.gov/business-programs/cannabizfile/cannabis-forms-and-fees/limited-liability-companies-llc-california": {
+    "status": 0,
+    "etag": null,
+    "lastModified": null,
+    "bodyHash": "13697683331d1856ec39b54033142d083112ae1086672f42b261c2cf6b1c57f7",
+    "finalUrl": "https://www.sos.ca.gov/business-programs/cannabizfile/cannabis-forms-and-fees/limited-liability-companies-llc-california"
+  },
+  "https://www.ftb.ca.gov/file/business/types/limited-liability-company/index.html": {
+    "status": 0,
+    "etag": null,
+    "lastModified": null,
+    "bodyHash": "13697683331d1856ec39b54033142d083112ae1086672f42b261c2cf6b1c57f7",
+    "finalUrl": "https://www.ftb.ca.gov/file/business/types/limited-liability-company/index.html"
+  },
+  "https://dos.fl.gov/sunbiz/manage-business/efile/annual-report/": {
+    "status": 0,
+    "etag": null,
+    "lastModified": null,
+    "bodyHash": "13697683331d1856ec39b54033142d083112ae1086672f42b261c2cf6b1c57f7",
+    "finalUrl": "https://dos.fl.gov/sunbiz/manage-business/efile/annual-report/"
+  },
+  "https://dos.fl.gov/sunbiz/": {
+    "status": 0,
+    "etag": null,
+    "lastModified": null,
+    "bodyHash": "13697683331d1856ec39b54033142d083112ae1086672f42b261c2cf6b1c57f7",
+    "finalUrl": "https://dos.fl.gov/sunbiz/"
+  },
+  "https://dos.ny.gov/existing-corporations-and-businesses": {
+    "status": 0,
+    "etag": null,
+    "lastModified": null,
+    "bodyHash": "13697683331d1856ec39b54033142d083112ae1086672f42b261c2cf6b1c57f7",
+    "finalUrl": "https://dos.ny.gov/existing-corporations-and-businesses"
+  },
+  "https://dos.ny.gov/biennial-statements-business-corporations-and-limited-liability-companies": {
+    "status": 0,
+    "etag": null,
+    "lastModified": null,
+    "bodyHash": "13697683331d1856ec39b54033142d083112ae1086672f42b261c2cf6b1c57f7",
+    "finalUrl": "https://dos.ny.gov/biennial-statements-business-corporations-and-limited-liability-companies"
+  },
+  "https://dos.ny.gov/fee-schedules": {
+    "status": 0,
+    "etag": null,
+    "lastModified": null,
+    "bodyHash": "13697683331d1856ec39b54033142d083112ae1086672f42b261c2cf6b1c57f7",
+    "finalUrl": "https://dos.ny.gov/fee-schedules"
+  },
+  "https://comptroller.texas.gov/taxes/franchise/": {
+    "status": 0,
+    "etag": null,
+    "lastModified": null,
+    "bodyHash": "13697683331d1856ec39b54033142d083112ae1086672f42b261c2cf6b1c57f7",
+    "finalUrl": "https://comptroller.texas.gov/taxes/franchise/"
+  },
+  "https://www.sos.state.tx.us/corp/": {
+    "status": 0,
+    "etag": null,
+    "lastModified": null,
+    "bodyHash": "13697683331d1856ec39b54033142d083112ae1086672f42b261c2cf6b1c57f7",
+    "finalUrl": "https://www.sos.state.tx.us/corp/"
+  }
+}
