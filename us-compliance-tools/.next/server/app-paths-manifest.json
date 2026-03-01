@@ -1,8 +1,0 @@
-{
-  "/_not-found/page": "app/_not-found/page.js",
-  "/page": "app/page.js",
-  "/sitemap.xml/route": "app/sitemap.xml/route.js",
-  "/tools/page": "app/tools/page.js",
-  "/robots.txt/route": "app/robots.txt/route.js",
-  "/tools/[state]/[tool]/page": "app/tools/[state]/[tool]/page.js"
-}

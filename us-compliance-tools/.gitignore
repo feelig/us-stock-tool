@@ -1,0 +1,6 @@
+# build outputs
+.next
+out
+node_modules
+.env
+.DS_Store
