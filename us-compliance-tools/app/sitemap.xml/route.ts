@@ -3,7 +3,19 @@ import { STATES } from "../../core/stateConfig";
 import { tools } from "../../core/toolRegistry";
 import { getStateData } from "../../core/stateLoader";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://finlogichub5.com";
+function resolveSiteUrl() {
+  const envUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (envUrl) return envUrl;
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("NEXT_PUBLIC_SITE_URL is required in production.");
+  }
+
+  const port = process.env.PORT || "3000";
+  return `http://localhost:${port}`;
+}
+
+const siteUrl = resolveSiteUrl().replace(/\/+$/, "");
 
 function formatDate(date: Date) {
   return date.toISOString().split("T")[0];

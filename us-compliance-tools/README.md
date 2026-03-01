@@ -3,6 +3,16 @@ Next.js app for U.S. compliance tools.
 
 # Setup
 - Install dependencies: `npm install`
+- Required env var: `NEXT_PUBLIC_SITE_URL`
+
+Examples:
+```
+# Local
+NEXT_PUBLIC_SITE_URL=http://localhost:3001
+
+# Production
+NEXT_PUBLIC_SITE_URL=https://yourdomain.com
+```
 
 # Development Commands (English)
 

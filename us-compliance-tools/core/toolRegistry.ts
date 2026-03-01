@@ -8,15 +8,15 @@ export const tools = {
       faqs: (state: string) => [
         {
           q: "What does this tool calculate?",
-          a: `It summarizes the typical annual report filing timeline for ${state} and helps you plan your due date. Always confirm with official sources.`,
+          a: `It summarizes the typical annual report filing timeline for ${state} and helps you plan your due date. Verify with official sources.`,
         },
         {
           q: "Does this replace official guidance?",
-          a: "No. This tool is informational only and does not provide legal advice. Verify deadlines with the state filing office.",
+          a: "No. This tool is informational only and does not provide legal advice. Verify with official sources.",
         },
         {
           q: "What information do I need?",
-          a: "Usually your entity type and formation date. Requirements can vary, so confirm details before filing.",
+          a: "Typically your entity type and formation date. Requirements can vary, so verify with official sources.",
         },
       ],
     },
@@ -30,15 +30,15 @@ export const tools = {
       faqs: (state: string) => [
         {
           q: "What does this tool provide?",
-          a: `It outlines common late filing penalty structures for ${state} so you can plan ahead. Confirm exact penalties with official sources.`,
+          a: `It outlines common late filing penalty structures for ${state} so you can plan ahead. Verify with official sources.`,
         },
         {
           q: "Are penalties fixed or variable?",
-          a: "It depends on the state and filing type. Some penalties are fixed, while others are percentage-based.",
+          a: "It depends on the state and filing type. Some penalties are fixed, while others are percentage-based. Verify with official sources.",
         },
         {
           q: "Is this legal advice?",
-          a: "No. This is general information. Consult official guidance or a qualified professional for legal advice.",
+          a: "No. This is general information and not legal advice. Verify with official sources.",
         },
       ],
     },
@@ -52,15 +52,15 @@ export const tools = {
       faqs: (state: string) => [
         {
           q: "What does this tool estimate?",
-          a: `It provides a high-level estimate of common annual fees in ${state} for typical filings. Verify amounts with official sources.`,
+          a: `It provides a high-level estimate of common annual fees in ${state} for typical filings. Verify with official sources.`,
         },
         {
           q: "Why might my fee differ?",
-          a: "Fees can depend on entity type, revenue thresholds, and filing details. Always confirm the exact amount before paying.",
+          a: "Fees can depend on entity type, revenue thresholds, and filing details. Verify with official sources.",
         },
         {
           q: "Can I rely on this for compliance?",
-          a: "Use it as a starting point only. It is not legal advice and may not cover all scenarios.",
+          a: "Use it as a starting point only. It is not legal advice and may not cover all scenarios. Verify with official sources.",
         },
       ],
     },

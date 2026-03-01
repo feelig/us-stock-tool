@@ -146,6 +146,8 @@ export default async function ToolPage({ params }: { params: Params }) {
   const faqs = seo.faqs;
   const faqJsonLd = buildFaqJsonLd(faqs);
   const { moreToolsForState, otherStatesForTool } = getInternalLinks(state, toolSlug);
+  const hasSources = Array.isArray(stateData.sources) && stateData.sources.length > 0;
+  const hasUpdatedAt = Boolean(stateData.updated_at);
 
   if (!stateData) notFound();
   if (!toolConfig) notFound();
@@ -294,7 +296,14 @@ export default async function ToolPage({ params }: { params: Params }) {
         </Link>
         <h1 className="text-3xl font-semibold text-ink-950">{title}</h1>
         <p className="text-sm text-ink-600">{description}</p>
-        <p className="text-xs text-ink-500">Last updated: {stateData.updated_at}</p>
+        <p className="text-xs text-ink-500">
+          Last updated: {stateData.updated_at ?? "unknown"}
+        </p>
+        {(!hasUpdatedAt || !hasSources) && (
+          <p className="text-xs text-ink-500">
+            Data incomplete — verify with official sources.
+          </p>
+        )}
       </header>
 
       <section>
@@ -437,7 +446,7 @@ export default async function ToolPage({ params }: { params: Params }) {
       <section className="rounded-2xl border border-stone-200 bg-white/70 p-5">
         <h2 className="text-lg font-semibold text-ink-950">Sources</h2>
         <div className="mt-2 flex flex-col gap-2 text-sm text-ink-600">
-          {stateData.sources.length > 0 ? (
+          {hasSources ? (
             <ul className="list-disc space-y-2 pl-4">
               {stateData.sources.map((source: any, index: number) => {
                 if (typeof source === "string") {
