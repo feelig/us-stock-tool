@@ -109,19 +109,52 @@ function collectSources() {
   });
 }
 
+function isBlockedStatus(s) {
+  return s === 403 || s === 429;
+}
+
 function diffBaseline(prev, curr) {
   const changes = [];
   const prevMap = new Map(Object.entries(prev ?? {}));
 
-  for (const [url, now] of Object.entries(curr)) {
+  for (const [url, after] of Object.entries(curr)) {
     const before = prevMap.get(url);
+
     if (!before) {
-      changes.push({ url, type: "NEW", before: null, after: now });
+      changes.push({ url, type: "NEW", before: null, after });
       continue;
     }
-    const fields = ["status", "etag", "lastModified", "bodyHash", "finalUrl"];
-    const changed = fields.some((k) => (before?.[k] ?? null) !== (now?.[k] ?? null));
-    if (changed) changes.push({ url, type: "CHANGED", before, after: now });
+
+    if (isBlockedStatus(after?.status)) {
+      changes.push({ url, type: "BLOCKED", before, after });
+      prevMap.delete(url);
+      continue;
+    }
+
+    const stableFields = ["status", "finalUrl", "etag", "lastModified"];
+    const stableChanged = stableFields.some(
+      (k) => (before?.[k] ?? null) !== (after?.[k] ?? null)
+    );
+
+    const canUseBody =
+      before?.etag == null &&
+      before?.lastModified == null &&
+      after?.etag == null &&
+      after?.lastModified == null;
+
+    const bodyChanged =
+      canUseBody && (before?.bodyHash ?? null) !== (after?.bodyHash ?? null);
+
+    if (stableChanged || bodyChanged) {
+      changes.push({
+        url,
+        type: "CHANGED",
+        before,
+        after,
+        meta: { stableChanged, bodyChanged, canUseBody },
+      });
+    }
+
     prevMap.delete(url);
   }
 
@@ -224,8 +257,15 @@ async function main() {
 
   fs.writeFileSync(BASELINE_PATH, JSON.stringify(current, null, 2));
 
-  if (changes.length > 0) {
-    console.warn(`Changes detected: ${changes.length}`);
+  const actionable = changes.filter((c) => c.type !== "BLOCKED");
+  const blocked = changes.filter((c) => c.type === "BLOCKED");
+
+  if (blocked.length > 0) {
+    console.warn(`Blocked sources: ${blocked.length} (403/429). Not failing run.`);
+  }
+
+  if (actionable.length > 0) {
+    console.warn(`Changes detected: ${actionable.length}`);
     process.exit(1);
   }
 
