@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import AnnualReportDeadlineCalculator from "../../../../components/calculators/AnnualReportDeadlineCalculator";
 import AnnualFeeCalculator from "../../../../components/calculators/AnnualFeeCalculator";
 import ComplianceCalendarGenerator from "../../../../components/calculators/ComplianceCalendarGenerator";
@@ -13,20 +13,8 @@ import TexasFranchiseTaxPenaltyCalculator from "../../../../components/calculato
 import RecordToolView from "../../../components/RecordToolView";
 import { loadTools } from "../../../../lib/loadTools";
 import { getStateData } from "@/core/stateLoader";
-
-const knownStates = ["california", "texas", "florida", "newyork"] as const;
-const knownTools = [
-  "annual-report-deadline",
-  "late-filing-penalty",
-  "annual-fee-calculator",
-  "llc-formation-cost",
-  "registered-agent-cost",
-  "business-compliance-calendar",
-  "texas-franchise-tax-due-date",
-  "texas-franchise-tax-penalty",
-  "llc-publication-cost-estimator",
-  "florida-annual-report-late-fee",
-] as const;
+import { STATES, isValidState } from "@/core/stateConfig";
+import { tools } from "@/core/toolRegistry";
 
 type Params = { state: string; tool: string };
 
@@ -111,55 +99,41 @@ function formatCurrency(amount?: number) {
   }).format(amount);
 }
 
-export function generateStaticParams() {
-  return knownStates.flatMap((state) =>
-    knownTools.map((tool) => ({ state, tool }))
-  );
-}
+export async function generateStaticParams() {
+  const params = [];
 
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const stateData = (() => {
-    try {
-      return getStateData(params.state);
-    } catch {
-      return null;
+  for (const state of STATES) {
+    for (const tool of Object.keys(tools)) {
+      params.push({ state, tool });
     }
-  })();
-  const tools = await loadTools().catch(() => [] as ToolConfig[]);
-  const toolConfig = tools.find((tool) => tool.toolSlug === params.tool);
-
-  if (!stateData || !toolConfig) {
-    return {
-      title: "Compliance Tool Not Found",
-      description: "The requested compliance tool could not be found.",
-    };
   }
 
-  const title = applyTemplate(toolConfig.titleTemplate, stateData.stateName);
-  const description = applyTemplate(
-    toolConfig.descriptionTemplate,
-    stateData.stateName
-  );
+  return params;
+}
+
+export async function generateMetadata({ params }: { params: Params }) {
+  const { state, tool } = params;
 
   return {
-    title,
-    description,
-    alternates: {
-      canonical: `/tools/${params.state}/${params.tool}`,
-    },
+    title: `${state} ${tool} | US Compliance Tool`,
+    description: `Check ${state} ${tool} requirements and fees.`,
   };
 }
 
 export default async function ToolPage({ params }: { params: Params }) {
+  const { state, tool } = params;
+  if (!isValidState(state)) notFound();
+  if (!tools[tool as keyof typeof tools]) notFound();
+
   const stateData = (() => {
     try {
-      return getStateData(params.state);
+      return getStateData(state);
     } catch {
       return null;
     }
   })();
   const tools = await loadTools().catch(() => [] as ToolConfig[]);
-  const toolConfig = tools.find((tool) => tool.toolSlug === params.tool);
+  const toolConfig = tools.find((tool) => tool.toolSlug === tool);
 
   if (!stateData) {
     return (
@@ -333,6 +307,9 @@ export default async function ToolPage({ params }: { params: Params }) {
         </Link>
         <h1 className="text-3xl font-semibold text-ink-950">{title}</h1>
         <p className="text-sm text-ink-600">{description}</p>
+        <p className="text-xs text-ink-500">
+          Last updated: {stateData.updated_at ?? "unknown"}
+        </p>
       </header>
 
       <section>
