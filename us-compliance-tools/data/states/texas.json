@@ -7,29 +7,10 @@
     "llc_annual_fee": 0
   },
   "penalties": {
-    "late_filing_fee": null,
-    "lateFiling": null
+    "late_filing_fee": null
   },
   "sources": [
     "https://comptroller.texas.gov/taxes/franchise/",
     "https://www.sos.state.tx.us/corp/"
-  ],
-  "stateName": "Texas",
-  "stateSlug": "texas",
-  "entity": "LLC",
-  "annualReport": {
-    "ruleType": "annual_due_date",
-    "ruleText": "Franchise Tax Report is due May 15 each year.",
-    "officialName": "Franchise Tax Report",
-    "dueDate": "May 15",
-    "notes": "Verify with official sources."
-  },
-  "fees": {
-    "annualFee": {
-      "amount": 0,
-      "currency": "USD",
-      "notes": "No fixed annual LLC fee; franchise tax depends on revenue thresholds. Verify with official sources."
-    }
-  },
-  "lastVerified": "2026-03-01"
+  ]
 }

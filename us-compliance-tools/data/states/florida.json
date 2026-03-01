@@ -7,30 +7,10 @@
     "llc_annual_fee": null
   },
   "penalties": {
-    "late_filing_fee": null,
-    "lateFiling": null
+    "late_filing_fee": null
   },
   "sources": [
     "https://dos.fl.gov/sunbiz/manage-business/efile/annual-report/",
     "https://dos.fl.gov/sunbiz/"
-  ],
-  "stateName": "Florida",
-  "stateSlug": "florida",
-  "entity": "LLC",
-  "annualReport": {
-    "ruleType": "annual_due_date",
-    "ruleText": "Annual Report is due May 1 each year.",
-    "officialName": "Annual Report",
-    "dueDate": "May 1",
-    "deadline": "May 1",
-    "notes": "Verify with official sources."
-  },
-  "fees": {
-    "annualFee": {
-      "amount": 0,
-      "currency": "USD",
-      "notes": "Entity fees vary by type; verify the LLC annual report fee with official sources."
-    }
-  },
-  "lastVerified": "2026-03-01"
+  ]
 }

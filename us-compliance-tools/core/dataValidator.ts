@@ -44,6 +44,14 @@ export function validateStateDataFile(filePath: string) {
     warn(`${filename}: missing required field "updated_at".`);
   }
 
+  if (!data?.business) {
+    warn(`${filename}: missing required field "business".`);
+  }
+
+  if (!data?.penalties) {
+    warn(`${filename}: missing required field "penalties".`);
+  }
+
   if (!Array.isArray(data?.sources) || data.sources.length === 0) {
     warn(`${filename}: "sources" must be a non-empty array.`);
   }

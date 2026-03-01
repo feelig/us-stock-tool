@@ -7,32 +7,11 @@
     "llc_annual_fee": 9
   },
   "penalties": {
-    "late_filing_fee": null,
-    "lateFiling": null
+    "late_filing_fee": null
   },
   "sources": [
     "https://dos.ny.gov/existing-corporations-and-businesses",
     "https://dos.ny.gov/biennial-statements-business-corporations-and-limited-liability-companies",
     "https://dos.ny.gov/fee-schedules"
-  ],
-  "stateName": "New York",
-  "stateSlug": "newyork",
-  "entity": "LLC",
-  "annualReport": {
-    "ruleType": "biennial_calendar_month",
-    "ruleText": "Every two years during the calendar month of the original filing.",
-    "officialName": "Biennial Statement",
-    "recurring": "every 2 years",
-    "dueDate": "calendar month of the original filing",
-    "feeUSD": 9,
-    "notes": "Verify with official sources."
-  },
-  "fees": {
-    "annualFee": {
-      "amount": 9,
-      "currency": "USD",
-      "notes": "Biennial Statement fee for LLCs. Verify with official sources."
-    }
-  },
-  "lastVerified": "2026-03-01"
+  ]
 }
