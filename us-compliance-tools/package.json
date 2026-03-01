@@ -1,0 +1,27 @@
+{
+  "name": "us-compliance-tools",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "dev:stable": "lsof -ti tcp:3001 | xargs -r kill -9 && rm -rf .next node_modules/.cache && npm install && next dev -p 3001",
+    "prod:verify": "lsof -ti tcp:3001 | xargs -r kill -9 && rm -rf .next node_modules/.cache && npm install && next build && HOST=127.0.0.1 PORT=3001 next start"
+  },
+  "dependencies": {
+    "next": "14.2.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "20.11.30",
+    "@types/react": "18.2.79",
+    "@types/react-dom": "18.2.25",
+    "autoprefixer": "10.4.19",
+    "postcss": "8.4.38",
+    "tailwindcss": "3.4.3",
+    "typescript": "5.4.4"
+  }
+}

@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --font-sans: ui-sans-serif;
+  --font-serif: ui-serif;
+}
+
+body {
+  @apply bg-stone-50 text-ink-900;
+}
+
+::selection {
+  background: rgba(13, 148, 136, 0.2);
+}

@@ -1,0 +1,86 @@
+[
+  {
+    "toolSlug": "annual-report-deadline",
+    "titleTemplate": "{State} LLC Annual Report Deadline Calculator",
+    "descriptionTemplate": "Find the due date for {State} LLC annual report filing and avoid penalties.",
+    "category": "Deadlines",
+    "faq": [],
+    "relatedToolSlugs": ["late-filing-penalty", "annual-fee-calculator"]
+  },
+  {
+    "toolSlug": "late-filing-penalty",
+    "titleTemplate": "{State} Late Filing Penalty Calculator",
+    "descriptionTemplate": "Estimate late filing penalties for {State}.",
+    "category": "Penalties",
+    "faq": [],
+    "relatedToolSlugs": ["annual-report-deadline", "florida-annual-report-late-fee"]
+  },
+  {
+    "toolSlug": "annual-fee-calculator",
+    "titleTemplate": "{State} LLC Annual Fee Calculator",
+    "descriptionTemplate": "Estimate annual LLC fees in {State}.",
+    "category": "Fees",
+    "faq": [],
+    "relatedToolSlugs": ["annual-report-deadline", "llc-formation-cost"]
+  },
+  {
+    "toolSlug": "llc-formation-cost",
+    "titleTemplate": "{State} LLC Formation Cost Estimator",
+    "descriptionTemplate": "Estimate total formation costs for a {State} LLC filing.",
+    "category": "Formation",
+    "faq": [],
+    "relatedToolSlugs": ["registered-agent-cost", "annual-fee-calculator"]
+  },
+  {
+    "toolSlug": "registered-agent-cost",
+    "titleTemplate": "{State} Registered Agent Cost Estimator",
+    "descriptionTemplate": "Estimate ongoing registered agent costs for {State}.",
+    "category": "Formation",
+    "faq": [],
+    "relatedToolSlugs": ["llc-formation-cost", "annual-report-deadline"]
+  },
+  {
+    "toolSlug": "business-compliance-calendar",
+    "titleTemplate": "{State} Business Compliance Calendar",
+    "descriptionTemplate": "Generate a simple compliance calendar for {State} LLC deadlines.",
+    "category": "Planning",
+    "faq": [],
+    "relatedToolSlugs": ["annual-report-deadline", "annual-fee-calculator"]
+  },
+  {
+    "toolSlug": "texas-franchise-tax-due-date",
+    "titleTemplate": "{State} Franchise Tax Due Date Calculator",
+    "descriptionTemplate": "Estimate franchise tax due dates for {State}.",
+    "category": "Taxes",
+    "faq": [],
+    "allowedStates": ["texas"],
+    "relatedToolSlugs": ["texas-franchise-tax-penalty", "business-compliance-calendar"]
+  },
+  {
+    "toolSlug": "texas-franchise-tax-penalty",
+    "titleTemplate": "{State} Franchise Tax Penalty Estimator",
+    "descriptionTemplate": "Estimate potential franchise tax penalties for {State}.",
+    "category": "Taxes",
+    "faq": [],
+    "allowedStates": ["texas"],
+    "relatedToolSlugs": ["texas-franchise-tax-due-date"]
+  },
+  {
+    "toolSlug": "llc-publication-cost-estimator",
+    "titleTemplate": "{State} LLC Publication Cost Estimator",
+    "descriptionTemplate": "Estimate LLC publication costs for {State}.",
+    "category": "Formation",
+    "faq": [],
+    "allowedStates": ["newyork"],
+    "relatedToolSlugs": ["llc-formation-cost", "registered-agent-cost"]
+  },
+  {
+    "toolSlug": "florida-annual-report-late-fee",
+    "titleTemplate": "{State} Annual Report Late Fee Estimator",
+    "descriptionTemplate": "Estimate late fees for {State} annual report filings.",
+    "category": "Penalties",
+    "faq": [],
+    "allowedStates": ["florida"],
+    "relatedToolSlugs": ["annual-report-deadline", "late-filing-penalty"]
+  }
+]

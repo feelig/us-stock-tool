@@ -1,0 +1,41 @@
+{
+  "state": "California",
+  "updated_at": "2026-03",
+  "business": {
+    "llc_annual_fee": 800,
+    "annual_report_required": true,
+    "annual_report_deadline": "March 15"
+  },
+  "penalties": {
+    "late_filing_fee": 250,
+    "lateFiling": {
+      "type": "fixed",
+      "fixedAmount": 0,
+      "percentage": 0,
+      "notes": ""
+    }
+  },
+  "sources": [
+    "https://www.sos.ca.gov"
+  ],
+  "stateName": "California",
+  "stateSlug": "california",
+  "entity": "LLC",
+  "annualReport": {
+    "ruleType": "anniversary_month",
+    "ruleText": "Initial filing due within 90 days of registration, then every two years thereafter.",
+    "officialName": "Statement of Information",
+    "initialDue": "within 90 days of formation",
+    "recurring": "every 2 years",
+    "feeUSD": 20,
+    "notes": "LLCs must file a Statement of Information within 90 days of registration and every two years thereafter."
+  },
+  "fees": {
+    "annualFee": {
+      "amount": 0,
+      "currency": "USD",
+      "notes": ""
+    }
+  },
+  "lastVerified": "2026-03-01"
+}

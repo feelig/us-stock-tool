@@ -1,0 +1,42 @@
+{
+  "state": "New York",
+  "updated_at": "2026-03",
+  "business": {
+    "llc_annual_fee": 0,
+    "annual_report_required": true,
+    "annual_report_deadline": "TBD"
+  },
+  "penalties": {
+    "late_filing_fee": 0,
+    "lateFiling": {
+      "type": "fixed",
+      "fixedAmount": 0,
+      "percentage": 0,
+      "notes": ""
+    }
+  },
+  "sources": [
+    "https://dos.ny.gov/corporations"
+  ],
+  "stateName": "New York",
+  "stateSlug": "newyork",
+  "entity": "LLC",
+  "annualReport": {
+    "ruleType": "anniversary_month",
+    "ruleText": "Due each year based on the anniversary month of formation."
+  },
+  "fees": {
+    "annualFee": {
+      "amount": 0,
+      "currency": "USD",
+      "notes": ""
+    }
+  },
+  "publicationRequirement": {
+    "deadline": "within 120 days of formation",
+    "publicationCostRangeUSD": "300-1200+",
+    "certificateFilingFeeUSD": 50,
+    "notes": "New York LLCs must publish formation notice in two newspapers for six consecutive weeks."
+  },
+  "lastVerified": "2026-03-01"
+}
