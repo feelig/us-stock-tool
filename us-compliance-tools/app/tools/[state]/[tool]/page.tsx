@@ -12,9 +12,9 @@ import TexasFranchiseTaxDueDateCalculator from "../../../../components/calculato
 import TexasFranchiseTaxPenaltyCalculator from "../../../../components/calculators/TexasFranchiseTaxPenaltyCalculator";
 import RecordToolView from "../../../components/RecordToolView";
 import { loadTools } from "../../../../lib/loadTools";
-import { getStateData } from "@/core/stateLoader";
-import { STATES, isValidState } from "@/core/stateConfig";
-import { tools } from "@/core/toolRegistry";
+import { getStateData } from "../../../../core/stateLoader";
+import { STATES, isValidState } from "../../../../core/stateConfig";
+import { tools as toolRegistry } from "../../../../core/toolRegistry";
 
 type Params = { state: string; tool: string };
 
@@ -103,7 +103,7 @@ export async function generateStaticParams() {
   const params = [];
 
   for (const state of STATES) {
-    for (const tool of Object.keys(tools)) {
+    for (const tool of Object.keys(toolRegistry)) {
       params.push({ state, tool });
     }
   }
@@ -121,9 +121,9 @@ export async function generateMetadata({ params }: { params: Params }) {
 }
 
 export default async function ToolPage({ params }: { params: Params }) {
-  const { state, tool } = params;
+  const { state, tool: toolSlug } = params;
   if (!isValidState(state)) notFound();
-  if (!tools[tool as keyof typeof tools]) notFound();
+  if (!toolRegistry[toolSlug as keyof typeof toolRegistry]) notFound();
 
   const stateData = (() => {
     try {
@@ -133,7 +133,7 @@ export default async function ToolPage({ params }: { params: Params }) {
     }
   })();
   const tools = await loadTools().catch(() => [] as ToolConfig[]);
-  const toolConfig = tools.find((tool) => tool.toolSlug === tool);
+  const toolConfig = tools.find((tool) => tool.toolSlug === toolSlug);
 
   if (!stateData) {
     return (
@@ -453,7 +453,7 @@ export default async function ToolPage({ params }: { params: Params }) {
         <div className="mt-2 flex flex-col gap-2 text-sm text-ink-600">
           {stateData.sources.length > 0 ? (
             <ul className="list-disc space-y-2 pl-4">
-              {stateData.sources.map((source, index) => {
+              {stateData.sources.map((source: any, index: number) => {
                 if (typeof source === "string") {
                   return (
                     <li key={`${source}-${index}`} className="break-all">
