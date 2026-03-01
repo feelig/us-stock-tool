@@ -4,7 +4,7 @@ export const tools = {
     seo: {
       title: (state: string) => `${state} annual-report-deadline | US Compliance Tool`,
       description: (state: string) =>
-        `Check ${state} annual-report-deadline requirements and fees.`,
+        `Check ${state} annual-report-deadline requirements and fee details`,
       faqs: (state: string) => [
         {
           q: "What does this tool calculate?",
@@ -26,7 +26,7 @@ export const tools = {
     seo: {
       title: (state: string) => `${state} late-filing-penalty | US Compliance Tool`,
       description: (state: string) =>
-        `Review ${state} late-filing-penalty rules and fee considerations.`,
+        `Review ${state} late-filing-penalty rules and fee considerations`,
       faqs: (state: string) => [
         {
           q: "What does this tool provide?",
@@ -48,7 +48,7 @@ export const tools = {
     seo: {
       title: (state: string) => `${state} annual-fee-calculator | US Compliance Tool`,
       description: (state: string) =>
-        `Estimate ${state} annual-fee-calculator obligations for common entity filings.`,
+        `Estimate ${state} annual-fee-calculator obligations for common entity filings`,
       faqs: (state: string) => [
         {
           q: "What does this tool estimate?",

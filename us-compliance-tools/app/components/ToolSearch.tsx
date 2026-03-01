@@ -4,8 +4,8 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 
 export type ToolPageItem = {
-  stateSlug: string;
-  stateName: string;
+  stateId: string;
+  stateLabel: string;
   toolSlug: string;
   title: string;
   description: string;
@@ -52,13 +52,13 @@ export default function ToolSearch({
         return false;
       }
       if (showStateFilter && selectedState !== "All") {
-        if (entry.stateSlug !== selectedState) return false;
+        if (entry.stateId !== selectedState) return false;
       }
       if (!normalizedQuery) return true;
 
       const haystack = [
-        entry.stateName,
-        entry.stateSlug,
+        entry.stateLabel,
+        entry.stateId,
         entry.toolSlug,
         entry.title,
         entry.description,
@@ -138,13 +138,13 @@ export default function ToolSearch({
           {filtered.map((entry) => (
             entry.href ? (
               <Link
-                key={`${entry.stateSlug}-${entry.toolSlug}`}
+                key={`${entry.stateId}-${entry.toolSlug}`}
                 href={entry.href}
                 className="flex flex-col gap-2 rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-ink-700 transition hover:border-accent-500 hover:text-accent-600"
               >
                 <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-wide">
                   <span className="rounded-full border border-stone-200 px-2 py-1 text-ink-500">
-                    {entry.stateName}
+                    {entry.stateLabel}
                   </span>
                   <span className="rounded-full border border-stone-200 px-2 py-1 text-ink-500">
                     {entry.category}

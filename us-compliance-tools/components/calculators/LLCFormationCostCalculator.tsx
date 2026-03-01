@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 type LLCFormationCostCalculatorProps = {
-  stateName?: string;
+  stateLabel?: string;
   notes?: string;
   isLoading?: boolean;
 };
@@ -17,7 +17,7 @@ function formatCurrency(amount: number) {
 }
 
 export default function LLCFormationCostCalculator({
-  stateName,
+  stateLabel,
   notes,
   isLoading = false,
 }: LLCFormationCostCalculatorProps) {
@@ -54,7 +54,7 @@ export default function LLCFormationCostCalculator({
       <div className="flex flex-col gap-1">
         <h2 className="text-lg font-semibold text-slate-900">LLC Formation Cost</h2>
         <p className="text-sm text-slate-600">
-          Estimate first-year formation costs for {stateName ?? "this state"}.
+          Estimate first-year formation costs for {stateLabel ?? "this state"}.
         </p>
       </div>
 

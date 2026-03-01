@@ -1,9 +1,10 @@
 import { readdir, readFile } from "fs/promises";
 import path from "path";
+import { normalizeStateData } from "../core/stateSchema";
 
 export type StateSummary = {
-  stateName: string;
-  stateSlug: string;
+  label: string;
+  slug: string;
 };
 
 export async function loadStates(): Promise<StateSummary[]> {
@@ -17,10 +18,15 @@ export async function loadStates(): Promise<StateSummary[]> {
     slugs.map(async (slug) => {
       const filePath = path.join(statesDir, `${slug}.json`);
       const raw = await readFile(filePath, "utf8");
-      const data = JSON.parse(raw) as StateSummary;
-      return { stateName: data.stateName, stateSlug: data.stateSlug };
+      const data = normalizeStateData(JSON.parse(raw));
+      const label =
+        data.state ??
+        slug
+          .replace(/[-_]+/g, " ")
+          .replace(/\b\w/g, (char) => char.toUpperCase());
+      return { label, slug };
     })
   );
 
-  return states.sort((a, b) => a.stateName.localeCompare(b.stateName));
+  return states.sort((a, b) => a.label.localeCompare(b.label));
 }

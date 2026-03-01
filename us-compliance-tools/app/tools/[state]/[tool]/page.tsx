@@ -13,6 +13,7 @@ import TexasFranchiseTaxPenaltyCalculator from "../../../../components/calculato
 import RecordToolView from "../../../components/RecordToolView";
 import { loadTools } from "../../../../lib/loadTools";
 import { getStateData } from "../../../../core/stateLoader";
+import { normalizeStateData } from "../../../../core/stateSchema";
 import { STATES, isValidState } from "../../../../core/stateConfig";
 import { tools as toolRegistry } from "../../../../core/toolRegistry";
 import { buildFaqJsonLd, getInternalLinks, getToolSeo } from "../../../../core/seo";
@@ -29,12 +30,12 @@ type ToolConfig = {
   relatedToolSlugs: string[];
 };
 
-function formatStateLabel(stateName: string) {
-  return stateName || "Unknown State";
+function formatStateLabel(stateLabel: string | null) {
+  return stateLabel || "Unknown State";
 }
 
-function applyTemplate(template: string, stateName: string) {
-  return template.replace(/\{State\}/g, stateName);
+function applyTemplate(template: string, stateLabel: string) {
+  return template.replace(/\{State\}/g, stateLabel);
 }
 
 function formatToolLabel(toolSlug: string) {
@@ -49,8 +50,8 @@ function formatStateLabelFromSlug(slug: string) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function formatStateList(stateSlugs: string[]) {
-  const labels = stateSlugs.map(formatStateLabelFromSlug);
+function formatStateList(stateIds: string[]) {
+  const labels = stateIds.map(formatStateLabelFromSlug);
   if (labels.length <= 1) return labels[0] ?? "";
   if (labels.length === 2) return `${labels[0]} and ${labels[1]}`;
   return `${labels.slice(0, -1).join(", ")}, and ${labels[labels.length - 1]}`;
@@ -133,13 +134,15 @@ export default async function ToolPage({ params }: { params: Params }) {
   if (!isValidState(state)) notFound();
   if (!toolRegistry[toolSlug as keyof typeof toolRegistry]) notFound();
 
-  const stateData = (() => {
+  const raw = (() => {
     try {
       return getStateData(state);
     } catch {
       return null;
     }
   })();
+  if (!raw) notFound();
+  const stateData = normalizeStateData(raw);
   const tools = await loadTools().catch(() => [] as ToolConfig[]);
   const toolConfig = tools.find((tool) => tool.toolSlug === toolSlug);
   const seo = getToolSeo(state, toolSlug);
@@ -149,21 +152,21 @@ export default async function ToolPage({ params }: { params: Params }) {
   const hasSources = Array.isArray(stateData.sources) && stateData.sources.length > 0;
   const hasUpdatedAt = Boolean(stateData.updated_at);
 
-  if (!stateData) notFound();
   if (!toolConfig) notFound();
 
-  const title = applyTemplate(toolConfig.titleTemplate, stateData.stateName);
+  const stateLabel = stateData.state ?? formatStateLabelFromSlug(state);
+  const title = applyTemplate(toolConfig.titleTemplate, stateLabel);
   const description = applyTemplate(
     toolConfig.descriptionTemplate,
-    stateData.stateName
+    stateLabel
   );
 
   if (
     toolConfig.allowedStates &&
-    !toolConfig.allowedStates.includes(stateData.stateSlug)
+    !toolConfig.allowedStates.includes(state)
   ) {
-    const allowedStateSlug = toolConfig.allowedStates[0];
-    const allowedStateLabel = formatStateLabelFromSlug(allowedStateSlug);
+    const allowedStateId = toolConfig.allowedStates[0];
+    const allowedStateLabel = formatStateLabelFromSlug(allowedStateId);
     const allowedStateNames = formatStateList(toolConfig.allowedStates);
     return (
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
@@ -176,7 +179,7 @@ export default async function ToolPage({ params }: { params: Params }) {
         </p>
         <div className="flex flex-wrap gap-3">
           <Link
-            href={`/tools/${allowedStateSlug}/${toolConfig.toolSlug}`}
+            href={`/tools/${allowedStateId}/${toolConfig.toolSlug}`}
             className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
           >
             Go to {allowedStateLabel} tool
@@ -192,78 +195,26 @@ export default async function ToolPage({ params }: { params: Params }) {
     );
   }
 
-  const annualReportItems = [
-    stateData.annualReport.officialName
-      ? { label: "Official name", value: stateData.annualReport.officialName }
+  const reportItems = [
+    stateData.business.annual_report_required !== null
+      ? {
+          label: "Required",
+          value: stateData.business.annual_report_required ? "Yes" : "No",
+        }
       : null,
-    stateData.annualReport.initialDue
-      ? { label: "Initial due", value: stateData.annualReport.initialDue }
+    stateData.business.annual_report_deadline
+      ? { label: "Deadline", value: stateData.business.annual_report_deadline }
       : null,
-    stateData.annualReport.recurring
-      ? { label: "Recurring", value: stateData.annualReport.recurring }
-      : null,
-    stateData.annualReport.dueDate
-      ? { label: "Due date", value: stateData.annualReport.dueDate }
-      : null,
-    stateData.annualReport.feeUSD !== undefined
-      ? { label: "Filing fee", value: formatCurrency(stateData.annualReport.feeUSD) }
-      : null,
-    stateData.annualReport.lateFeeUSD !== undefined
-      ? { label: "Late fee", value: formatCurrency(stateData.annualReport.lateFeeUSD) }
-      : null,
-    stateData.annualReport.notes
-      ? { label: "Notes", value: stateData.annualReport.notes }
-      : null,
-    stateData.annualReport.ruleText
-      ? { label: "Rule summary", value: stateData.annualReport.ruleText }
+    stateData.business.llc_annual_fee !== null
+      ? {
+          label: "LLC annual fee",
+          value: formatCurrency(stateData.business.llc_annual_fee),
+        }
       : null,
   ].filter(Boolean) as Array<{ label: string; value: string }>;
 
-  const franchiseTaxItems = stateData.franchiseTax
-    ? ([
-        stateData.franchiseTax.dueDate
-          ? { label: "Due date", value: stateData.franchiseTax.dueDate }
-          : null,
-        stateData.franchiseTax.lateFilingFeeUSD !== undefined
-          ? {
-              label: "Late filing fee",
-              value: formatCurrency(stateData.franchiseTax.lateFilingFeeUSD),
-            }
-          : null,
-        stateData.franchiseTax.latePenalty
-          ? {
-              label: "Penalty rates",
-              value: `1-30 days: ${stateData.franchiseTax.latePenalty["1to30days"] ?? "N/A"}, over 30 days: ${stateData.franchiseTax.latePenalty.over30days ?? "N/A"}`,
-            }
-          : null,
-        stateData.franchiseTax.notes
-          ? { label: "Notes", value: stateData.franchiseTax.notes }
-          : null,
-      ].filter(Boolean) as Array<{ label: string; value: string }>)
-    : [];
-
-  const publicationItems = stateData.publicationRequirement
-    ? ([
-        stateData.publicationRequirement.deadline
-          ? { label: "Deadline", value: stateData.publicationRequirement.deadline }
-          : null,
-        stateData.publicationRequirement.publicationCostRangeUSD
-          ? {
-              label: "Publication cost range",
-              value: stateData.publicationRequirement.publicationCostRangeUSD,
-            }
-          : null,
-        stateData.publicationRequirement.certificateFilingFeeUSD !== undefined
-          ? {
-              label: "Certificate filing fee",
-              value: formatCurrency(stateData.publicationRequirement.certificateFilingFeeUSD),
-            }
-          : null,
-        stateData.publicationRequirement.notes
-          ? { label: "Notes", value: stateData.publicationRequirement.notes }
-          : null,
-      ].filter(Boolean) as Array<{ label: string; value: string }>)
-    : [];
+  const franchiseTaxItems: Array<{ label: string; value: string }> = [];
+  const publicationItems: Array<{ label: string; value: string }> = [];
 
   const relatedTools = toolConfig.relatedToolSlugs || [];
   const isDataBackedTool = [
@@ -271,6 +222,36 @@ export default async function ToolPage({ params }: { params: Params }) {
     "late-filing-penalty",
     "annual-fee-calculator",
   ].includes(toolConfig.toolSlug);
+
+  const reportRule = stateData.business.annual_report_deadline
+    ? {
+        ruleType: /calendar month|anniversary/i.test(
+          stateData.business.annual_report_deadline
+        )
+          ? "anniversary_month"
+          : "fixed_date",
+        ruleText: stateData.business.annual_report_deadline,
+      }
+    : null;
+
+  const lateFilingRule =
+    stateData.penalties.late_filing_fee !== null
+      ? {
+          type: "fixed",
+          fixedAmount: stateData.penalties.late_filing_fee,
+          percentage: 0,
+          notes: "Verify with official sources.",
+        }
+      : null;
+
+  const annualFee =
+    stateData.business.llc_annual_fee !== null
+      ? {
+          amount: stateData.business.llc_annual_fee,
+          currency: "USD",
+          notes: "Verify with official sources.",
+        }
+      : null;
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
@@ -282,11 +263,11 @@ export default async function ToolPage({ params }: { params: Params }) {
       )}
       <RecordToolView
         title={title}
-        url={`/tools/${stateData.stateSlug}/${toolConfig.toolSlug}`}
+        url={`/tools/${state}/${toolConfig.toolSlug}`}
       />
       <header className="space-y-3">
         <p className="text-xs uppercase tracking-[0.3em] text-ink-600">
-          {formatStateLabel(stateData.stateName)} compliance tool
+          {formatStateLabel(stateData.state)} compliance tool
         </p>
         <Link
           href="/tools"
@@ -309,57 +290,65 @@ export default async function ToolPage({ params }: { params: Params }) {
       <section>
         {toolConfig.toolSlug === "annual-report-deadline" && (
           <AnnualReportDeadlineCalculator
-            annualReport={stateData.annualReport}
+            rule={reportRule}
           />
         )}
         {toolConfig.toolSlug === "late-filing-penalty" && (
           <LateFilingPenaltyCalculator
-            rule={stateData.penalties.lateFiling}
-            currency={stateData.fees.annualFee.currency}
+            rule={lateFilingRule}
+            currency="USD"
           />
         )}
         {toolConfig.toolSlug === "annual-fee-calculator" && (
           <AnnualFeeCalculator
-            fee={stateData.fees.annualFee}
-            stateName={stateData.stateName}
+            fee={annualFee}
+            stateLabel={stateData.state ?? undefined}
           />
         )}
         {toolConfig.toolSlug === "llc-formation-cost" && (
           <LLCFormationCostCalculator
-            stateName={stateData.stateName}
-            notes={stateData.fees.annualFee.notes}
+            stateLabel={stateData.state ?? undefined}
+            notes={stateData.business.annual_report_deadline ?? ""}
           />
         )}
         {toolConfig.toolSlug === "registered-agent-cost" && (
           <RegisteredAgentCostCalculator
-            stateName={stateData.stateName}
-            notes={stateData.fees.annualFee.notes}
+            stateLabel={stateData.state ?? undefined}
+            notes={stateData.business.annual_report_deadline ?? ""}
           />
         )}
         {toolConfig.toolSlug === "business-compliance-calendar" && (
           <ComplianceCalendarGenerator
-            stateName={stateData.stateName}
-            notes={stateData.annualReport.ruleText}
+            stateLabel={stateData.state ?? undefined}
+            notes={stateData.business.annual_report_deadline ?? ""}
           />
         )}
         {toolConfig.toolSlug === "texas-franchise-tax-due-date" && (
           <TexasFranchiseTaxDueDateCalculator
-            notes={stateData.annualReport.ruleText}
+            notes={stateData.business.annual_report_deadline ?? ""}
           />
         )}
         {toolConfig.toolSlug === "texas-franchise-tax-penalty" && (
           <TexasFranchiseTaxPenaltyCalculator
-            notes={stateData.penalties.lateFiling.notes}
+            notes={
+              stateData.penalties.late_filing_fee !== null
+                ? `Late filing fee: ${formatCurrency(stateData.penalties.late_filing_fee)}`
+                : "Verify with official sources."
+            }
           />
         )}
         {toolConfig.toolSlug === "llc-publication-cost-estimator" && (
           <NYPublicationCostEstimator
-            notes={stateData.fees.annualFee.notes}
+            notes={stateData.business.annual_report_deadline ?? ""}
           />
         )}
         {toolConfig.toolSlug === "florida-annual-report-late-fee" && (
           <FloridaAnnualReportLateFeeCalculator
-            notes={stateData.penalties.lateFiling.notes}
+            notes={
+              stateData.penalties.late_filing_fee !== null
+                ? `Late filing fee: ${formatCurrency(stateData.penalties.late_filing_fee)}`
+                : "Verify with official sources."
+            }
           />
         )}
         {!isDataBackedTool && (
@@ -372,11 +361,11 @@ export default async function ToolPage({ params }: { params: Params }) {
       <section className="rounded-2xl border border-stone-200 bg-white/80 p-5 shadow-card">
         <h2 className="text-lg font-semibold text-ink-950">Compliance details</h2>
         <div className="mt-4 grid gap-4 text-sm text-ink-700">
-          {annualReportItems.length > 0 && (
+          {reportItems.length > 0 && (
             <div className="rounded-lg border border-stone-200 bg-white px-4 py-3">
               <h3 className="text-sm font-semibold text-ink-900">Annual report</h3>
               <dl className="mt-2 grid gap-2">
-                {annualReportItems.map((item) => (
+                {reportItems.map((item) => (
                   <div key={`annual-${item.label}`} className="flex flex-col gap-1">
                     <dt className="text-xs uppercase tracking-wide text-ink-500">
                       {item.label}
@@ -417,7 +406,7 @@ export default async function ToolPage({ params }: { params: Params }) {
               </dl>
             </div>
           )}
-          {annualReportItems.length === 0 &&
+          {reportItems.length === 0 &&
             franchiseTaxItems.length === 0 &&
             publicationItems.length === 0 && (
               <p className="text-sm text-ink-600">No additional rule details yet.</p>
@@ -524,7 +513,7 @@ export default async function ToolPage({ params }: { params: Params }) {
             {relatedTools.map((slug) => (
               <Link
                 key={slug}
-                href={`/tools/${stateData.stateSlug}/${slug}`}
+                href={`/tools/${state}/${slug}`}
                 className="rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-ink-700 shadow-sm transition hover:border-accent-500 hover:text-accent-600"
               >
                 {formatToolLabel(slug)}

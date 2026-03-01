@@ -5,8 +5,8 @@ import { loadStates } from "../../lib/loadStates";
 import { loadTools } from "../../lib/loadTools";
 
 type ToolPageItem = {
-  stateSlug: string;
-  stateName: string;
+  stateId: string;
+  stateLabel: string;
   toolSlug: string;
   title: string;
   description: string;
@@ -14,8 +14,8 @@ type ToolPageItem = {
   href: string;
 };
 
-function applyTemplate(template: string, stateName: string) {
-  return template.replace(/\{State\}/g, stateName);
+function applyTemplate(template: string, stateLabel: string) {
+  return template.replace(/\{State\}/g, stateLabel);
 }
 
 export default async function ToolsHubPage() {
@@ -24,16 +24,16 @@ export default async function ToolsHubPage() {
   const toolPages: ToolPageItem[] = states.flatMap((state) =>
     tools
       .filter(
-        (tool) => !tool.allowedStates || tool.allowedStates.includes(state.stateSlug)
+        (tool) => !tool.allowedStates || tool.allowedStates.includes(state.slug)
       )
       .map((tool) => ({
-        stateSlug: state.stateSlug,
-        stateName: state.stateName,
+        stateId: state.slug,
+        stateLabel: state.label,
         toolSlug: tool.toolSlug,
-        title: applyTemplate(tool.titleTemplate, state.stateName),
-        description: applyTemplate(tool.descriptionTemplate, state.stateName),
+        title: applyTemplate(tool.titleTemplate, state.label),
+        description: applyTemplate(tool.descriptionTemplate, state.label),
         category: tool.category,
-        href: `/tools/${state.stateSlug}/${tool.toolSlug}`,
+        href: `/tools/${state.slug}/${tool.toolSlug}`,
       }))
   );
 
@@ -60,7 +60,7 @@ export default async function ToolsHubPage() {
         items={toolPages}
         categories={categories}
         showStateFilter
-        states={states.map((state) => ({ slug: state.stateSlug, name: state.stateName }))}
+        states={states.map((state) => ({ slug: state.slug, name: state.label }))}
       />
 
       <RecentTools />

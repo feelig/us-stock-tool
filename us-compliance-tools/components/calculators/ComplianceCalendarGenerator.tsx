@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 type ComplianceCalendarGeneratorProps = {
-  stateName?: string;
+  stateLabel?: string;
   notes?: string;
   isLoading?: boolean;
 };
@@ -17,7 +17,7 @@ function formatDisplayDate(date: Date): string {
 }
 
 export default function ComplianceCalendarGenerator({
-  stateName,
+  stateLabel,
   notes,
   isLoading = false,
 }: ComplianceCalendarGeneratorProps) {
@@ -60,7 +60,7 @@ export default function ComplianceCalendarGenerator({
       <div className="flex flex-col gap-1">
         <h2 className="text-lg font-semibold text-slate-900">Compliance Calendar</h2>
         <p className="text-sm text-slate-600">
-          Generate a simple compliance timeline for {stateName ?? "this state"}.
+          Generate a simple compliance timeline for {stateLabel ?? "this state"}.
         </p>
       </div>
 
