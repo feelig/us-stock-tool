@@ -30,12 +30,12 @@ type ToolConfig = {
   relatedToolSlugs: string[];
 };
 
-function formatStateLabel(stateName: string | null) {
-  return stateName || "Unknown State";
+function formatStateLabel(stateLabel: string | null) {
+  return stateLabel || "Unknown State";
 }
 
-function applyTemplate(template: string, stateName: string) {
-  return template.replace(/\{State\}/g, stateName);
+function applyTemplate(template: string, stateLabel: string) {
+  return template.replace(/\{State\}/g, stateLabel);
 }
 
 function formatToolLabel(toolSlug: string) {
@@ -50,8 +50,8 @@ function formatStateLabelFromSlug(slug: string) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function formatStateList(stateSlugs: string[]) {
-  const labels = stateSlugs.map(formatStateLabelFromSlug);
+function formatStateList(stateIds: string[]) {
+  const labels = stateIds.map(formatStateLabelFromSlug);
   if (labels.length <= 1) return labels[0] ?? "";
   if (labels.length === 2) return `${labels[0]} and ${labels[1]}`;
   return `${labels.slice(0, -1).join(", ")}, and ${labels[labels.length - 1]}`;
@@ -165,8 +165,8 @@ export default async function ToolPage({ params }: { params: Params }) {
     toolConfig.allowedStates &&
     !toolConfig.allowedStates.includes(state)
   ) {
-    const allowedStateSlug = toolConfig.allowedStates[0];
-    const allowedStateLabel = formatStateLabelFromSlug(allowedStateSlug);
+    const allowedStateId = toolConfig.allowedStates[0];
+    const allowedStateLabel = formatStateLabelFromSlug(allowedStateId);
     const allowedStateNames = formatStateList(toolConfig.allowedStates);
     return (
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
@@ -179,7 +179,7 @@ export default async function ToolPage({ params }: { params: Params }) {
         </p>
         <div className="flex flex-wrap gap-3">
           <Link
-            href={`/tools/${allowedStateSlug}/${toolConfig.toolSlug}`}
+            href={`/tools/${allowedStateId}/${toolConfig.toolSlug}`}
             className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
           >
             Go to {allowedStateLabel} tool
@@ -195,7 +195,7 @@ export default async function ToolPage({ params }: { params: Params }) {
     );
   }
 
-  const annualReportItems = [
+  const reportItems = [
     stateData.business.annual_report_required !== null
       ? {
           label: "Required",
@@ -223,7 +223,7 @@ export default async function ToolPage({ params }: { params: Params }) {
     "annual-fee-calculator",
   ].includes(toolConfig.toolSlug);
 
-  const annualReportRule = stateData.business.annual_report_deadline
+  const reportRule = stateData.business.annual_report_deadline
     ? {
         ruleType: /calendar month|anniversary/i.test(
           stateData.business.annual_report_deadline
@@ -290,7 +290,7 @@ export default async function ToolPage({ params }: { params: Params }) {
       <section>
         {toolConfig.toolSlug === "annual-report-deadline" && (
           <AnnualReportDeadlineCalculator
-            annualReport={annualReportRule}
+            rule={reportRule}
           />
         )}
         {toolConfig.toolSlug === "late-filing-penalty" && (
@@ -302,24 +302,24 @@ export default async function ToolPage({ params }: { params: Params }) {
         {toolConfig.toolSlug === "annual-fee-calculator" && (
           <AnnualFeeCalculator
             fee={annualFee}
-            stateName={stateData.state ?? undefined}
+            stateLabel={stateData.state ?? undefined}
           />
         )}
         {toolConfig.toolSlug === "llc-formation-cost" && (
           <LLCFormationCostCalculator
-            stateName={stateData.state ?? undefined}
+            stateLabel={stateData.state ?? undefined}
             notes={stateData.business.annual_report_deadline ?? ""}
           />
         )}
         {toolConfig.toolSlug === "registered-agent-cost" && (
           <RegisteredAgentCostCalculator
-            stateName={stateData.state ?? undefined}
+            stateLabel={stateData.state ?? undefined}
             notes={stateData.business.annual_report_deadline ?? ""}
           />
         )}
         {toolConfig.toolSlug === "business-compliance-calendar" && (
           <ComplianceCalendarGenerator
-            stateName={stateData.state ?? undefined}
+            stateLabel={stateData.state ?? undefined}
             notes={stateData.business.annual_report_deadline ?? ""}
           />
         )}
@@ -361,11 +361,11 @@ export default async function ToolPage({ params }: { params: Params }) {
       <section className="rounded-2xl border border-stone-200 bg-white/80 p-5 shadow-card">
         <h2 className="text-lg font-semibold text-ink-950">Compliance details</h2>
         <div className="mt-4 grid gap-4 text-sm text-ink-700">
-          {annualReportItems.length > 0 && (
+          {reportItems.length > 0 && (
             <div className="rounded-lg border border-stone-200 bg-white px-4 py-3">
               <h3 className="text-sm font-semibold text-ink-900">Annual report</h3>
               <dl className="mt-2 grid gap-2">
-                {annualReportItems.map((item) => (
+                {reportItems.map((item) => (
                   <div key={`annual-${item.label}`} className="flex flex-col gap-1">
                     <dt className="text-xs uppercase tracking-wide text-ink-500">
                       {item.label}
@@ -406,7 +406,7 @@ export default async function ToolPage({ params }: { params: Params }) {
               </dl>
             </div>
           )}
-          {annualReportItems.length === 0 &&
+          {reportItems.length === 0 &&
             franchiseTaxItems.length === 0 &&
             publicationItems.length === 0 && (
               <p className="text-sm text-ink-600">No additional rule details yet.</p>

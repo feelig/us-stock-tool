@@ -7,7 +7,7 @@ export type AnnualReportRule = {
 };
 
 type AnnualReportDeadlineCalculatorProps = {
-  annualReport?: AnnualReportRule | null;
+  rule?: AnnualReportRule | null;
   isLoading?: boolean;
 };
 
@@ -20,7 +20,7 @@ function formatDisplayDate(date: Date): string {
 }
 
 export default function AnnualReportDeadlineCalculator({
-  annualReport,
+  rule,
   isLoading = false,
 }: AnnualReportDeadlineCalculatorProps) {
   const [formationDate, setFormationDate] = useState("");
@@ -33,7 +33,7 @@ export default function AnnualReportDeadlineCalculator({
     setError(null);
     setResult(null);
 
-    if (isLoading || !annualReport) {
+    if (isLoading || !rule) {
       setError("State data is still loading.");
       return;
     }
@@ -49,7 +49,7 @@ export default function AnnualReportDeadlineCalculator({
       return;
     }
 
-    if (annualReport.ruleType !== "anniversary_month") {
+    if (rule.ruleType !== "anniversary_month") {
       setError("This calculator only supports anniversary month rules.");
       return;
     }
@@ -76,7 +76,7 @@ export default function AnnualReportDeadlineCalculator({
     }
   };
 
-  const ruleText = annualReport?.ruleText ?? "";
+  const ruleText = rule?.ruleText ?? "";
 
   return (
     <div className="w-full max-w-2xl rounded-xl border border-slate-200 bg-white p-5 shadow-sm">

@@ -8,7 +8,7 @@ export type AnnualFee = {
 
 type AnnualFeeCalculatorProps = {
   fee?: AnnualFee | null;
-  stateName?: string;
+  stateLabel?: string;
   isLoading?: boolean;
 };
 
@@ -23,7 +23,7 @@ function formatCurrency(amount: number, currency: string) {
 
 export default function AnnualFeeCalculator({
   fee,
-  stateName,
+  stateLabel,
   isLoading = false,
 }: AnnualFeeCalculatorProps) {
   if (isLoading || !fee) {
@@ -44,7 +44,7 @@ export default function AnnualFeeCalculator({
       <div className="flex flex-col gap-1">
         <h2 className="text-lg font-semibold text-slate-900">Annual Fee</h2>
         <p className="text-sm text-slate-600">
-          Current LLC annual fee for {stateName ?? "this state"}.
+          Current LLC annual fee for {stateLabel ?? "this state"}.
         </p>
       </div>
 

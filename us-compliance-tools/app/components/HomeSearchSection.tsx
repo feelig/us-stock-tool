@@ -5,8 +5,8 @@ import ToolSearch from "./ToolSearch";
 
 type HomeSearchSectionProps = {
   items: Array<{
-    stateSlug: string;
-    stateName: string;
+    stateId: string;
+    stateLabel: string;
     toolSlug: string;
     title: string;
     description: string;

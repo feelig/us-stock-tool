@@ -5,8 +5,8 @@ import { loadStates } from "../lib/loadStates";
 import { loadTools } from "../lib/loadTools";
 
 type ToolPageItem = {
-  stateSlug: string;
-  stateName: string;
+  stateId: string;
+  stateLabel: string;
   toolSlug: string;
   title: string;
   description: string;
@@ -14,8 +14,8 @@ type ToolPageItem = {
   href: string;
 };
 
-function applyTemplate(template: string, stateName: string) {
-  return template.replace(/\{State\}/g, stateName);
+function applyTemplate(template: string, stateLabel: string) {
+  return template.replace(/\{State\}/g, stateLabel);
 }
 
 export default async function HomePage() {
@@ -24,16 +24,16 @@ export default async function HomePage() {
   const toolPages: ToolPageItem[] = states.flatMap((state) =>
     tools
       .filter(
-        (tool) => !tool.allowedStates || tool.allowedStates.includes(state.stateSlug)
+        (tool) => !tool.allowedStates || tool.allowedStates.includes(state.slug)
       )
       .map((tool) => ({
-        stateSlug: state.stateSlug,
-        stateName: state.stateName,
+        stateId: state.slug,
+        stateLabel: state.label,
         toolSlug: tool.toolSlug,
-        title: applyTemplate(tool.titleTemplate, state.stateName),
-        description: applyTemplate(tool.descriptionTemplate, state.stateName),
+        title: applyTemplate(tool.titleTemplate, state.label),
+        description: applyTemplate(tool.descriptionTemplate, state.label),
         category: tool.category,
-        href: `/tools/${state.stateSlug}/${tool.toolSlug}`,
+        href: `/tools/${state.slug}/${tool.toolSlug}`,
       }))
   );
 
@@ -41,11 +41,11 @@ export default async function HomePage() {
 
   const popularStates = ["california", "texas", "florida", "newyork"];
   const popularStateEntries = states
-    .filter((state) => popularStates.includes(state.stateSlug))
+    .filter((state) => popularStates.includes(state.slug))
     .map((state) => ({
       ...state,
       tools: toolPages
-        .filter((item) => item.stateSlug === state.stateSlug)
+        .filter((item) => item.stateId === state.slug)
         .slice(0, 5)
         .map((item) => ({
           slug: item.toolSlug,
@@ -107,15 +107,15 @@ export default async function HomePage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {popularStateEntries.map((state) => (
             <div
-              key={state.stateSlug}
+              key={state.slug}
               className="rounded-2xl border border-stone-200 bg-white/80 p-5 shadow-card"
             >
-              <h3 className="text-lg font-semibold text-ink-950">{state.stateName}</h3>
+              <h3 className="text-lg font-semibold text-ink-950">{state.label}</h3>
               <div className="mt-3 flex flex-col gap-2">
                 {state.tools.map((tool) => (
                   <Link
                     key={tool.slug}
-                    href={`/tools/${state.stateSlug}/${tool.slug}`}
+                    href={`/tools/${state.slug}/${tool.slug}`}
                     className="rounded-lg border border-stone-200 px-3 py-2 text-xs font-semibold text-ink-700 transition hover:border-accent-500 hover:text-accent-600"
                   >
                     {tool.label}
