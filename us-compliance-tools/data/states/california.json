@@ -1,5 +1,7 @@
 {
   "state": "California",
+  "version": 1,
+  "source_last_checked": "2026-03-01",
   "updated_at": "2026-03",
   "business": {
     "annual_report_required": true,
