@@ -1,5 +1,5 @@
 {
-  "date": "2026-02-27",
+  "date": "2026-03-02",
   "mri": 40,
   "riskLevel": "neutral",
   "equityRange": "40-60%",
@@ -8,29 +8,29 @@
   "inputsTable": [
     {
       "asset": "SPY",
-      "price": 689.3,
-      "change20d": -0.0088004371458974,
+      "price": 685.99,
+      "change20d": -0.011598755114978876,
       "ma100Pos": "Above MA100",
       "signal": "Risk-on"
     },
     {
       "asset": "QQQ",
-      "price": 609.24,
-      "change20d": -0.03786993461987942,
+      "price": 607.29,
+      "change20d": -0.035174681855011714,
       "ma100Pos": "Below MA100",
       "signal": "Risk-off"
     },
     {
       "asset": "TLT",
-      "price": 90.27,
-      "change20d": 0.03047945205479463,
+      "price": 90.82,
+      "change20d": 0.03652134215932423,
       "ma100Pos": "Above MA100",
       "signal": "Relief"
     },
     {
       "asset": "GLD",
-      "price": 477.48,
-      "change20d": -0.03453574894856026,
+      "price": 483.75,
+      "change20d": -0.024500907441016295,
       "ma100Pos": "Above MA100",
       "signal": "Hedge"
     }
@@ -45,6 +45,7 @@
     "QQQ 在 MA100 之下：科技相对弱于大盘（Risk-off）",
     "宏观信号：利率压力缓和（Relief），黄金提供对冲支撑（Hedge）"
   ],
+  "summaryLine": "中性区间（30–60）：SPY偏强，QQQ偏弱，TLT缓和，GLD对冲。",
   "outlook": {
     "baseCase": "Balanced regime; keep allocations within neutral ranges.",
     "upsideTrigger": "Risk-on tilt if SPY/QQQ hold above MA100.",
@@ -63,10 +64,10 @@
       "GLD": 100
     },
     "countsFromHistory": {
-      "SPY": 100,
-      "QQQ": 100,
-      "TLT": 100,
-      "GLD": 100
+      "SPY": 101,
+      "QQQ": 101,
+      "TLT": 101,
+      "GLD": 101
     }
   }
 }

@@ -1,5 +1,18 @@
 {
-  "date": "2026-02-27",
-  "hasAlert": false,
-  "alerts": []
+  "date": "2026-03-01",
+  "hasAlert": true,
+  "alerts": [
+    {
+      "type": "regime_change",
+      "from": "neutral",
+      "to": "risk_on",
+      "date": "2026-03-01"
+    },
+    {
+      "type": "threshold_low",
+      "level": "low",
+      "score": 26,
+      "date": "2026-03-01"
+    }
+  ]
 }

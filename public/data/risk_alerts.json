@@ -1,5 +1,31 @@
 {
-  "date": "2026-02-27",
-  "alerts": [],
-  "history": []
+  "date": "2026-03-01",
+  "alerts": [
+    {
+      "type": "regime_change",
+      "from": "neutral",
+      "to": "risk_on",
+      "date": "2026-03-01"
+    },
+    {
+      "type": "threshold_low",
+      "level": "low",
+      "score": 26,
+      "date": "2026-03-01"
+    }
+  ],
+  "history": [
+    {
+      "type": "threshold_low",
+      "level": "low",
+      "score": 26,
+      "date": "2026-03-01"
+    },
+    {
+      "type": "regime_change",
+      "from": "neutral",
+      "to": "risk_on",
+      "date": "2026-03-01"
+    }
+  ]
 }

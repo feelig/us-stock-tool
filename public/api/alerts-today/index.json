@@ -1,7 +1,20 @@
 {
-  "date": "2026-02-27",
-  "hasAlerts": false,
-  "alerts": [],
-  "dailyUrl": "https://finlogichub5.com/daily/2026-02-27",
+  "date": "2026-03-01",
+  "hasAlerts": true,
+  "alerts": [
+    {
+      "type": "regime_change",
+      "from": "neutral",
+      "to": "risk_on",
+      "date": "2026-03-01"
+    },
+    {
+      "type": "threshold_low",
+      "level": "low",
+      "score": 26,
+      "date": "2026-03-01"
+    }
+  ],
+  "dailyUrl": "https://finlogichub5.com/daily/2026-03-01",
   "alertsUrl": "https://finlogichub5.com/alerts/"
 }
